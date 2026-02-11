@@ -15,6 +15,7 @@ This document outlines the technical architecture for a conversational search in
 
 ## System Architecture
 
+![alt text](image.png)
 ### Technology Stack
 
 | Component | Technology | Rationale |

@@ -489,7 +489,7 @@ IMPORTANT RULES:
 - Include both specific and broader terms to cast a wider net
 - Add visual descriptors (composition, lighting, mood) when implied by the query
 - Consider related concepts that photographers would tag (e.g. "happy family" → also "togetherness", "bonding", "lifestyle")
-- Keep the expanded query concise — aim for 5-15 well-chosen terms, not a paragraph
+- Keep the expanded query concise — limit to a maximum of 4 terms to avoid "too many boolean clauses" errors
 - Do NOT add unrelated terms just to pad the query
 - The output query will be sent to a search engine that uses BOTH keyword matching and semantic similarity
 
