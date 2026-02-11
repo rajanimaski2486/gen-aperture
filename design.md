@@ -48,7 +48,8 @@ Docker Container
 - Fits Backstage FastAPI template
 
 ---
-
+## Workflow 
+![alt text](image-1.png)
 ## Core Components
 
 ### 1. Frontend (React + Vite)

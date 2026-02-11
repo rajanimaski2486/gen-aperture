@@ -12,6 +12,8 @@ AI-powered conversational interface for searching stock photos using natural lan
 
 ## Architecture
 
+![alt text](image.png)
+
 - **Frontend**: React 18 + Vite
 - **Backend**: FastAPI (Python 3.11+)
 - **Agents**: LangGraph with OpenAI GPT-4o-mini
@@ -96,6 +98,8 @@ gen-aperture/
 └── docker-compose.yml
 ```
 
+## Workflow
+![alt text](image-1.png)
 ## API Endpoints
 
 ### POST /api/chat
