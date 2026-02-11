@@ -1,0 +1,160 @@
+"""
+File extraction service for PDF, DOCX, and TXT files.
+Extracts text content from uploaded files for AI agent processing.
+"""
+import logging
+from typing import Optional
+from pathlib import Path
+import mimetypes
+from pypdf import PdfReader
+from docx import Document
+from io import BytesIO
+
+logger = logging.getLogger(__name__)
+
+
+class FileExtractor:
+    """Extract text content from uploaded files."""
+    
+    # Supported file extensions
+    SUPPORTED_EXTENSIONS = {
+        '.pdf': 'pdf',
+        '.docx': 'docx',
+        '.txt': 'txt',
+    }
+    
+    MAX_FILE_SIZE = 1024 * 1024  # 1MB
+    
+    def __init__(self):
+        # Initialize mimetypes
+        mimetypes.init()
+    
+    def extract_text(self, file_content: bytes, filename: str) -> dict:
+        """
+        Extract text from file content.
+        
+        Args:
+            file_content: Raw file bytes
+            filename: Original filename
+            
+        Returns:
+            dict with keys:
+                - text: Extracted text content
+                - file_type: Detected file type
+                - error: Error message if extraction failed
+        """
+        try:
+            # Check file size
+            if len(file_content) > self.MAX_FILE_SIZE:
+                return {
+                    'text': None,
+                    'file_type': None,
+                    'error': f'File size exceeds {self.MAX_FILE_SIZE / 1024 / 1024}MB limit'
+                }
+            
+            # Detect file type from extension
+            file_ext = Path(filename).suffix.lower()
+            logger.info(f"Detected extension: {file_ext} for file: {filename}")
+            
+            # Get file type
+            file_type = self.SUPPORTED_EXTENSIONS.get(file_ext)
+            if not file_type:
+                return {
+                    'text': None,
+                    'file_type': file_ext,
+                    'error': f'Unsupported file type: {file_ext}. Supported types: PDF, DOCX, TXT'
+                }
+            
+            # Extract based on type
+            if file_type == 'pdf':
+                text = self._extract_pdf(file_content)
+            elif file_type == 'docx':
+                text = self._extract_docx(file_content)
+            elif file_type == 'txt':
+                text = self._extract_txt(file_content)
+            else:
+                raise ValueError(f"Unhandled file type: {file_type}")
+            
+            # Validate extracted text
+            if not text or not text.strip():
+                return {
+                    'text': None,
+                    'file_type': file_type,
+                    'error': 'No text content found in file'
+                }
+            
+            logger.info(f"Successfully extracted {len(text)} characters from {filename}")
+            
+            return {
+                'text': text.strip(),
+                'file_type': file_type,
+                'error': None
+            }
+            
+        except Exception as e:
+            logger.error(f"Error extracting text from {filename}: {str(e)}", exc_info=True)
+            return {
+                'text': None,
+                'file_type': None,
+                'error': f'Failed to extract text: {str(e)}'
+            }
+    
+    def _extract_pdf(self, file_content: bytes) -> str:
+        """Extract text from PDF file."""
+        try:
+            reader = PdfReader(BytesIO(file_content))
+            text_parts = []
+            
+            for page_num, page in enumerate(reader.pages):
+                try:
+                    text = page.extract_text()
+                    if text:
+                        text_parts.append(text)
+                except Exception as e:
+                    logger.warning(f"Failed to extract text from PDF page {page_num}: {e}")
+                    continue
+            
+            return '\n\n'.join(text_parts)
+            
+        except Exception as e:
+            raise ValueError(f"PDF extraction failed: {str(e)}")
+    
+    def _extract_docx(self, file_content: bytes) -> str:
+        """Extract text from DOCX file."""
+        try:
+            doc = Document(BytesIO(file_content))
+            text_parts = []
+            
+            # Extract from paragraphs
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    text_parts.append(para.text)
+            
+            # Extract from tables
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = ' | '.join(cell.text.strip() for cell in row.cells)
+                    if row_text.strip():
+                        text_parts.append(row_text)
+            
+            return '\n\n'.join(text_parts)
+            
+        except Exception as e:
+            raise ValueError(f"DOCX extraction failed: {str(e)}")
+    
+    def _extract_txt(self, file_content: bytes) -> str:
+        """Extract text from TXT file."""
+        try:
+            # Try UTF-8 first
+            try:
+                return file_content.decode('utf-8')
+            except UnicodeDecodeError:
+                # Fallback to latin-1
+                return file_content.decode('latin-1')
+                
+        except Exception as e:
+            raise ValueError(f"TXT extraction failed: {str(e)}")
+
+
+# Singleton instance
+file_extractor = FileExtractor()
