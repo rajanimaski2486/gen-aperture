@@ -1,0 +1,13 @@
+This document outlines the Visual & Verbal Guidelines for Johnson & Johnson, designed to protect the Brand Identity, applying to all media and formats while adhering to accessibility guidance.
+
+**Key Brand Identity Components and Guidelines:**
+
+  * **Usage and Support:** The master guideline is for employees, brand ambassadors, communicators, designers, and agency partners. Companion documents are available for digital design, motion design, and supplements on the Brand Center Portal. General questions can be directed to OPBrandPortal@its.jnj.com, and design questions to design@its.jnj.com.
+  * **Brand Purpose and Expression:** Johnson & Johnson's Purpose is to "blend Science and Ingenuity to profoundly change the trajectory of health for humanity". The brand expression is guided by the foundational principles to "Be clear," "Be confident," and "Be vibrant".
+  * **Logo:** The Logo Signature is the primary logo and is preferred in J\&J Red on a White background. The Logo Initials are a secondary identifier for internal use only or external use with permission when space is limited. The company name in text should appear in the same font, color, and size as surrounding text, set in initial caps, and is only abbreviated as "J\&J" for internal use.
+  * **Color:** The core color palette features White as dominant (no less than 50% in a single view). The primary and secondary colors include Red, Blue, Magenta, Extra Light Gray, and Black. Accent colors are only for information graphics and data visualization.
+  * **Typography:** The primary typeface is J\&J Circular for all public applications. Arial is the acceptable substitute for internal desktop communications and Microsoft Office® products. Text hierarchy is important, generally using J\&J Circular Black for headlines and J\&J Circular Book for body copy.
+  * **Photography:** Photography must adhere to a documentary style and be authentic, emotional, and compelling. Stock photos should only be purchased from Getty Images or Shutterstock.
+  * **Accessibility:** Communications must meet the WCAG 2.1 AA standard, including for color contrast. The goal is to move toward AAA accessibility standards.
+
+

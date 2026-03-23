@@ -43,4 +43,9 @@ export const conversationsAPI = {
     const response = await api.get(`/conversations/${conversationId}`);
     return response.data;
   },
+
+  deleteConversation: async (conversationId) => {
+    const response = await api.delete(`/conversations/${conversationId}`);
+    return response.data;
+  },
 };

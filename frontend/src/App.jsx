@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import './index.css';
 import { chatAPI, conversationsAPI } from './services/api';
 
+const ACTIVE_CONVERSATION_KEY = 'active_conversation_id';
+
 /** Modal to display JSON payload */
-function PayloadModal({ title, payload, onClose }) {
+function PayloadModal({ title, payload, url, method, onClose }) {
   if (!payload) return null;
   return (
     <div className="payload-modal-overlay" onClick={onClose}>
@@ -12,8 +16,95 @@ function PayloadModal({ title, payload, onClose }) {
           <h3>{title}</h3>
           <button className="payload-modal-close" onClick={onClose}>✕</button>
         </div>
+        {url && (
+          <div className="payload-modal-url">
+            <span className="payload-modal-url-label">{method || 'POST'}</span>
+            <code>{url}</code>
+          </div>
+        )}
         <pre className="payload-modal-body">{JSON.stringify(payload, null, 2)}</pre>
       </div>
+    </div>
+  );
+}
+
+/** Reflection Reranker log panel */
+function RerankLogPanel({ decisions, explanation }) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!decisions || decisions.length === 0) return null;
+
+  const kept = decisions.filter(d => d.keep);
+  const discarded = decisions.filter(d => !d.keep);
+  const total = decisions.length;
+
+  return (
+    <div className="rerank-log-panel">
+      <button
+        className="rerank-log-toggle"
+        onClick={() => setExpanded(prev => !prev)}
+      >
+        <span>🎯 Reflection Reranking Log</span>
+        <span className="rerank-log-summary">
+          {total} evaluated → {kept.length} selected
+        </span>
+        <span style={{ marginLeft: 'auto' }}>{expanded ? '▾' : '▸'}</span>
+      </button>
+
+      {expanded && (
+        <div className="rerank-log-body">
+          {explanation && (
+            <div className="rerank-explanation-box">
+              ⚠️ {explanation}
+            </div>
+          )}
+
+          <table className="rerank-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Image</th>
+                <th>Score</th>
+                <th>Decision</th>
+                <th>Reason</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Kept results first */}
+              {kept
+                .sort((a, b) => (a.final_rank ?? 999) - (b.final_rank ?? 999))
+                .map((d, i) => (
+                  <tr key={`keep-${i}`} className={d.is_borderline ? 'row-borderline' : 'row-keep'}>
+                    <td>#{d.final_rank}</td>
+                    <td className="cell-description">{(d.hadron_id || '—')}</td>
+                    <td>{d.rerank_score?.toFixed(2)}</td>
+                    <td>
+                      {d.is_borderline
+                        ? <span className="decision-borderline">⚠ Borderline</span>
+                        : <span className="decision-keep">✓ Keep</span>
+                      }
+                    </td>
+                    <td className="cell-reason">{d.reason || '—'}</td>
+                    <td>{d.confidence != null ? `${(d.confidence * 100).toFixed(0)}%` : '—'}</td>
+                  </tr>
+                ))
+              }
+              {/* Discarded results */}
+              {discarded.map((d, i) => (
+                <tr key={`discard-${i}`} className="row-discard">
+                  <td>—</td>
+                  <td className="cell-description">{d.hadron_id || '—'}</td>
+                  <td>{d.rerank_score?.toFixed(2)}</td>
+                  <td><span className="decision-discard">✗ Discard</span></td>
+                  <td className="cell-reason">{d.reason || '—'}</td>
+                  <td>{d.confidence != null ? `${(d.confidence * 100).toFixed(0)}%` : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -32,14 +123,16 @@ function AgentWorkflowPanel({ steps }) {
     'Squad Router': '🧭',
     'Project Manager': '📋',
     'Search Specialist': '🔍',
-    'Synthesizer': '✨'
+    'Synthesizer': '✨',
+    'Reflection Reranker': '🎯'
   };
 
   const agentColors = {
     'Squad Router': '#6366f1',
     'Project Manager': '#f59e0b',
     'Search Specialist': '#10b981',
-    'Synthesizer': '#8b5cf6'
+    'Synthesizer': '#8b5cf6',
+    'Reflection Reranker': '#0d9488'
   };
 
   return (
@@ -48,6 +141,8 @@ function AgentWorkflowPanel({ steps }) {
         <PayloadModal
           title={payloadModal.title}
           payload={payloadModal.payload}
+          url={payloadModal.url}
+          method={payloadModal.method}
           onClose={() => setPayloadModal(null)}
         />
       )}
@@ -104,9 +199,17 @@ function AgentWorkflowPanel({ steps }) {
                   {step.opensearch_payload && (
                     <button
                       className="payload-link"
-                      onClick={(e) => { e.stopPropagation(); setPayloadModal({ title: `${step.agent} — OpenSearch Payload`, payload: step.opensearch_payload }); }}
+                      onClick={(e) => { e.stopPropagation(); setPayloadModal({ title: `${step.agent} — OpenSearch Payload`, payload: step.opensearch_payload, url: step.opensearch_url }); }}
                     >
                       📋 View OpenSearch Payload
+                    </button>
+                  )}
+                  {step.search_service_response && (
+                    <button
+                      className="payload-link"
+                      onClick={(e) => { e.stopPropagation(); setPayloadModal({ title: `Search Service Response — ${step.action}`, payload: step.search_service_response, url: step.search_service_endpoint, method: 'GET' }); }}
+                    >
+                      🌐 View Search Service Response
                     </button>
                   )}
                 </div>
@@ -155,6 +258,8 @@ function App() {
   const [conversations, setConversations] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  // True when the outgoing message contains a rerank trigger phrase
+  const [isReranking, setIsReranking] = useState(false);
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [tempApiKey, setTempApiKey] = useState('');
@@ -162,21 +267,37 @@ function App() {
 
   // Check for API key on mount
   useEffect(() => {
-    const storedApiKey = sessionStorage.getItem('openai_api_key');
-    if (!storedApiKey) {
-      setShowApiKeyModal(true);
-    } else {
-      setApiKey(storedApiKey);
-    }
-    loadRecentConversations();
+    const initializeApp = async () => {
+      const storedApiKey = sessionStorage.getItem('openai_api_key');
+      if (!storedApiKey) {
+        setShowApiKeyModal(true);
+      } else {
+        setApiKey(storedApiKey);
+      }
+
+      await loadRecentConversations();
+
+      // Restore the last active conversation after page reload.
+      const storedConversationId = sessionStorage.getItem(ACTIVE_CONVERSATION_KEY);
+      if (storedConversationId) {
+        const loaded = await loadConversation(storedConversationId);
+        if (!loaded) {
+          sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+        }
+      }
+    };
+
+    initializeApp();
   }, []);
 
   const loadRecentConversations = async () => {
     try {
       const recent = await conversationsAPI.getRecent();
       setConversations(recent);
+      return recent;
     } catch (err) {
       console.error('Failed to load conversations:', err);
+      return [];
     }
   };
 
@@ -206,10 +327,13 @@ function App() {
       
       setMessages(loadedMessages);
       setConversationId(convId);
+      sessionStorage.setItem(ACTIVE_CONVERSATION_KEY, convId);
       setSelectedFile(null);
+      return true;
     } catch (err) {
       console.error('Failed to load conversation:', err);
       showError('Failed to load conversation history');
+      return false;
     } finally {
       setIsLoading(false);
     }
@@ -236,8 +360,27 @@ function App() {
 
   const handleNewChat = () => {
     setConversationId(null);
+    sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setMessages([]);
     setSelectedFile(null);
+  };
+
+  const handleDeleteConversation = async (e, convId) => {
+    e.stopPropagation();
+    try {
+      await conversationsAPI.deleteConversation(convId);
+      // If the deleted conversation is currently open, clear it
+      if (convId === conversationId) {
+        setConversationId(null);
+        sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+        setMessages([]);
+        setSelectedFile(null);
+      }
+      await loadRecentConversations();
+    } catch (err) {
+      console.error('Failed to delete conversation:', err);
+      showError('Failed to delete conversation');
+    }
   };
 
   const handleFileSelect = (e) => {
@@ -260,7 +403,11 @@ function App() {
 
     const userMessage = inputMessage.trim();
     setInputMessage('');
-    
+
+    // Detect rerank trigger phrases to show the dedicated loading indicator
+    const rerankTrigger = /\bbest\b|\btop[\s-]?ranked?\b|\brerank\b|\breflect\s+and\s+respond\b|\breviewed\b/i;
+    setIsReranking(rerankTrigger.test(userMessage));
+
     // Add user message to UI
     const newUserMessage = { 
       role: 'user', 
@@ -284,13 +431,18 @@ function App() {
         role: 'assistant',
         content: response.response,
         results: response.results,
+        filter_metadata: response.filter_metadata || null,
         workflow_steps: response.workflow_steps || [],
-        search_mode: response.search_mode || 'relevance'
+        search_mode: response.search_mode || 'relevance',
+        rerank_applied: response.rerank_applied || false,
+        rerank_decisions: response.rerank_decisions || [],
+        rerank_explanation: response.rerank_explanation || null,
       }]);
 
       // Update conversation ID if new
       if (!conversationId) {
         setConversationId(response.conversation_id);
+        sessionStorage.setItem(ACTIVE_CONVERSATION_KEY, response.conversation_id);
       }
 
       // Clear file selection
@@ -362,10 +514,19 @@ function App() {
               className={`conversation-item ${conv.conversation_id === conversationId ? 'active' : ''}`}
               onClick={() => loadConversation(conv.conversation_id)}
             >
-              <div className="conversation-query">{conv.last_user_query || 'New conversation'}</div>
-              <div className="conversation-meta">
-                {conv.message_count} message{conv.message_count !== 1 ? 's' : ''}
+              <div className="conversation-item-content">
+                <div className="conversation-query">{conv.title || conv.last_user_query || 'New conversation'}</div>
+                <div className="conversation-meta">
+                  {conv.message_count} message{conv.message_count !== 1 ? 's' : ''}
+                </div>
               </div>
+              <button
+                className="conversation-delete-btn"
+                title="Delete conversation"
+                onClick={(e) => handleDeleteConversation(e, conv.conversation_id)}
+              >
+                ✕
+              </button>
             </div>
           ))}
         </div>
@@ -394,7 +555,13 @@ function App() {
                 {msg.role === 'user' ? 'U' : 'A'}
               </div>
               <div className="message-content">
-                <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                {msg.role === 'assistant' ? (
+                  <div className="markdown-body">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                )}
                 {msg.file && (
                   <div style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
                     📎 {msg.file}
@@ -405,44 +572,73 @@ function App() {
                 {msg.workflow_steps && msg.workflow_steps.length > 0 && (
                   <AgentWorkflowPanel steps={msg.workflow_steps} />
                 )}
+
+                {/* Reflection Reranker Log Panel */}
+                {msg.rerank_applied && (
+                  <RerankLogPanel
+                    decisions={msg.rerank_decisions}
+                    explanation={msg.rerank_explanation}
+                  />
+                )}
                 
-                {/* Image results - show up to 10 */}
-                {msg.results && msg.results.length > 0 && (
-                  <div className="image-results">
-                    <div className="image-results-header">
-                      📸 Showing {Math.min(msg.results.length, 10)} images
-                      {msg.search_mode && (
-                        <span className={`search-mode-badge ${msg.search_mode}`}>
-                          {msg.search_mode === 'popular' ? '🔥 Popular' : '🎯 Relevant'}
-                        </span>
+                {/* Image results - show up to 10 with filters applied inline */}
+                {msg.results && msg.results.length > 0 && (() => {
+                  const activeResults = msg.results;
+                  return (
+                    <div className="image-results">
+                      <div className="image-results-header">
+                        📸 Showing {Math.min(activeResults.length, 10)} images
+                        {msg.search_mode && (
+                          <span className={`search-mode-badge ${msg.search_mode}`}>
+                            {msg.search_mode === 'popular' ? '🔥 Popular' : '🎯 Relevant'}
+                          </span>
+                        )}
+                        {msg.rerank_applied && (
+                          <span className="rerank-badge">🎯 Reranked</span>
+                        )}
+                      </div>
+
+                      {msg.filter_metadata?.filters_applied && (
+                        <div className="filter-metadata-banner">
+                          {msg.filter_metadata.category_values?.length > 0 && (
+                            <span>🏷️ {msg.filter_metadata.category_values.join(', ')}</span>
+                          )}
+                          {msg.filter_metadata.exclusion_terms?.length > 0 && (
+                            <span>🚫 Excluded: {msg.filter_metadata.exclusion_terms.join(', ')}</span>
+                          )}
+                          {msg.filter_metadata.refinement_filter_descriptions?.length > 0 && (
+                            <span>🔧 {msg.filter_metadata.refinement_filter_descriptions.join(' · ')}</span>
+                          )}
+                        </div>
                       )}
-                    </div>
-                    <div className="image-grid">
-                      {msg.results.slice(0, 10).map((result, resultIdx) => (
-                        <div key={resultIdx} className="image-card">
-                          <img 
-                            src={result.thumbnail_url} 
-                            alt={result.description}
-                            loading="lazy"
-                            onClick={() => window.open(result.image_url, '_blank')}
-                            style={{ cursor: 'pointer' }}
-                          />
-                          <div className="image-info">
-                            <div className="image-description" title={result.description}>
-                              {result.description}
-                            </div>
-                            <div className="image-meta">
-                              <span>🏆 {result.license_count || 0} licenses</span>
-                              {result.score && (
-                                <span>⭐ {result.score.toFixed(2)}</span>
-                              )}
+
+                      <div className="image-grid">
+                        {activeResults.slice(0, 10).map((result, resultIdx) => (
+                          <div key={resultIdx} className="image-card">
+                            <img 
+                              src={result.thumbnail_url} 
+                              alt={result.description}
+                              loading="lazy"
+                              onClick={() => window.open(result.image_url, '_blank')}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <div className="image-info">
+                              <div className="image-description" title={result.description}>
+                                {result.description}
+                              </div>
+                              <div className="image-meta">
+                                <span>🏆 {result.license_count || 0} licenses</span>
+                                {result.score && (
+                                  <span>⭐ {result.score.toFixed(2)}</span>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
               </div>
             </div>
           ))}
@@ -452,6 +648,9 @@ function App() {
               <div className="message-avatar">A</div>
               <div className="message-content">
                 <div className="loading"></div>
+                {isReranking && (
+                  <p className="rerank-loading-text">🔄 Applying reflection reranking…</p>
+                )}
               </div>
             </div>
           )}

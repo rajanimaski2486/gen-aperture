@@ -1,0 +1,51 @@
+
+ I’m presenting a multimodal search system that uses two agent patterns.
+A reflection-based agent pattern in which the system retrieves results first, then the agent reviews and reranks them for better quality.
+In the planning agent pattern, the agent first analyzes the uploaded brief, understands context and requirements, builds a structured search plan, and then retrieves results aligned to that plan.
+
+
+
+
+
+“Here’s the first query I’m typing to demo the reflection-based agent pattern:
+
+show me new york city buildings specifically empire state building during winter
+
+This first step runs baseline retrieval.
+The Squad Router detects a text-only query with no file and routes it directly to the Search Specialist. The Search Specialist then performs intent analysis (entities + semantic query), applies lightweight payload refinements (such as category and license filters), and executes the search query via the Search Service MCP server, which then leverages the OpenSearch MCP server.
+
+These are direct relevance results from the retrieval pipeline.
+
+“Now I’ll run reflection with a second prompt: `respond with best matches`.”
+
+reflect and respond with best matches
+
+
+“Now the Reflection Reranker agent runs after retrieval in three passes: LLM scoring, LLM critique, then deterministic selection and de-duplication.
+
+“This shows the reflection-based agent pattern: search first, then agent review and refinement.”
+
+Scenario 2: 
+ I’ll switch to the planning agent pattern by uploading a creative brief.
+
+“After upload, I’ll type: `find travel and leisure images for this brief`.”
+
+
+find travel and leisure images for this brief
+
+
+“With a file uploaded, orchestration changes. The router sends this to the Project Manager agent first.
+
+
+“The Project Manager agent analyzes the brief and generates structured analysis: brand domain, lexical query, semantic query, visual and quality requirements, themes, technical constraints, exclusion terms, and suggested categories.”
+
+
+“This is the planning agent pattern: the agent understands context first, creates a search plan, and then executes retrieval.”
+
+
+“Then the Search Specialist agent executes that plan: semantic query goes to MCP, lexical query patches payload, and category, filter, and exclusion constraints are injected before OpenSearch execution.”
+
+
+So this flow shows planning agent behavior end to end: analyze brief, understand context, plan search, then retrieve aligned results.”
+
+“In short, the reflection-based agent pattern improves results after retrieval, while the planning agent pattern improves search strategy before retrieval.”

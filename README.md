@@ -4,10 +4,11 @@ AI-powered conversational interface for searching stock photos using natural lan
 
 ## Features
 
-- 🤖 **Multi-Agent AI** powered by LangGraph
-- 💬 **Natural language search** with conversation context
-- 📄 **Document upload** (PDF/DOCX/TXT) for context-aware searching
-- 🔐 **User-provided API keys** (30-min session, never stored)
+- 🤖 **Multi-Agent AI** — LangGraph-orchestrated Squad Router, Project Manager, Search Specialist, Synthesizer, and Reflection Reranker agents
+- 💬 **Natural language search** with multi-turn conversation context
+- 📄 **Document upload** (PDF/DOCX/TXT) for brief-aware searching — auto-extracts visual requirements, mood, categories, and exclusions
+- 🎯 **Reflection Reranking** — post-retrieval LLM reasoning pass that reorders, deduplicates, and filters results by true relevance (triggered by keywords like "best", "top ranked", "rerank", "reviewed")
+- 🔐 **User-provided API keys** (30-min session, never stored on server)
 - 📊 **Conversation history** with 7-day retention
 
 ## Architecture
@@ -17,7 +18,41 @@ AI-powered conversational interface for searching stock photos using natural lan
 - **Frontend**: React 18 + Vite
 - **Backend**: FastAPI (Python 3.11+)
 - **Agents**: LangGraph with OpenAI GPT-4o-mini
-- **Storage**: OpenSearch 3.3 (conversations + photo index)
+- **Storage**: OpenSearch (conversations + photo index `web-index-v9`)
+
+## Agent Pipeline
+
+```
+User message
+  ↓
+Squad Router          — detects intent (relevance vs. popular) and routes
+  ↓
+Project Manager       — (brief uploads only) extracts visual requirements,
+                         queries, categories, exclusions from PDF/DOCX/TXT
+  ↓
+Search Specialist     — calls Search Service MCP, builds + executes
+                         OpenSearch hybrid (neural + lexical) query
+  ↓
+Reflection Reranker   — (trigger-phrase only) 2-pass LLM reflection:
+                         Pass 1: scores all 20 candidates on relevance,
+                                 criteria match, specificity, completeness
+                         Pass 2: critiques ranking, identifies duplicates,
+                                 flags borderline; Pass 3 (Python) builds
+                                 final ordered list of ≥10 results
+  ↓
+Synthesizer           — combines brief analysis + results into response
+```
+
+### Reflection Reranker — trigger phrases
+
+| User says… | Triggers reranking? |
+|---|---|
+| "best results", "best matching photos" | ✅ |
+| "top ranked", "top-ranked" | ✅ |
+| "rerank" | ✅ |
+| "reflect and respond" | ✅ |
+| "reviewed picks" | ✅ |
+| "find a sunset photo" | ❌ |
 
 ## Quick Start
 
@@ -33,7 +68,7 @@ AI-powered conversational interface for searching stock photos using natural lan
 1. **Clone and setup environment:**
 ```bash
 cd gen-aperture
-cp backend/.env.example backend/.env
+cp backend/.env.example backend/.env  # edit as needed
 ```
 
 2. **Start backend:**
@@ -56,10 +91,7 @@ npm run dev
 
 Frontend runs on http://localhost:5173
 
-4. **Open browser:**
-- Go to http://localhost:5173
-- Enter your OpenAI API key when prompted
-- Start chatting!
+4. **Open browser** → http://localhost:5173 → enter your OpenAI API key → start chatting
 
 ### Using Docker Compose
 
@@ -75,87 +107,102 @@ Access at http://localhost:5173
 gen-aperture/
 ├── backend/
 │   ├── app/
-│   │   ├── main.py              # FastAPI application
-│   │   ├── config.py            # Settings
-│   │   ├── routers/             # API endpoints
-│   │   │   ├── chat.py          # Chat endpoint
-│   │   │   └── conversations.py # Conversation management
-│   │   ├── services/            # Business logic
-│   │   │   ├── session_manager.py
-│   │   │   └── conversation_store.py
-│   │   └── models/              # Data models
-│   │       └── schemas.py
+│   │   ├── main.py                    # FastAPI application entry point
+│   │   ├── config.py                  # Settings & reranker thresholds
+│   │   ├── routers/
+│   │   │   ├── chat.py                # POST /api/chat endpoint
+│   │   │   └── conversations.py       # Conversation history endpoints
+│   │   ├── services/
+│   │   │   ├── agent_squad.py         # LangGraph multi-agent orchestrator
+│   │   │   ├── reranker.py            # Reflection reranker (3-pass pipeline)
+│   │   │   ├── photo_search.py        # OpenSearch photo query execution
+│   │   │   ├── search_service_mcp.py  # Search Service MCP tool integration
+│   │   │   ├── query_refinement.py    # Filter extraction (orientation, recency…)
+│   │   │   ├── category_filter.py     # Category GID mapping
+│   │   │   ├── file_extractor.py      # PDF/DOCX/TXT text extraction
+│   │   │   ├── session_manager.py     # API key session handling
+│   │   │   ├── conversation_store.py  # OpenSearch conversation persistence
+│   │   │   └── opensearch_guardrails.py # Read-only safety enforcement
+│   │   └── models/
+│   │       └── schemas.py             # Pydantic request/response schemas
 │   └── requirements.txt
 ├── frontend/
 │   ├── src/
-│   │   ├── App.jsx              # Main React component
-│   │   ├── services/api.js      # API client
-│   │   └── index.css            # Styles
+│   │   ├── App.jsx                    # Chat UI, workflow panel, rerank log
+│   │   ├── services/api.js            # Axios API client
+│   │   └── index.css                  # Styles including rerank panel
 │   └── package.json
-├── DESIGN.md                     # Technical specification
-├── .github/
-│   └── copilot-instructions.md  # AI agent guidance
+├── briefs/                            # Sample creative briefs for testing
+├── design.md                          # Technical specification
+├── .github/copilot-instructions.md    # AI agent guidance
 └── docker-compose.yml
 ```
 
 ## Workflow
+
 ![alt text](image-1.png)
+
 ## API Endpoints
 
 ### POST /api/chat
-Send message and get AI response
+Send message and get AI response with photo results.
 ```bash
 curl -X POST http://localhost:8000/api/chat \
-  -F "message=Find outdoor photos" \
+  -F "message=Find the best outdoor sunset photos" \
   -F "openai_api_key=sk-..." \
   -F "file=@brief.pdf"
+```
+
+Response includes standard fields plus reranker output when triggered:
+```json
+{
+  "conversation_id": "...",
+  "response": "Here are the top results…",
+  "results": [...],
+  "search_mode": "relevance",
+  "workflow_steps": [...],
+  "rerank_applied": true,
+  "rerank_decisions": [
+    {"final_rank": 1, "hadron_id": "h001", "rerank_score": 0.97,
+     "keep": true, "is_borderline": false,
+     "reason": "Directly depicts golden ocean sunset.", "confidence": 0.97}
+  ],
+  "rerank_explanation": null
+}
 ```
 
 ### GET /api/conversations/recent
 List last 5 conversations
 
 ### GET /api/conversations/{id}
-Get full conversation details
+Get full conversation with messages
 
 ### GET /health
-Health check endpoint
+Health check
 
 ## Configuration
 
-Backend environment variables (`.env`):
+Backend environment variables (`backend/.env`):
 ```
-OPENSEARCH_ENDPOINT=http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org
+OPENSEARCH_ENDPOINT=http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org
 OPENSEARCH_PHOTO_INDEX=web-index-v9
 OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
 OPENSEARCH_READONLY=true
 SESSION_TIMEOUT_MINUTES=30
 ENVIRONMENT=development
+
+# Reflection reranker thresholds (all optional — defaults shown)
+RERANK_MIN_RESULTS_TARGET=10
+RERANK_RELEVANCE_THRESHOLD=5.0
+RERANK_BORDERLINE_THRESHOLD=3.5
+RERANK_DUPLICATE_SIMILARITY_THRESHOLD=0.5
 ```
-
-## Development Phases
-
-**Phase 1 (Current): Foundation** ✅
-- Backend skeleton
-- Basic React UI
-- OpenSearch connection
-- Session management
-
-**Phase 2 (Next): Agents**
-- LangGraph multi-agent setup
-- File extraction
-- OpenSearch search tool
-- Photo result formatting
-
-**Phase 3: Polish**
-- Error handling
-- UI improvements
-- Deployment setup
 
 ## Security
 
-- ⚠️ **API keys never stored on server** - users provide their own
-- Session timeout: 30 minutes of inactivity
-- Internal-only deployment (ShutterCorp network)
+- ⚠️ **API keys never stored on server** — users provide their own per session
+- Session timeout: 30 minutes of inactivity, key auto-deleted
+- OpenSearch cluster is read-only for the photo index
 - 1MB file upload limit
 - 7-day conversation retention
 
@@ -168,16 +215,17 @@ https://backstage.shuttercorp.net/create/templates/default/add-gha-app-fastapi
 
 ## Documentation
 
-- [DESIGN.md](DESIGN.md) - Complete technical specification
-- [.github/copilot-instructions.md](.github/copilot-instructions.md) - AI coding guidelines
-- [REVIEW.md](REVIEW.md) - Design review summary
+- [design.md](design.md) — Complete technical specification
+- [.github/copilot-instructions.md](.github/copilot-instructions.md) — AI coding guidelines
+- [REVIEW.md](REVIEW.md) — Design review summary
+- [PHASE1-COMPLETE.md](PHASE1-COMPLETE.md) — Phase 1 completion notes
 
 ## Support
 
 Internal ShutterCorp project  
 Team: Search Platform  
-OpenSearch: `mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org`
+OpenSearch: `nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org`
 
 ---
 
-**Status**: Phase 1 Complete - Foundation Ready ✅
+**Status**: Production-ready — multi-agent search with reflection reranking ✅

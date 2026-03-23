@@ -17,6 +17,7 @@ structure, ranking, and all other filters are preserved.
 import copy
 import logging
 import json
+import urllib.parse
 import httpx
 from typing import Dict, Any, Optional
 
@@ -128,6 +129,9 @@ class SearchServiceMCP:
             "source": "enterprise",
         }
 
+        # Build the full URL for logging / UI display
+        endpoint_url = f"{self.base_url}?{urllib.parse.urlencode(params)}"
+
         logger.info(
             f"MCP [{tool.name}]: Calling Search Service — q={query}, sort_order={tool.sort_order}"
         )
@@ -143,6 +147,8 @@ class SearchServiceMCP:
                 "opensearch_query": None,
                 "tool_name": tool.name,
                 "sort_order": tool.sort_order,
+                "search_service_endpoint": endpoint_url,
+                "search_service_response_payload": None,
             }
 
         # Extract the debug.request — this is the raw OpenSearch query DSL
@@ -155,6 +161,8 @@ class SearchServiceMCP:
                 "opensearch_query": None,
                 "tool_name": tool.name,
                 "sort_order": tool.sort_order,
+                "search_service_endpoint": endpoint_url,
+                "search_service_response_payload": {k: v for k, v in data.items() if k != "debug"},
             }
 
         # Extract index and host metadata from the request
@@ -182,8 +190,8 @@ class SearchServiceMCP:
             "media_type",
         ]
 
-        # Increase size to get enough results
-        debug_request["size"] = 20
+        # Increase size to get enough results for reranking
+        debug_request["size"] = 50
 
         # Remove script_fields we don't need (uid is computed client-side)
         debug_request.pop("script_fields", None)
@@ -210,6 +218,8 @@ class SearchServiceMCP:
             "host": host,
             "tool_name": tool.name,
             "sort_order": tool.sort_order,
+            "search_service_endpoint": endpoint_url,
+            "search_service_response_payload": {k: v for k, v in data.items() if k != "debug"},
             "search_service_metadata": {
                 "num_found": num_found,
                 "ranker": ranker.get("rankerImplementation", "unknown"),

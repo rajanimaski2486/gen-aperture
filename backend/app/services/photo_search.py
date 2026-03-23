@@ -107,7 +107,8 @@ class PhotoSearchService:
     def execute_raw_query(
         self,
         opensearch_query: Dict[str, Any],
-        index: str = None
+        index: str = None,
+        search_pipeline: str = "hybrid-rrf-60",
     ) -> Dict[str, Any]:
         """
         Execute a raw OpenSearch query DSL (e.g. from Search Service debug.request).
@@ -127,9 +128,9 @@ class PhotoSearchService:
             response = self.client.search(
                 index=target_index,
                 body=opensearch_query,
-                params={"search_pipeline": "hybrid-rrf-60"}
+                params={"search_pipeline": search_pipeline},
             )
-            
+
             # Parse results
             hits = response.get('hits', {}).get('hits', [])
             total = response.get('hits', {}).get('total', {}).get('value', 0)

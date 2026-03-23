@@ -32,6 +32,10 @@ class ConversationStore:
 
         # In read-only mode, we keep new conversations/messages in memory only.
         self._memory_conversations: Dict[str, Dict] = {}
+        # Tombstone set: IDs deleted by the user during this session (used to
+        # hide OpenSearch-sourced convos that can't be physically deleted in
+        # read-only mode).
+        self._deleted_ids: set = set()
     
     async def check_connection(self) -> bool:
         """Check if OpenSearch is accessible"""
@@ -62,6 +66,7 @@ class ConversationStore:
                         "created_at": {"type": "date"},
                         "last_message_at": {"type": "date"},
                         "last_user_query": {"type": "text"},
+                        "title": {"type": "keyword"},
                         "message_count": {"type": "integer"},
                         "file_name": {"type": "keyword"},
                         "file_content": {"type": "text", "index": False},
@@ -155,6 +160,7 @@ class ConversationStore:
             "created_at": now,
             "last_message_at": now,
             "last_user_query": "",
+            "title": None,
             "message_count": 0,
             "file_name": file_name,
             "file_content": file_content,
@@ -176,6 +182,50 @@ class ConversationStore:
             logger.error(f"Failed to create conversation: {e}")
             raise
     
+    async def set_title(self, conversation_id: str, title: str) -> None:
+        """Set the permanent title for a conversation (generated from first prompt)"""
+        if self.readonly:
+            conv = self._memory_conversations.get(conversation_id)
+            if conv:
+                conv["title"] = title
+            return
+
+        try:
+            self.client.update(
+                index=self.index,
+                id=conversation_id,
+                body={"doc": {"title": title}},
+            )
+            logger.debug(f"Set title for conversation {conversation_id[:8]}...")
+        except Exception as e:
+            logger.warning(f"Failed to set conversation title: {e}")
+
+    async def update_file_content(
+        self,
+        conversation_id: str,
+        file_name: Optional[str],
+        file_content: Optional[str],
+    ) -> None:
+        """Update the file content stored at the conversation level (e.g. when a new
+        file is uploaded mid-conversation, overwriting the previous one)."""
+        if self.readonly:
+            conv = self._memory_conversations.get(conversation_id)
+            if conv:
+                conv["file_name"] = file_name
+                conv["file_content"] = file_content
+            return
+
+        try:
+            self.client.update(
+                index=self.index,
+                id=conversation_id,
+                body={"doc": {"file_name": file_name, "file_content": file_content}},
+            )
+            logger.info(f"Updated file content for conversation {conversation_id[:8]}...")
+        except Exception as e:
+            logger.error(f"Failed to update file content: {e}")
+            raise
+
     async def add_message(
         self,
         conversation_id: str,
@@ -272,6 +322,33 @@ class ConversationStore:
             logger.error(f"Failed to get conversation: {e}")
             return None
     
+    async def delete_conversation(self, conversation_id: str) -> bool:
+        """Delete a conversation by ID. Returns True if deleted, False if not found."""
+        # Remove from in-memory store
+        if conversation_id in self._memory_conversations:
+            del self._memory_conversations[conversation_id]
+            self._deleted_ids.add(conversation_id)
+            return True
+
+        if self.readonly:
+            # Can't physically delete from OpenSearch in read-only mode.
+            # Record a tombstone so it disappears from the sidebar listing.
+            self._deleted_ids.add(conversation_id)
+            logger.info(f"Tombstoned conversation {conversation_id[:8]}... (read-only mode)")
+            return True
+
+        try:
+            self.client.delete(index=self.index, id=conversation_id)
+            self._deleted_ids.add(conversation_id)
+            logger.info(f"Deleted conversation {conversation_id[:8]}...")
+            return True
+        except exceptions.NotFoundError:
+            logger.warning(f"Conversation {conversation_id} not found for deletion")
+            return False
+        except Exception as e:
+            logger.error(f"Failed to delete conversation: {e}")
+            raise
+
     async def list_recent_conversations(self, limit: int = 5) -> List[Dict]:
         """Get recent conversations for sidebar"""
         try:
@@ -282,6 +359,7 @@ class ConversationStore:
                     {
                         "conversation_id": conv.get("conversation_id"),
                         "last_user_query": conv.get("last_user_query", ""),
+                        "title": conv.get("title"),
                         "last_message_at": conv.get("last_message_at"),
                         "message_count": conv.get("message_count", 0),
                     }
@@ -291,14 +369,25 @@ class ConversationStore:
                 "query": {"match_all": {}},
                 "sort": [{"last_message_at": {"order": "desc"}}],
                 "size": limit,
-                "_source": ["conversation_id", "last_user_query", "last_message_at", "message_count"]
+                "_source": ["conversation_id", "last_user_query", "title", "last_message_at", "message_count"]
             }
             
             result = self.client.search(index=self.index, body=query)
-            os_previews = [hit['_source'] for hit in result.get('hits', {}).get('hits', [])]
+            os_previews = [
+                {
+                    "conversation_id": h["_source"].get("conversation_id"),
+                    "last_user_query": h["_source"].get("last_user_query", ""),
+                    "title": h["_source"].get("title"),
+                    "last_message_at": h["_source"].get("last_message_at"),
+                    "message_count": h["_source"].get("message_count", 0),
+                }
+                for h in result.get("hits", {}).get("hits", [])
+            ]
 
             combined = mem_previews + os_previews
             combined.sort(key=lambda d: d.get("last_message_at") or "", reverse=True)
+            # Filter tombstoned conversations
+            combined = [c for c in combined if c.get("conversation_id") not in self._deleted_ids]
             return combined[:limit]
             
         except Exception as e:
@@ -308,10 +397,25 @@ class ConversationStore:
                 {
                     "conversation_id": conv.get("conversation_id"),
                     "last_user_query": conv.get("last_user_query", ""),
+                    "title": conv.get("title"),
                     "last_message_at": conv.get("last_message_at"),
                     "message_count": conv.get("message_count", 0),
                 }
                 for conv in self._memory_conversations.values()
             ]
             mem_only.sort(key=lambda d: d.get("last_message_at") or "", reverse=True)
+            # Filter tombstoned conversations
+            mem_only = [c for c in mem_only if c.get("conversation_id") not in self._deleted_ids]
             return mem_only[:limit]
+
+
+# Module-level singleton so all routers share the same in-memory state
+_conversation_store_instance: Optional[ConversationStore] = None
+
+
+def get_conversation_store() -> ConversationStore:
+    """Return the application-wide ConversationStore singleton."""
+    global _conversation_store_instance
+    if _conversation_store_instance is None:
+        _conversation_store_instance = ConversationStore()
+    return _conversation_store_instance

@@ -1,0 +1,9172 @@
+{
+  "version": 2.4,
+  "last_update_date": "2023-01-11T15:30",
+  "en": [
+    {
+      "gid": 0,
+      "namespace": ["shutterstock"],
+      "legacy_id": 0,
+      "type": ["image"],
+      "value": "DELETED"
+    },
+    {
+      "gid": 1,
+      "namespace": ["shutterstock"],
+      "legacy_id": 1,
+      "type": ["image", "video"],
+      "value": "Animals/Wildlife"
+    },
+    {
+      "gid": 1,
+      "namespace": ["editorial"],
+      "legacy_id": 10000,
+      "type": ["image", "video"],
+      "value": "Animal"
+    },
+    {
+      "gid": 2,
+      "namespace": ["shutterstock"],
+      "legacy_id": 2,
+      "type": ["image", "video"],
+      "value": "Buildings/Landmarks"
+    },
+    {
+      "gid": 3,
+      "namespace": ["shutterstock"],
+      "legacy_id": 3,
+      "type": ["image", "video"],
+      "value": "Backgrounds/Textures"
+    },
+    {
+      "gid": 4,
+      "namespace": ["shutterstock"],
+      "legacy_id": 4,
+      "type": ["image", "video"],
+      "value": "Business/Finance"
+    },
+    {
+      "gid": 5,
+      "namespace": ["shutterstock"],
+      "legacy_id": 5,
+      "type": ["image", "video"],
+      "value": "Education"
+    },
+    {
+      "gid": 6,
+      "namespace": ["shutterstock"],
+      "legacy_id": 6,
+      "type": ["image", "video"],
+      "value": "Food and Drink"
+    },
+    {
+      "gid": 6,
+      "namespace": ["editorial"],
+      "legacy_id": 10006,
+      "type": ["image", "video"],
+      "value": "Food & Drink"
+    },
+    {
+      "gid": 7,
+      "namespace": ["shutterstock"],
+      "legacy_id": 7,
+      "type": ["image", "video"],
+      "value": "Healthcare/Medical"
+    },
+    {
+      "gid": 7,
+      "namespace": ["editorial"],
+      "legacy_id": 10012,
+      "type": ["image", "video"],
+      "value": "Health"
+    },
+    {
+      "gid": 8,
+      "namespace": ["shutterstock"],
+      "legacy_id": 8,
+      "type": ["image", "video"],
+      "value": "Holidays"
+    },
+    {
+      "gid": 9,
+      "namespace": ["shutterstock"],
+      "legacy_id": 9,
+      "type": ["image", "video"],
+      "value": "Objects"
+    },
+    {
+      "gid": 10,
+      "namespace": ["shutterstock"],
+      "legacy_id": 10,
+      "type": ["image", "video"],
+      "value": "Industrial"
+    },
+    {
+      "gid": 10,
+      "namespace": ["editorial"],
+      "legacy_id": 10011,
+      "type": ["image", "video"],
+      "value": "Industry"
+    },
+    {
+      "gid": 11,
+      "namespace": ["shutterstock"],
+      "legacy_id": 11,
+      "type": ["image", "video"],
+      "value": "Art"
+    },
+    {
+      "gid": 11,
+      "namespace": ["editorial"],
+      "legacy_id": 10002,
+      "type": ["image", "video"],
+      "value": "Art"
+    },
+    {
+      "gid": 12,
+      "namespace": ["shutterstock"],
+      "legacy_id": 12,
+      "type": ["image", "video"],
+      "value": "Nature"
+    },
+    {
+      "gid": 13,
+      "namespace": ["shutterstock"],
+      "legacy_id": 13,
+      "type": ["image", "video"],
+      "value": "People"
+    },
+    {
+      "gid": 14,
+      "namespace": ["shutterstock"],
+      "legacy_id": 14,
+      "type": ["image", "video"],
+      "value": "Religion"
+    },
+    {
+      "gid": 14,
+      "namespace": ["editorial"],
+      "legacy_id": 10018,
+      "type": ["image", "video"],
+      "value": "Religion"
+    },
+    {
+      "gid": 15,
+      "namespace": ["shutterstock"],
+      "legacy_id": 15,
+      "type": ["image", "video"],
+      "value": "Science"
+    },
+    {
+      "gid": 15,
+      "namespace": ["editorial"],
+      "legacy_id": 10020,
+      "type": ["image", "video"],
+      "value": "Science"
+    },
+    {
+      "gid": 16,
+      "namespace": ["shutterstock"],
+      "legacy_id": 16,
+      "type": ["image", "video"],
+      "value": "Technology"
+    },
+    {
+      "gid": 17,
+      "namespace": ["shutterstock"],
+      "legacy_id": 17,
+      "type": ["image", "video"],
+      "value": "Signs/Symbols"
+    },
+    {
+      "gid": 18,
+      "namespace": ["shutterstock"],
+      "legacy_id": 18,
+      "type": ["image", "video"],
+      "value": "Sports/Recreation"
+    },
+    {
+      "gid": 18,
+      "namespace": ["editorial"],
+      "legacy_id": 10019,
+      "type": ["image", "video"],
+      "value": "Sports"
+    },
+    {
+      "gid": 19,
+      "namespace": ["shutterstock"],
+      "legacy_id": 0,
+      "type": ["image"],
+      "value": "Transportation"
+    },
+    {
+      "gid": 19,
+      "namespace": ["shutterstock"],
+      "legacy_id": 19,
+      "type": ["video"],
+      "value": "Transportation"
+    },
+    {
+      "gid": 19,
+      "namespace": ["editorial"],
+      "legacy_id": 10022,
+      "type": ["image", "video"],
+      "value": "Transport"
+    },
+    {
+      "gid": 20,
+      "namespace": ["shutterstock"],
+      "legacy_id": 20,
+      "type": ["image", "video"],
+      "value": "NOT-CATEGORIZED"
+    },
+    {
+      "gid": 21,
+      "namespace": ["shutterstock"],
+      "legacy_id": 21,
+      "type": ["image"],
+      "value": "Interiors"
+    },
+    {
+      "gid": 22,
+      "namespace": ["shutterstock"],
+      "legacy_id": 22,
+      "type": ["image"],
+      "value": "Miscellaneous"
+    },
+    {
+      "gid": 23,
+      "namespace": ["shutterstock"],
+      "legacy_id": 23,
+      "type": ["image"],
+      "value": "Illustrations/Clip-Art"
+    },
+    {
+      "gid": 24,
+      "namespace": ["shutterstock"],
+      "legacy_id": 24,
+      "type": ["image"],
+      "value": "Vintage"
+    },
+    {
+      "gid": 25,
+      "namespace": ["shutterstock"],
+      "legacy_id": 25,
+      "type": ["image"],
+      "value": "Parks/Outdoor"
+    },
+    {
+      "gid": 26,
+      "namespace": ["shutterstock"],
+      "legacy_id": 26,
+      "type": ["image"],
+      "value": "Abstract"
+    },
+    {
+      "gid": 27,
+      "namespace": ["shutterstock"],
+      "legacy_id": 27,
+      "type": ["image"],
+      "value": "Beauty/Fashion"
+    },
+    {
+      "gid": 27,
+      "namespace": ["editorial"],
+      "legacy_id": 10008,
+      "type": ["image", "video"],
+      "value": "Fashion"
+    },
+    {
+      "gid": 28,
+      "namespace": ["shutterstock"],
+      "legacy_id": 28,
+      "type": ["image"],
+      "value": "Editorial"
+    },
+    {
+      "gid": 28,
+      "namespace": ["shutterstock"],
+      "legacy_id": 21,
+      "type": ["video"],
+      "value": "Editorial"
+    },
+    {
+      "gid": 29,
+      "namespace": ["shutterstock"],
+      "legacy_id": 29,
+      "type": ["image"],
+      "value": "Vectors"
+    },
+    {
+      "gid": 30,
+      "namespace": ["shutterstock"],
+      "legacy_id": 30,
+      "type": ["image"],
+      "value": "Model Released Only"
+    },
+    {
+      "gid": 30,
+      "namespace": ["editorial"],
+      "legacy_id": 10052,
+      "type": ["image", "video"],
+      "value": "Model Released"
+    },
+    {
+      "gid": 31,
+      "namespace": ["shutterstock"],
+      "legacy_id": 31,
+      "type": ["image"],
+      "value": "Celebrities"
+    },
+    {
+      "gid": 32,
+      "namespace": ["editorial"],
+      "legacy_id": 10003,
+      "type": ["image", "video"],
+      "value": "Crime"
+    },
+    {
+      "gid": 33,
+      "namespace": ["editorial"],
+      "legacy_id": 10004,
+      "type": ["image", "video"],
+      "value": "Demonstration"
+    },
+    {
+      "gid": 34,
+      "namespace": ["editorial"],
+      "legacy_id": 10005,
+      "type": ["image", "video"],
+      "value": "Disaster & Emergency"
+    },
+    {
+      "gid": 35,
+      "namespace": ["editorial"],
+      "legacy_id": 10013,
+      "type": ["image", "video"],
+      "value": "Military"
+    },
+    {
+      "gid": 36,
+      "namespace": ["editorial"],
+      "legacy_id": 10016,
+      "type": ["image", "video"],
+      "value": "Music"
+    },
+    {
+      "gid": 37,
+      "namespace": ["editorial"],
+      "legacy_id": 10064,
+      "type": ["image", "video"],
+      "value": "Out & About"
+    },
+    {
+      "gid": 38,
+      "namespace": ["editorial"],
+      "legacy_id": 10067,
+      "type": ["image", "video"],
+      "value": "Party"
+    },
+    {
+      "gid": 39,
+      "namespace": ["editorial"],
+      "legacy_id": 10015,
+      "type": ["image", "video"],
+      "value": "Police"
+    },
+    {
+      "gid": 40,
+      "namespace": ["editorial"],
+      "legacy_id": 10055,
+      "type": ["image", "video"],
+      "value": "Television"
+    },
+    {
+      "gid": 41,
+      "namespace": ["editorial"],
+      "legacy_id": 10009,
+      "type": ["image", "video"],
+      "value": "Travel"
+    },
+    {
+      "gid": 42,
+      "namespace": ["editorial"],
+      "legacy_id": 10023,
+      "type": ["image", "video"],
+      "value": "War & Conflict"
+    },
+    {
+      "gid": 43,
+      "namespace": ["editorial"],
+      "legacy_id": 10065,
+      "type": ["image", "video"],
+      "value": "Historical"
+    },
+    {
+      "gid": 44,
+      "namespace": ["editorial"],
+      "legacy_id": 10014,
+      "type": ["image", "video"],
+      "value": "Theatre"
+    },
+    {
+      "gid": 45,
+      "namespace": ["editorial"],
+      "legacy_id": 10036,
+      "type": ["image", "video"],
+      "value": "Royalty"
+    },
+    {
+      "gid": 46,
+      "namespace": ["editorial"],
+      "legacy_id": 10078,
+      "type": ["image", "video"],
+      "value": "Red Carpet"
+    },
+    {
+      "gid": 47,
+      "namespace": ["editorial"],
+      "legacy_id": 10007,
+      "type": ["image", "video"],
+      "value": "Film Stills"
+    },
+    {
+      "gid": 48,
+      "namespace": ["editorial"],
+      "legacy_id": 10056,
+      "type": ["image", "video"],
+      "value": "Personality"
+    },
+    {
+      "gid": 49,
+      "namespace": ["editorial"],
+      "legacy_id": 10042,
+      "type": ["image", "video"],
+      "value": "Female"
+    },
+    {
+      "gid": 50,
+      "namespace": ["editorial"],
+      "legacy_id": 10044,
+      "type": ["image", "video"],
+      "value": "Male"
+    },
+    {
+      "gid": 51,
+      "namespace": ["editorial"],
+      "legacy_id": 10049,
+      "type": ["image", "video"],
+      "value": "Studio"
+    },
+    {
+      "gid": 52,
+      "namespace": ["editorial"],
+      "legacy_id": 10021,
+      "type": ["image", "video"],
+      "value": "Stock"
+    },
+    {
+      "gid": 53,
+      "namespace": ["editorial"],
+      "legacy_id": 10045,
+      "type": ["image", "video"],
+      "value": "Not-Performing"
+    },
+    {
+      "gid": 54,
+      "namespace": ["editorial"],
+      "legacy_id": 10057,
+      "type": ["image", "video"],
+      "value": "Not-Personality"
+    },
+    {
+      "gid": 55,
+      "namespace": ["editorial"],
+      "legacy_id": 10054,
+      "type": ["image", "video"],
+      "value": "Glamour"
+    },
+    {
+      "gid": 56,
+      "namespace": ["editorial"],
+      "legacy_id": 10010,
+      "type": ["image", "video"],
+      "value": "Humour"
+    },
+    {
+      "gid": 57,
+      "namespace": ["editorial"],
+      "legacy_id": 10066,
+      "type": ["image", "video"],
+      "value": "Nostalgia"
+    },
+    {
+      "gid": 58,
+      "namespace": ["editorial"],
+      "legacy_id": 10025,
+      "type": ["image", "video"],
+      "value": "Actor"
+    },
+    {
+      "gid": 59,
+      "namespace": ["editorial"],
+      "legacy_id": 10024,
+      "type": ["image", "video"],
+      "value": "Artist"
+    },
+    {
+      "gid": 60,
+      "namespace": ["editorial"],
+      "legacy_id": 10028,
+      "type": ["image", "video"],
+      "value": "British Politician"
+    },
+    {
+      "gid": 61,
+      "namespace": ["editorial"],
+      "legacy_id": 10026,
+      "type": ["image", "video"],
+      "value": "Businessperson"
+    },
+    {
+      "gid": 62,
+      "namespace": ["editorial"],
+      "legacy_id": 10069,
+      "type": ["image", "video"],
+      "value": "Chef"
+    },
+    {
+      "gid": 63,
+      "namespace": ["editorial"],
+      "legacy_id": 10053,
+      "type": ["image", "video"],
+      "value": "Comedian"
+    },
+    {
+      "gid": 64,
+      "namespace": ["editorial"],
+      "legacy_id": 10072,
+      "type": ["image", "video"],
+      "value": "Disc Jockey"
+    },
+    {
+      "gid": 65,
+      "namespace": ["editorial"],
+      "legacy_id": 10029,
+      "type": ["image", "video"],
+      "value": "Fashion Designer"
+    },
+    {
+      "gid": 66,
+      "namespace": ["editorial"],
+      "legacy_id": 10032,
+      "type": ["image", "video"],
+      "value": "Film Director"
+    },
+    {
+      "gid": 67,
+      "namespace": ["editorial"],
+      "legacy_id": 10031,
+      "type": ["image", "video"],
+      "value": "Film Producer"
+    },
+    {
+      "gid": 68,
+      "namespace": ["editorial"],
+      "legacy_id": 10030,
+      "type": ["image", "video"],
+      "value": "Football Player"
+    },
+    {
+      "gid": 69,
+      "namespace": ["editorial"],
+      "legacy_id": 10033,
+      "type": ["image", "video"],
+      "value": "Model"
+    },
+    {
+      "gid": 70,
+      "namespace": ["editorial"],
+      "legacy_id": 10068,
+      "type": ["image", "video"],
+      "value": "News Reader"
+    },
+    {
+      "gid": 71,
+      "namespace": ["editorial"],
+      "legacy_id": 10071,
+      "type": ["image", "video"],
+      "value": "Photographer"
+    },
+    {
+      "gid": 72,
+      "namespace": ["editorial"],
+      "legacy_id": 10034,
+      "type": ["image", "video"],
+      "value": "Politician"
+    },
+    {
+      "gid": 73,
+      "namespace": ["editorial"],
+      "legacy_id": 10035,
+      "type": ["image", "video"],
+      "value": "Racing Driver"
+    },
+    {
+      "gid": 74,
+      "namespace": ["editorial"],
+      "legacy_id": 10073,
+      "type": ["image", "video"],
+      "value": "Radio Presenter"
+    },
+    {
+      "gid": 75,
+      "namespace": ["editorial"],
+      "legacy_id": 10080,
+      "type": ["image", "video"],
+      "value": "Reality TV Star"
+    },
+    {
+      "gid": 76,
+      "namespace": ["editorial"],
+      "legacy_id": 10070,
+      "type": ["image", "video"],
+      "value": "Socialite"
+    },
+    {
+      "gid": 77,
+      "namespace": ["editorial"],
+      "legacy_id": 10037,
+      "type": ["image", "video"],
+      "value": "Sports Person"
+    },
+    {
+      "gid": 78,
+      "namespace": ["editorial"],
+      "legacy_id": 10038,
+      "type": ["image", "video"],
+      "value": "Tennis Player"
+    },
+    {
+      "gid": 79,
+      "namespace": ["editorial"],
+      "legacy_id": 10039,
+      "type": ["image", "video"],
+      "value": "TV Personality"
+    },
+    {
+      "gid": 80,
+      "namespace": ["editorial"],
+      "legacy_id": 10040,
+      "type": ["image", "video"],
+      "value": "Writer"
+    },
+    {
+      "gid": 81,
+      "namespace": ["editorial"],
+      "legacy_id": 10041,
+      "type": ["image", "video"],
+      "value": "Alone"
+    },
+    {
+      "gid": 82,
+      "namespace": ["editorial"],
+      "legacy_id": 10051,
+      "type": ["image", "video"],
+      "value": "With Others"
+    },
+    {
+      "gid": 83,
+      "namespace": ["editorial"],
+      "legacy_id": 10043,
+      "type": ["image", "video"],
+      "value": "Full Length"
+    },
+    {
+      "gid": 84,
+      "namespace": ["editorial"],
+      "legacy_id": 10047,
+      "type": ["image", "video"],
+      "value": "Headshot"
+    },
+    {
+      "gid": 85,
+      "namespace": ["editorial"],
+      "legacy_id": 10046,
+      "type": ["image", "video"],
+      "value": "Posed"
+    },
+    {
+      "gid": 86,
+      "namespace": ["editorial"],
+      "legacy_id": 10048,
+      "type": ["image", "video"],
+      "value": "Performing"
+    },
+    {
+      "gid": 87,
+      "namespace": ["editorial"],
+      "legacy_id": 10085,
+      "type": ["image", "video"],
+      "value": "Newsroom"
+    },
+    {
+      "gid": 88,
+      "namespace": ["editorial"],
+      "legacy_id": 10086,
+      "type": ["image", "video"],
+      "value": "News"
+    },
+    {
+      "gid": 89,
+      "namespace": ["editorial"],
+      "legacy_id": 10087,
+      "type": ["image", "video"],
+      "value": "Entertainment"
+    },
+    {
+      "gid": 90,
+      "namespace": ["editorial"],
+      "legacy_id": 10088,
+      "type": ["image", "video"],
+      "value": "Archival"
+    },
+    {
+      "gid": 91,
+      "namespace": ["editorial"],
+      "legacy_id": 10001,
+      "type": ["image", "video"],
+      "value": "Awards"
+    },
+    {
+      "gid": 92,
+      "namespace": ["editorial"],
+      "legacy_id": 10027,
+      "type": ["image", "video"],
+      "value": "British Royalty"
+    },
+    {
+      "gid": 93,
+      "namespace": ["editorial"],
+      "legacy_id": 10075,
+      "type": ["image", "video"],
+      "value": "Portrait",
+      "parent_gid": 84
+    },
+    {
+      "gid": 94,
+      "namespace": ["editorial"],
+      "legacy_id": 10089,
+      "type": ["image", "video"],
+      "value": "Exclusive"
+    },
+    {
+      "gid": 95,
+      "namespace": ["editorial"],
+      "legacy_id": 10006,
+      "type": ["image", "video"],
+      "value": "Food",
+      "parent_gid": 6
+    },
+    {
+      "gid": 96,
+      "namespace": ["editorial"],
+      "legacy_id": 10012,
+      "type": ["image", "video"],
+      "value": "Medical",
+      "parent_gid": 7
+    },
+    {
+      "gid": 97,
+      "namespace": ["editorial"],
+      "legacy_id": 10019,
+      "type": ["image", "video"],
+      "value": "Sport",
+      "parent_gid": 18
+    },
+    {
+      "gid": 98,
+      "namespace": ["editorial"],
+      "legacy_id": 10055,
+      "type": ["image", "video"],
+      "value": "Television Show",
+      "parent_gid": 40
+    },
+    {
+      "gid": 99,
+      "namespace": ["editorial"],
+      "legacy_id": 10014,
+      "type": ["image", "video"],
+      "value": "Theater",
+      "parent_gid": 44
+    },
+    {
+      "gid": 100,
+      "namespace": ["editorial"],
+      "legacy_id": 10014,
+      "type": ["image", "video"],
+      "value": "Play",
+      "parent_gid": 44
+    },
+    {
+      "gid": 101,
+      "namespace": ["editorial"],
+      "legacy_id": 10037,
+      "type": ["image", "video"],
+      "value": "Sportsperson",
+      "parent_gid": 77
+    },
+    {
+      "gid": 102,
+      "namespace": ["editorial"],
+      "legacy_id": 10039,
+      "type": ["image", "video"],
+      "value": "TV Presenter",
+      "parent_gid": 79
+    },
+    {
+      "gid": 103,
+      "namespace": ["editorial"],
+      "legacy_id": 10017,
+      "type": ["image", "video"],
+      "value": "Premiere"
+    },
+    {
+      "gid": 104,
+      "namespace": ["editorial"],
+      "legacy_id": 10090,
+      "type": ["image", "video"],
+      "value": "Posing",
+      "parent_gid": 85
+    },
+    {
+      "gid": 105,
+      "namespace": ["editorial"],
+      "legacy_id": 10091,
+      "type": ["image", "video"],
+      "value": "Group",
+      "parent_gid": 82
+    },
+    {
+      "gid": 106,
+      "namespace": ["editorial"],
+      "legacy_id": 10068,
+      "type": ["image", "video"],
+      "value": "Newsreader",
+      "parent_gid": 70
+    },
+    {
+      "gid": 107,
+      "namespace": ["editorial"],
+      "legacy_id": 10083,
+      "type": ["image", "video"],
+      "value": "Celebrity",
+      "parent_gid": 48
+    },
+    {
+      "gid": 108,
+      "namespace": ["editorial"],
+      "legacy_id": 10059,
+      "type": ["image", "video"],
+      "value": "Actress",
+      "parent_gid": 58
+    },
+    {
+      "gid": 109,
+      "namespace": ["editorial"],
+      "legacy_id": 10077,
+      "type": ["image", "video"],
+      "value": "DJ",
+      "parent_gid": 64
+    },
+    {
+      "gid": 110,
+      "namespace": ["editorial"],
+      "legacy_id": 10062,
+      "type": ["image", "video"],
+      "value": "Sportswoman",
+      "parent_gid": 77
+    },
+    {
+      "gid": 111,
+      "namespace": ["editorial"],
+      "legacy_id": 10063,
+      "type": ["image", "video"],
+      "value": "Sportsman",
+      "parent_gid": 77
+    },
+    {
+      "gid": 112,
+      "namespace": ["editorial"],
+      "legacy_id": 10058,
+      "type": ["image", "video"],
+      "value": "Pop",
+      "parent_gid": 36
+    },
+    {
+      "gid": 113,
+      "namespace": ["editorial"],
+      "legacy_id": 10060,
+      "type": ["image", "video"],
+      "value": "Businesswoman",
+      "parent_gid": 61
+    },
+    {
+      "gid": 114,
+      "namespace": ["editorial"],
+      "legacy_id": 10061,
+      "type": ["image", "video"],
+      "value": "Businessman",
+      "parent_gid": 61
+    },
+    {
+      "gid": 115,
+      "namespace": ["editorial"],
+      "legacy_id": 10050,
+      "type": ["image", "video"],
+      "value": "Star",
+      "parent_gid": 48
+    },
+    {
+      "gid": 116,
+      "namespace": ["editorial"],
+      "legacy_id": 10092,
+      "type": ["image", "video"],
+      "value": "Spotlight"
+    },
+    {
+      "gid": 117,
+      "namespace": ["editorial"],
+      "legacy_id": 10093,
+      "type": ["image", "video"],
+      "value": "Topix"
+    },
+    {
+      "gid": 200,
+      "namespace": ["picmonkey"],
+      "legacy_id": 0,
+      "type": ["templates"],
+      "value": "Making Christmas"
+    },
+    {
+      "gid": 201,
+      "namespace": ["picmonkey"],
+      "legacy_id": 1,
+      "type": ["templates"],
+      "value": "Winter Wonderland"
+    },
+    {
+      "gid": 202,
+      "namespace": ["picmonkey"],
+      "legacy_id": 2,
+      "type": ["templates"],
+      "value": "Vision Boards"
+    },
+    {
+      "gid": 203,
+      "namespace": ["picmonkey"],
+      "legacy_id": 3,
+      "type": ["templates"],
+      "value": "Online Ad"
+    },
+    {
+      "gid": 204,
+      "namespace": ["picmonkey"],
+      "legacy_id": 4,
+      "type": ["templates"],
+      "value": "Announcement"
+    },
+    {
+      "gid": 205,
+      "namespace": ["picmonkey"],
+      "legacy_id": 5,
+      "type": ["templates"],
+      "value": "New Baby Announcement"
+    },
+    {
+      "gid": 206,
+      "namespace": ["picmonkey"],
+      "legacy_id": 6,
+      "type": ["templates"],
+      "value": "Graduation Announcement"
+    },
+    {
+      "gid": 207,
+      "namespace": ["picmonkey"],
+      "legacy_id": 7,
+      "type": ["templates"],
+      "value": "Banner"
+    },
+    {
+      "gid": 208,
+      "namespace": ["picmonkey"],
+      "legacy_id": 8,
+      "type": ["templates"],
+      "value": "Branding"
+    },
+    {
+      "gid": 209,
+      "namespace": ["picmonkey"],
+      "legacy_id": 9,
+      "type": ["templates"],
+      "value": "Marketing"
+    },
+    {
+      "gid": 210,
+      "namespace": ["picmonkey"],
+      "legacy_id": 10,
+      "type": ["templates"],
+      "value": "Business Card"
+    },
+    {
+      "gid": 211,
+      "namespace": ["picmonkey"],
+      "legacy_id": 11,
+      "type": ["templates"],
+      "value": "Card"
+    },
+    {
+      "gid": 212,
+      "namespace": ["picmonkey"],
+      "legacy_id": 12,
+      "type": ["templates"],
+      "value": "Baby Card"
+    },
+    {
+      "gid": 213,
+      "namespace": ["picmonkey"],
+      "legacy_id": 13,
+      "type": ["templates"],
+      "value": "Birthday Card"
+    },
+    {
+      "gid": 214,
+      "namespace": ["picmonkey"],
+      "legacy_id": 14,
+      "type": ["templates"],
+      "value": "Christmas Card"
+    },
+    {
+      "gid": 215,
+      "namespace": ["picmonkey"],
+      "legacy_id": 15,
+      "type": ["templates"],
+      "value": "Father's Day Card"
+    },
+    {
+      "gid": 216,
+      "namespace": ["picmonkey"],
+      "legacy_id": 16,
+      "type": ["templates"],
+      "value": "Graduation Card"
+    },
+    {
+      "gid": 217,
+      "namespace": ["picmonkey"],
+      "legacy_id": 17,
+      "type": ["templates"],
+      "value": "Mother's Day Card"
+    },
+    {
+      "gid": 218,
+      "namespace": ["picmonkey"],
+      "legacy_id": 18,
+      "type": ["templates"],
+      "value": "New Year's Card"
+    },
+    {
+      "gid": 219,
+      "namespace": ["picmonkey"],
+      "legacy_id": 19,
+      "type": ["templates"],
+      "value": "Photo Card"
+    },
+    {
+      "gid": 220,
+      "namespace": ["picmonkey"],
+      "legacy_id": 20,
+      "type": ["templates"],
+      "value": "Thank You Card"
+    },
+    {
+      "gid": 221,
+      "namespace": ["picmonkey"],
+      "legacy_id": 21,
+      "type": ["templates"],
+      "value": "Valentine's Day Card"
+    },
+    {
+      "gid": 222,
+      "namespace": ["picmonkey"],
+      "legacy_id": 22,
+      "type": ["templates"],
+      "value": "Facebook"
+    },
+    {
+      "gid": 223,
+      "namespace": ["picmonkey"],
+      "legacy_id": 23,
+      "type": ["templates"],
+      "value": "Facebook Ad"
+    },
+    {
+      "gid": 224,
+      "namespace": ["picmonkey"],
+      "legacy_id": 24,
+      "type": ["templates"],
+      "value": "Facebook Event Cover"
+    },
+    {
+      "gid": 225,
+      "namespace": ["picmonkey"],
+      "legacy_id": 25,
+      "type": ["templates"],
+      "value": "Flyer"
+    },
+    {
+      "gid": 226,
+      "namespace": ["picmonkey"],
+      "legacy_id": 26,
+      "type": ["templates"],
+      "value": "Holiday & Event"
+    },
+    {
+      "gid": 227,
+      "namespace": ["picmonkey"],
+      "legacy_id": 27,
+      "type": ["templates"],
+      "value": "Baby Shower"
+    },
+    {
+      "gid": 228,
+      "namespace": ["picmonkey"],
+      "legacy_id": 28,
+      "type": ["templates"],
+      "value": "Birthday"
+    },
+    {
+      "gid": 229,
+      "namespace": ["picmonkey"],
+      "legacy_id": 29,
+      "type": ["templates"],
+      "value": "Christmas"
+    },
+    {
+      "gid": 230,
+      "namespace": ["picmonkey"],
+      "legacy_id": 30,
+      "type": ["templates"],
+      "value": "Father's Day"
+    },
+    {
+      "gid": 231,
+      "namespace": ["picmonkey"],
+      "legacy_id": 31,
+      "type": ["templates"],
+      "value": "Graduation"
+    },
+    {
+      "gid": 232,
+      "namespace": ["picmonkey"],
+      "legacy_id": 32,
+      "type": ["templates"],
+      "value": "Halloween"
+    },
+    {
+      "gid": 233,
+      "namespace": ["picmonkey"],
+      "legacy_id": 33,
+      "type": ["templates"],
+      "value": "Hanukkah"
+    },
+    {
+      "gid": 234,
+      "namespace": ["picmonkey"],
+      "legacy_id": 34,
+      "type": ["templates"],
+      "value": "Mother's Day"
+    },
+    {
+      "gid": 235,
+      "namespace": ["picmonkey"],
+      "legacy_id": 35,
+      "type": ["templates"],
+      "value": "New Year's"
+    },
+    {
+      "gid": 236,
+      "namespace": ["picmonkey"],
+      "legacy_id": 36,
+      "type": ["templates"],
+      "value": "Wedding"
+    },
+    {
+      "gid": 237,
+      "namespace": ["picmonkey"],
+      "legacy_id": 37,
+      "type": ["templates"],
+      "value": "Save the Date"
+    },
+    {
+      "gid": 238,
+      "namespace": ["picmonkey"],
+      "legacy_id": 38,
+      "type": ["templates"],
+      "value": "Thanksgiving"
+    },
+    {
+      "gid": 239,
+      "namespace": ["picmonkey"],
+      "legacy_id": 39,
+      "type": ["templates"],
+      "value": "Infographic"
+    },
+    {
+      "gid": 240,
+      "namespace": ["picmonkey"],
+      "legacy_id": 40,
+      "type": ["templates"],
+      "value": "Instagram"
+    },
+    {
+      "gid": 241,
+      "namespace": ["picmonkey"],
+      "legacy_id": 41,
+      "type": ["templates"],
+      "value": "Instagram Post"
+    },
+    {
+      "gid": 242,
+      "namespace": ["picmonkey"],
+      "legacy_id": 42,
+      "type": ["templates"],
+      "value": "Instagram Story"
+    },
+    {
+      "gid": 243,
+      "namespace": ["picmonkey"],
+      "legacy_id": 43,
+      "type": ["templates"],
+      "value": "Invitation"
+    },
+    {
+      "gid": 244,
+      "namespace": ["picmonkey"],
+      "legacy_id": 44,
+      "type": ["templates"],
+      "value": "Birthday Invitation"
+    },
+    {
+      "gid": 245,
+      "namespace": ["picmonkey"],
+      "legacy_id": 45,
+      "type": ["templates"],
+      "value": "Bridal Shower Invitation"
+    },
+    {
+      "gid": 246,
+      "namespace": ["picmonkey"],
+      "legacy_id": 46,
+      "type": ["templates"],
+      "value": "Halloween Invitation"
+    },
+    {
+      "gid": 247,
+      "namespace": ["picmonkey"],
+      "legacy_id": 47,
+      "type": ["templates"],
+      "value": "Party Invitation"
+    },
+    {
+      "gid": 248,
+      "namespace": ["picmonkey"],
+      "legacy_id": 48,
+      "type": ["templates"],
+      "value": "Wedding Invitation"
+    },
+    {
+      "gid": 249,
+      "namespace": ["picmonkey"],
+      "legacy_id": 49,
+      "type": ["templates"],
+      "value": "Logo"
+    },
+    {
+      "gid": 250,
+      "namespace": ["picmonkey"],
+      "legacy_id": 50,
+      "type": ["templates"],
+      "value": "Pinterest"
+    },
+    {
+      "gid": 251,
+      "namespace": ["picmonkey"],
+      "legacy_id": 51,
+      "type": ["templates"],
+      "value": "Poster"
+    },
+    {
+      "gid": 252,
+      "namespace": ["picmonkey"],
+      "legacy_id": 52,
+      "type": ["templates"],
+      "value": "Twitter"
+    },
+    {
+      "gid": 253,
+      "namespace": ["picmonkey"],
+      "legacy_id": 53,
+      "type": ["templates"],
+      "value": "Twitter Header"
+    },
+    {
+      "gid": 254,
+      "namespace": ["picmonkey"],
+      "legacy_id": 54,
+      "type": ["templates"],
+      "value": "YouTube"
+    },
+    {
+      "gid": 255,
+      "namespace": ["picmonkey"],
+      "legacy_id": 55,
+      "type": ["templates"],
+      "value": "YouTube Thumbnail"
+    },
+    {
+      "gid": 256,
+      "namespace": ["picmonkey"],
+      "legacy_id": 56,
+      "type": ["templates"],
+      "value": "Email Header"
+    },
+    {
+      "gid": 257,
+      "namespace": ["picmonkey"],
+      "legacy_id": 57,
+      "type": ["templates"],
+      "value": "Facebook Carousel Ad"
+    },
+    {
+      "gid": 258,
+      "namespace": ["picmonkey"],
+      "legacy_id": 58,
+      "type": ["templates"],
+      "value": "Snapchat"
+    },
+    {
+      "gid": 259,
+      "namespace": ["picmonkey"],
+      "legacy_id": 59,
+      "type": ["templates"],
+      "value": "Facebook Post"
+    },
+    {
+      "gid": 260,
+      "namespace": ["picmonkey"],
+      "legacy_id": 60,
+      "type": ["templates"],
+      "value": "Featured"
+    },
+    {
+      "gid": 261,
+      "namespace": ["picmonkey"],
+      "legacy_id": 61,
+      "type": ["templates"],
+      "value": "Template Merch"
+    },
+    {
+      "gid": 262,
+      "namespace": ["picmonkey"],
+      "legacy_id": 62,
+      "type": ["templates"],
+      "value": "Template Browse"
+    },
+    {
+      "gid": 263,
+      "namespace": ["picmonkey"],
+      "legacy_id": 63,
+      "type": ["templates"],
+      "value": "Pinterest Pin"
+    },
+    {
+      "gid": 264,
+      "namespace": ["picmonkey"],
+      "legacy_id": 64,
+      "type": ["templates"],
+      "value": "Pinterest Promoted Pin"
+    },
+    {
+      "gid": 265,
+      "namespace": ["picmonkey"],
+      "legacy_id": 65,
+      "type": ["templates"],
+      "value": "Pinterest Square Pin"
+    },
+    {
+      "gid": 266,
+      "namespace": ["picmonkey"],
+      "legacy_id": 66,
+      "type": ["templates"],
+      "value": "Calendar"
+    },
+    {
+      "gid": 267,
+      "namespace": ["picmonkey"],
+      "legacy_id": 67,
+      "type": ["templates"],
+      "value": "Template Sets"
+    },
+    {
+      "gid": 268,
+      "namespace": ["picmonkey"],
+      "legacy_id": 68,
+      "type": ["templates"],
+      "value": "Shadowlands"
+    },
+    {
+      "gid": 269,
+      "namespace": ["picmonkey"],
+      "legacy_id": 69,
+      "type": ["templates"],
+      "value": "Blush Modern"
+    },
+    {
+      "gid": 270,
+      "namespace": ["picmonkey"],
+      "legacy_id": 70,
+      "type": ["templates"],
+      "value": "Retro-Static"
+    },
+    {
+      "gid": 271,
+      "namespace": ["picmonkey"],
+      "legacy_id": 71,
+      "type": ["templates"],
+      "value": "High Powered"
+    },
+    {
+      "gid": 272,
+      "namespace": ["picmonkey"],
+      "legacy_id": 72,
+      "type": ["templates"],
+      "value": "Clean & Bright"
+    },
+    {
+      "gid": 273,
+      "namespace": ["picmonkey"],
+      "legacy_id": 73,
+      "type": ["templates"],
+      "value": "Brand Board"
+    },
+    {
+      "gid": 274,
+      "namespace": ["picmonkey"],
+      "legacy_id": 74,
+      "type": ["templates"],
+      "value": "Collage"
+    },
+    {
+      "gid": 275,
+      "namespace": ["picmonkey"],
+      "legacy_id": 75,
+      "type": ["templates"],
+      "value": "Postcard"
+    },
+    {
+      "gid": 276,
+      "namespace": ["picmonkey"],
+      "legacy_id": 76,
+      "type": ["templates"],
+      "value": "Snapchat Geofilter"
+    },
+    {
+      "gid": 277,
+      "namespace": ["picmonkey"],
+      "legacy_id": 77,
+      "type": ["templates"],
+      "value": "Twitter Post"
+    },
+    {
+      "gid": 278,
+      "namespace": ["picmonkey"],
+      "legacy_id": 78,
+      "type": ["templates"],
+      "value": "YouTube Channel Art"
+    },
+    {
+      "gid": 279,
+      "namespace": ["picmonkey"],
+      "legacy_id": 79,
+      "type": ["templates"],
+      "value": "Resume"
+    },
+    {
+      "gid": 280,
+      "namespace": ["picmonkey"],
+      "legacy_id": 80,
+      "type": ["templates"],
+      "value": "Invoice"
+    },
+    {
+      "gid": 281,
+      "namespace": ["picmonkey"],
+      "legacy_id": 81,
+      "type": ["templates"],
+      "value": "Etsy Shop Big Banner"
+    },
+    {
+      "gid": 282,
+      "namespace": ["picmonkey"],
+      "legacy_id": 82,
+      "type": ["templates"],
+      "value": "Etsy Shop Mini Banner"
+    },
+    {
+      "gid": 283,
+      "namespace": ["picmonkey"],
+      "legacy_id": 83,
+      "type": ["templates"],
+      "value": "Etsy"
+    },
+    {
+      "gid": 284,
+      "namespace": ["picmonkey"],
+      "legacy_id": 84,
+      "type": ["templates"],
+      "value": "Building Blocks"
+    },
+    {
+      "gid": 285,
+      "namespace": ["picmonkey"],
+      "legacy_id": 85,
+      "type": ["templates"],
+      "value": "L&A"
+    },
+    {
+      "gid": 286,
+      "namespace": ["picmonkey"],
+      "legacy_id": 86,
+      "type": ["templates"],
+      "value": "Light & Airy"
+    },
+    {
+      "gid": 287,
+      "namespace": ["picmonkey"],
+      "legacy_id": 87,
+      "type": ["templates"],
+      "value": "Study in Scarlet"
+    },
+    {
+      "gid": 288,
+      "namespace": ["picmonkey"],
+      "legacy_id": 88,
+      "type": ["templates"],
+      "value": "Abstract Botanical"
+    },
+    {
+      "gid": 289,
+      "namespace": ["picmonkey"],
+      "legacy_id": 89,
+      "type": ["templates"],
+      "value": "Cover Letter"
+    },
+    {
+      "gid": 290,
+      "namespace": ["picmonkey"],
+      "legacy_id": 90,
+      "type": ["templates"],
+      "value": "Half Page Ad"
+    },
+    {
+      "gid": 291,
+      "namespace": ["picmonkey"],
+      "legacy_id": 91,
+      "type": ["templates"],
+      "value": "Large Leaderboard Ad Mobile"
+    },
+    {
+      "gid": 292,
+      "namespace": ["picmonkey"],
+      "legacy_id": 92,
+      "type": ["templates"],
+      "value": "Large Rectangle Ad"
+    },
+    {
+      "gid": 293,
+      "namespace": ["picmonkey"],
+      "legacy_id": 93,
+      "type": ["templates"],
+      "value": "Leaderboard Ad"
+    },
+    {
+      "gid": 294,
+      "namespace": ["picmonkey"],
+      "legacy_id": 94,
+      "type": ["templates"],
+      "value": "Medium Rectangle Ad"
+    },
+    {
+      "gid": 295,
+      "namespace": ["picmonkey"],
+      "legacy_id": 95,
+      "type": ["templates"],
+      "value": "Line & Groove"
+    },
+    {
+      "gid": 296,
+      "namespace": ["picmonkey"],
+      "legacy_id": 96,
+      "type": ["templates"],
+      "value": "Paperie"
+    },
+    {
+      "gid": 297,
+      "namespace": ["picmonkey"],
+      "legacy_id": 97,
+      "type": ["templates"],
+      "value": "Seasonal Fall"
+    },
+    {
+      "gid": 298,
+      "namespace": ["picmonkey"],
+      "legacy_id": 98,
+      "type": ["templates"],
+      "value": "Hot Insta Stories"
+    },
+    {
+      "gid": 299,
+      "namespace": ["picmonkey"],
+      "legacy_id": 99,
+      "type": ["templates"],
+      "value": "Merch Archive"
+    },
+    {
+      "gid": 300,
+      "namespace": ["picmonkey"],
+      "legacy_id": 100,
+      "type": ["templates"],
+      "value": "Film Strip"
+    },
+    {
+      "gid": 301,
+      "namespace": ["picmonkey"],
+      "legacy_id": 101,
+      "type": ["templates"],
+      "value": "Brush & Burnish 2"
+    },
+    {
+      "gid": 302,
+      "namespace": ["picmonkey"],
+      "legacy_id": 102,
+      "type": ["templates"],
+      "value": "Crystal Geos"
+    },
+    {
+      "gid": 303,
+      "namespace": ["picmonkey"],
+      "legacy_id": 103,
+      "type": ["templates"],
+      "value": "Classique"
+    },
+    {
+      "gid": 304,
+      "namespace": ["picmonkey"],
+      "legacy_id": 104,
+      "type": ["templates"],
+      "value": "Brush & Burnish"
+    },
+    {
+      "gid": 305,
+      "namespace": ["picmonkey"],
+      "legacy_id": 105,
+      "type": ["templates"],
+      "value": "Photo Booth"
+    },
+    {
+      "gid": 306,
+      "namespace": ["picmonkey"],
+      "legacy_id": 106,
+      "type": ["templates"],
+      "value": "Wanderlust"
+    },
+    {
+      "gid": 307,
+      "namespace": ["picmonkey"],
+      "legacy_id": 107,
+      "type": ["templates"],
+      "value": "Cool & Collected"
+    },
+    {
+      "gid": 308,
+      "namespace": ["picmonkey"],
+      "legacy_id": 108,
+      "type": ["templates"],
+      "value": "Very Merry"
+    },
+    {
+      "gid": 309,
+      "namespace": ["picmonkey"],
+      "legacy_id": 109,
+      "type": ["templates"],
+      "value": "Instagram Carousel Ad"
+    },
+    {
+      "gid": 310,
+      "namespace": ["picmonkey"],
+      "legacy_id": 110,
+      "type": ["templates"],
+      "value": "Presentation"
+    },
+    {
+      "gid": 311,
+      "namespace": ["picmonkey"],
+      "legacy_id": 111,
+      "type": ["templates"],
+      "value": "Torn Edges"
+    },
+    {
+      "gid": 312,
+      "namespace": ["picmonkey"],
+      "legacy_id": 112,
+      "type": ["templates"],
+      "value": "Bridal Shower"
+    },
+    {
+      "gid": 313,
+      "namespace": ["picmonkey"],
+      "legacy_id": 113,
+      "type": ["templates"],
+      "value": "Snapchat Ad"
+    },
+    {
+      "gid": 314,
+      "namespace": ["picmonkey"],
+      "legacy_id": 114,
+      "type": ["templates"],
+      "value": "Email"
+    },
+    {
+      "gid": 315,
+      "namespace": ["picmonkey"],
+      "legacy_id": 115,
+      "type": ["templates"],
+      "value": "Meme"
+    },
+    {
+      "gid": 316,
+      "namespace": ["picmonkey"],
+      "legacy_id": 116,
+      "type": ["templates"],
+      "value": "Gift List"
+    },
+    {
+      "gid": 317,
+      "namespace": ["picmonkey"],
+      "legacy_id": 117,
+      "type": ["templates"],
+      "value": "Wrapped Up"
+    },
+    {
+      "gid": 318,
+      "namespace": ["picmonkey"],
+      "legacy_id": 118,
+      "type": ["templates"],
+      "value": "Evergreen"
+    },
+    {
+      "gid": 319,
+      "namespace": ["picmonkey"],
+      "legacy_id": 119,
+      "type": ["templates"],
+      "value": "Seasonal Winter"
+    },
+    {
+      "gid": 320,
+      "namespace": ["picmonkey"],
+      "legacy_id": 120,
+      "type": ["templates"],
+      "value": "Medium Email"
+    },
+    {
+      "gid": 321,
+      "namespace": ["picmonkey"],
+      "legacy_id": 121,
+      "type": ["templates"],
+      "value": "LinkedIn"
+    },
+    {
+      "gid": 322,
+      "namespace": ["picmonkey"],
+      "legacy_id": 122,
+      "type": ["templates"],
+      "value": "Short Email"
+    },
+    {
+      "gid": 323,
+      "namespace": ["picmonkey"],
+      "legacy_id": 123,
+      "type": ["templates"],
+      "value": "Long Email"
+    },
+    {
+      "gid": 324,
+      "namespace": ["picmonkey"],
+      "legacy_id": 124,
+      "type": ["templates"],
+      "value": "Presidential Savings"
+    },
+    {
+      "gid": 325,
+      "namespace": ["picmonkey"],
+      "legacy_id": 125,
+      "type": ["templates"],
+      "value": "Color Palette"
+    },
+    {
+      "gid": 326,
+      "namespace": ["picmonkey"],
+      "legacy_id": 126,
+      "type": ["templates"],
+      "value": "Rustic Gold"
+    },
+    {
+      "gid": 327,
+      "namespace": ["picmonkey"],
+      "legacy_id": 127,
+      "type": ["templates"],
+      "value": "Valentine's Day"
+    },
+    {
+      "gid": 328,
+      "namespace": ["picmonkey"],
+      "legacy_id": 128,
+      "type": ["templates"],
+      "value": "Easter"
+    },
+    {
+      "gid": 329,
+      "namespace": ["picmonkey"],
+      "legacy_id": 129,
+      "type": ["templates"],
+      "value": "St. Patrick's Day"
+    },
+    {
+      "gid": 330,
+      "namespace": ["picmonkey"],
+      "legacy_id": 130,
+      "type": ["templates"],
+      "value": "Facebook Story"
+    },
+    {
+      "gid": 331,
+      "namespace": ["picmonkey"],
+      "legacy_id": 131,
+      "type": ["templates"],
+      "value": "Fit & Flair"
+    },
+    {
+      "gid": 332,
+      "namespace": ["picmonkey"],
+      "legacy_id": 132,
+      "type": ["templates"],
+      "value": "May Flowers"
+    },
+    {
+      "gid": 333,
+      "namespace": ["picmonkey"],
+      "legacy_id": 133,
+      "type": ["templates"],
+      "value": "Brand New"
+    },
+    {
+      "gid": 334,
+      "namespace": ["picmonkey"],
+      "legacy_id": 134,
+      "type": ["templates"],
+      "value": "March Madness"
+    },
+    {
+      "gid": 335,
+      "namespace": ["picmonkey"],
+      "legacy_id": 135,
+      "type": ["templates"],
+      "value": "Mood Board"
+    },
+    {
+      "gid": 336,
+      "namespace": ["picmonkey"],
+      "legacy_id": 136,
+      "type": ["templates"],
+      "value": "Etsy Shop Icon"
+    },
+    {
+      "gid": 337,
+      "namespace": ["picmonkey"],
+      "legacy_id": 137,
+      "type": ["templates"],
+      "value": "Skyscraper Ad"
+    },
+    {
+      "gid": 338,
+      "namespace": ["picmonkey"],
+      "legacy_id": 138,
+      "type": ["templates"],
+      "value": "Wide Skyscraper Ad"
+    },
+    {
+      "gid": 339,
+      "namespace": ["picmonkey"],
+      "legacy_id": 139,
+      "type": ["templates"],
+      "value": "COVID-19"
+    },
+    {
+      "gid": 340,
+      "namespace": ["picmonkey"],
+      "legacy_id": 140,
+      "type": ["templates"],
+      "value": "Worksheet"
+    },
+    {
+      "gid": 341,
+      "namespace": ["picmonkey"],
+      "legacy_id": 141,
+      "type": ["templates"],
+      "value": "Recipe Card"
+    },
+    {
+      "gid": 342,
+      "namespace": ["picmonkey"],
+      "legacy_id": 142,
+      "type": ["templates"],
+      "value": "Zoom Background"
+    },
+    {
+      "gid": 343,
+      "namespace": ["picmonkey"],
+      "legacy_id": 143,
+      "type": ["templates"],
+      "value": "Organic Collage"
+    },
+    {
+      "gid": 344,
+      "namespace": ["picmonkey"],
+      "legacy_id": 144,
+      "type": ["templates"],
+      "value": "Planner"
+    },
+    {
+      "gid": 345,
+      "namespace": ["picmonkey"],
+      "legacy_id": 145,
+      "type": ["templates"],
+      "value": "High School Graduation Announcement"
+    },
+    {
+      "gid": 346,
+      "namespace": ["picmonkey"],
+      "legacy_id": 146,
+      "type": ["templates"],
+      "value": "Baby Shower Invitation"
+    },
+    {
+      "gid": 347,
+      "namespace": ["picmonkey"],
+      "legacy_id": 147,
+      "type": ["templates"],
+      "value": "Horizontal Business Card"
+    },
+    {
+      "gid": 348,
+      "namespace": ["picmonkey"],
+      "legacy_id": 148,
+      "type": ["templates"],
+      "value": "College Graduation Announcement"
+    },
+    {
+      "gid": 349,
+      "namespace": ["picmonkey"],
+      "legacy_id": 149,
+      "type": ["templates"],
+      "value": "Vertical Business Card"
+    },
+    {
+      "gid": 350,
+      "namespace": ["picmonkey"],
+      "legacy_id": 150,
+      "type": ["templates"],
+      "value": "Christmas Invitation"
+    },
+    {
+      "gid": 351,
+      "namespace": ["picmonkey"],
+      "legacy_id": 151,
+      "type": ["templates"],
+      "value": "Christmas Flyer"
+    },
+    {
+      "gid": 352,
+      "namespace": ["picmonkey"],
+      "legacy_id": 152,
+      "type": ["templates"],
+      "value": "Modern Business Card"
+    },
+    {
+      "gid": 353,
+      "namespace": ["picmonkey"],
+      "legacy_id": 153,
+      "type": ["templates"],
+      "value": "Simple Business Card"
+    },
+    {
+      "gid": 354,
+      "namespace": ["picmonkey"],
+      "legacy_id": 154,
+      "type": ["templates"],
+      "value": "Advertisement Flyer"
+    },
+    {
+      "gid": 355,
+      "namespace": ["picmonkey"],
+      "legacy_id": 155,
+      "type": ["templates"],
+      "value": "Sale Flyer"
+    },
+    {
+      "gid": 356,
+      "namespace": ["picmonkey"],
+      "legacy_id": 156,
+      "type": ["templates"],
+      "value": "Circle Logo"
+    },
+    {
+      "gid": 357,
+      "namespace": ["picmonkey"],
+      "legacy_id": 157,
+      "type": ["templates"],
+      "value": "Power Listing"
+    },
+    {
+      "gid": 358,
+      "namespace": ["picmonkey"],
+      "legacy_id": 158,
+      "type": ["templates"],
+      "value": "Frame Job"
+    },
+    {
+      "gid": 359,
+      "namespace": ["picmonkey"],
+      "legacy_id": 159,
+      "type": ["templates"],
+      "value": "Vista Bonita"
+    },
+    {
+      "gid": 360,
+      "namespace": ["picmonkey"],
+      "legacy_id": 160,
+      "type": ["templates"],
+      "value": "Gift Certificate"
+    },
+    {
+      "gid": 361,
+      "namespace": ["picmonkey"],
+      "legacy_id": 161,
+      "type": ["templates"],
+      "value": "Certificate"
+    },
+    {
+      "gid": 362,
+      "namespace": ["picmonkey"],
+      "legacy_id": 162,
+      "type": ["templates"],
+      "value": "Business Plan"
+    },
+    {
+      "gid": 363,
+      "namespace": ["picmonkey"],
+      "legacy_id": 163,
+      "type": ["templates"],
+      "value": "Prismatic"
+    },
+    {
+      "gid": 364,
+      "namespace": ["picmonkey"],
+      "legacy_id": 164,
+      "type": ["templates"],
+      "value": "Product Mockup"
+    },
+    {
+      "gid": 365,
+      "namespace": ["picmonkey"],
+      "legacy_id": 165,
+      "type": ["templates"],
+      "value": "Zoom"
+    },
+    {
+      "gid": 366,
+      "namespace": ["picmonkey"],
+      "legacy_id": 166,
+      "type": ["templates"],
+      "value": "Error Slick"
+    },
+    {
+      "gid": 367,
+      "namespace": ["picmonkey"],
+      "legacy_id": 167,
+      "type": ["templates"],
+      "value": "Video"
+    },
+    {
+      "gid": 368,
+      "namespace": ["picmonkey"],
+      "legacy_id": 168,
+      "type": ["templates"],
+      "value": "Video Templates"
+    },
+    {
+      "gid": 369,
+      "namespace": ["picmonkey"],
+      "legacy_id": 169,
+      "type": ["templates"],
+      "value": "Daily Calendar"
+    },
+    {
+      "gid": 370,
+      "namespace": ["picmonkey"],
+      "legacy_id": 170,
+      "type": ["templates"],
+      "value": "Daily Planner"
+    },
+    {
+      "gid": 371,
+      "namespace": ["picmonkey"],
+      "legacy_id": 171,
+      "type": ["templates"],
+      "value": "Weekly Planner"
+    },
+    {
+      "gid": 372,
+      "namespace": ["picmonkey"],
+      "legacy_id": 172,
+      "type": ["templates"],
+      "value": "Monthly Planner"
+    },
+    {
+      "gid": 373,
+      "namespace": ["picmonkey"],
+      "legacy_id": 173,
+      "type": ["templates"],
+      "value": "Weekly Calendar"
+    },
+    {
+      "gid": 374,
+      "namespace": ["picmonkey"],
+      "legacy_id": 174,
+      "type": ["templates"],
+      "value": "Monthly Calendar"
+    },
+    {
+      "gid": 375,
+      "namespace": ["picmonkey"],
+      "legacy_id": 175,
+      "type": ["templates"],
+      "value": "Schedule"
+    },
+    {
+      "gid": 376,
+      "namespace": ["picmonkey"],
+      "legacy_id": 176,
+      "type": ["templates"],
+      "value": "Daily Schedule"
+    },
+    {
+      "gid": 377,
+      "namespace": ["picmonkey"],
+      "legacy_id": 177,
+      "type": ["templates"],
+      "value": "Weekly Schedule"
+    },
+    {
+      "gid": 378,
+      "namespace": ["picmonkey"],
+      "legacy_id": 178,
+      "type": ["templates"],
+      "value": "Monthly Schedule"
+    },
+    {
+      "gid": 379,
+      "namespace": ["picmonkey"],
+      "legacy_id": 179,
+      "type": ["templates"],
+      "value": "Instagram Ad"
+    },
+    {
+      "gid": 380,
+      "namespace": ["picmonkey"],
+      "legacy_id": 180,
+      "type": ["templates"],
+      "value": "Instagram Bingo"
+    },
+    {
+      "gid": 381,
+      "namespace": ["picmonkey"],
+      "legacy_id": 181,
+      "type": ["templates"],
+      "value": "Instagram Highlight"
+    },
+    {
+      "gid": 382,
+      "namespace": ["picmonkey"],
+      "legacy_id": 182,
+      "type": ["templates"],
+      "value": "Instagram Layout"
+    },
+    {
+      "gid": 383,
+      "namespace": ["picmonkey"],
+      "legacy_id": 183,
+      "type": ["templates"],
+      "value": "Instagram Question"
+    },
+    {
+      "gid": 384,
+      "namespace": ["picmonkey"],
+      "legacy_id": 184,
+      "type": ["templates"],
+      "value": "Menu"
+    },
+    {
+      "gid": 385,
+      "namespace": ["picmonkey"],
+      "legacy_id": 185,
+      "type": ["templates"],
+      "value": "Food Menu"
+    },
+    {
+      "gid": 386,
+      "namespace": ["picmonkey"],
+      "legacy_id": 186,
+      "type": ["templates"],
+      "value": "Drinks Menu"
+    },
+    {
+      "gid": 387,
+      "namespace": ["picmonkey"],
+      "legacy_id": 187,
+      "type": ["templates"],
+      "value": "Facebook Shop"
+    },
+    {
+      "gid": 388,
+      "namespace": ["picmonkey"],
+      "legacy_id": 188,
+      "type": ["templates"],
+      "value": "Timeline Infographic"
+    },
+    {
+      "gid": 389,
+      "namespace": ["picmonkey"],
+      "legacy_id": 189,
+      "type": ["templates"],
+      "value": "Mood Board"
+    },
+    {
+      "gid": 390,
+      "namespace": ["picmonkey"],
+      "legacy_id": 190,
+      "type": ["templates"],
+      "value": "Quote"
+    },
+    {
+      "gid": 391,
+      "namespace": ["picmonkey"],
+      "legacy_id": 191,
+      "type": ["templates"],
+      "value": "President's Day"
+    },
+    {
+      "gid": 392,
+      "namespace": ["picmonkey"],
+      "legacy_id": 192,
+      "type": ["templates"],
+      "value": "LinkedIn Cover"
+    },
+    {
+      "gid": 393,
+      "namespace": ["picmonkey"],
+      "legacy_id": 193,
+      "type": ["templates"],
+      "value": "LinkedIn Company Cover"
+    },
+    {
+      "gid": 394,
+      "namespace": ["picmonkey"],
+      "legacy_id": 194,
+      "type": ["templates"],
+      "value": "Meal Plan"
+    },
+    {
+      "gid": 395,
+      "namespace": ["picmonkey"],
+      "legacy_id": 195,
+      "type": ["templates"],
+      "value": "Pinterest Idea Pin"
+    },
+    {
+      "gid": 396,
+      "namespace": ["picmonkey"],
+      "legacy_id": 196,
+      "type": ["templates"],
+      "value": "Coloring Sheet"
+    },
+    {
+      "gid": 397,
+      "namespace": ["picmonkey"],
+      "legacy_id": 197,
+      "type": ["templates"],
+      "value": "Class Schedule"
+    },
+    {
+      "gid": 398,
+      "namespace": ["picmonkey"],
+      "legacy_id": 198,
+      "type": ["templates"],
+      "value": "Checklist"
+    },
+    {
+      "gid": 399,
+      "namespace": ["picmonkey"],
+      "legacy_id": 199,
+      "type": ["templates"],
+      "value": "To Do List"
+    },
+    {
+      "gid": 400,
+      "namespace": ["picmonkey"],
+      "legacy_id": 200,
+      "type": ["templates"],
+      "value": "Full-Featured Collage"
+    },
+    {
+      "gid": 401,
+      "namespace": ["picmonkey"],
+      "legacy_id": 201,
+      "type": ["templates"],
+      "value": "Template-Based Collage"
+    },
+    {
+      "gid": 402,
+      "namespace": ["picmonkey"],
+      "legacy_id": 202,
+      "type": ["templates"],
+      "value": "Facebook Cover Photo"
+    },
+    {
+      "gid": 403,
+      "namespace": ["picmonkey"],
+      "legacy_id": 203,
+      "type": ["templates"],
+      "value": "Animated Templates"
+    },
+    {
+      "gid": 404,
+      "namespace": ["picmonkey"],
+      "legacy_id": 204,
+      "type": ["templates"],
+      "value": "Storyboard"
+    },
+    {
+      "gid": 405,
+      "namespace": ["picmonkey"],
+      "legacy_id": 205,
+      "type": ["templates"],
+      "value": "Real Estate"
+    },
+    {
+      "gid": 406,
+      "namespace": ["picmonkey"],
+      "legacy_id": 206,
+      "type": ["templates"],
+      "value": "Fashion"
+    },
+    {
+      "gid": 407,
+      "namespace": ["picmonkey"],
+      "legacy_id": 207,
+      "type": ["templates"],
+      "value": "Beauty"
+    },
+    {
+      "gid": 408,
+      "namespace": ["picmonkey"],
+      "legacy_id": 208,
+      "type": ["templates"],
+      "value": "eCommerce"
+    },
+    {
+      "gid": 409,
+      "namespace": ["picmonkey"],
+      "legacy_id": 209,
+      "type": ["templates"],
+      "value": "Email Signature"
+    },
+    {
+      "gid": 410,
+      "namespace": ["picmonkey"],
+      "legacy_id": 210,
+      "type": ["templates"],
+      "value": "Photo Collage"
+    },
+    {
+      "gid": 411,
+      "namespace": ["picmonkey"],
+      "legacy_id": 211,
+      "type": ["templates"],
+      "value": "YouTube Banner"
+    },
+    {
+      "gid": 412,
+      "namespace": ["picmonkey"],
+      "legacy_id": 212,
+      "type": ["templates"],
+      "value": "Facebook Page Cover"
+    },
+    {
+      "gid": 413,
+      "namespace": ["picmonkey"],
+      "legacy_id": 213,
+      "type": ["templates"],
+      "value": "Newsletter"
+    },
+    {
+      "gid": 414,
+      "namespace": ["picmonkey"],
+      "legacy_id": 214,
+      "type": ["templates"],
+      "value": "Winter Holiday"
+    },
+    {
+      "gid": 415,
+      "namespace": ["picmonkey"],
+      "legacy_id": 215,
+      "type": ["templates"],
+      "value": "Brand Guidelines"
+    },
+    {
+      "gid": 416,
+      "namespace": ["picmonkey"],
+      "legacy_id": 216,
+      "type": ["templates"],
+      "value": "Brand Strategy"
+    },
+    {
+      "gid": 417,
+      "namespace": ["picmonkey"],
+      "legacy_id": 217,
+      "type": ["templates"],
+      "value": "Budget Planner"
+    },
+    {
+      "gid": 418,
+      "namespace": ["picmonkey"],
+      "legacy_id": 218,
+      "type": ["templates"],
+      "value": "Family Tree"
+    },
+    {
+      "gid": 419,
+      "namespace": ["picmonkey"],
+      "legacy_id": 219,
+      "type": ["templates"],
+      "value": "Birthday Flyer"
+    },
+    {
+      "gid": 420,
+      "namespace": ["picmonkey"],
+      "legacy_id": 220,
+      "type": ["templates"],
+      "value": "Real Estate Flyer"
+    },
+    {
+      "gid": 421,
+      "namespace": ["picmonkey"],
+      "legacy_id": 221,
+      "type": ["templates"],
+      "value": "Lesson Plan"
+    },
+    {
+      "gid": 422,
+      "namespace": ["picmonkey"],
+      "legacy_id": 222,
+      "type": ["templates"],
+      "value": "Preschool Lesson Plan"
+    },
+    {
+      "gid": 423,
+      "namespace": ["picmonkey"],
+      "legacy_id": 223,
+      "type": ["templates"],
+      "value": "Weekly Lesson Plan"
+    },
+    {
+      "gid": 424,
+      "namespace": ["picmonkey"],
+      "legacy_id": 224,
+      "type": ["templates"],
+      "value": "Timeline"
+    },
+    {
+      "gid": 425,
+      "namespace": ["picmonkey"],
+      "legacy_id": 225,
+      "type": ["templates"],
+      "value": "Project Timeline"
+    },
+    {
+      "gid": 426,
+      "namespace": ["picmonkey"],
+      "legacy_id": 226,
+      "type": ["templates"],
+      "value": "Vertical Timeline"
+    },
+    {
+      "gid": 427,
+      "namespace": ["picmonkey"],
+      "legacy_id": 227,
+      "type": ["templates"],
+      "value": "Simple Invoice"
+    },
+    {
+      "gid": 428,
+      "namespace": ["picmonkey"],
+      "legacy_id": 228,
+      "type": ["templates"],
+      "value": "Wedding Announcement"
+    },
+    {
+      "gid": 429,
+      "namespace": ["picmonkey"],
+      "legacy_id": 229,
+      "type": ["templates"],
+      "value": "Freelance Invoice"
+    },
+    {
+      "gid": 430,
+      "namespace": ["picmonkey"],
+      "legacy_id": 230,
+      "type": ["templates"],
+      "value": "Brochure"
+    },
+    {
+      "gid": 431,
+      "namespace": ["picmonkey"],
+      "legacy_id": 231,
+      "type": ["templates"],
+      "value": "Trifold Brochure"
+    },
+    {
+      "gid": 432,
+      "namespace": ["picmonkey"],
+      "legacy_id": 232,
+      "type": ["templates"],
+      "value": "Travel Brochure"
+    },
+    {
+      "gid": 433,
+      "namespace": ["picmonkey"],
+      "legacy_id": 233,
+      "type": ["templates"],
+      "value": "Proposal"
+    },
+    {
+      "gid": 434,
+      "namespace": ["picmonkey"],
+      "legacy_id": 234,
+      "type": ["templates"],
+      "value": "Business Proposal"
+    },
+    {
+      "gid": 435,
+      "namespace": ["picmonkey"],
+      "legacy_id": 235,
+      "type": ["templates"],
+      "value": "Project Proposal"
+    },
+    {
+      "gid": 436,
+      "namespace": ["picmonkey"],
+      "legacy_id": 236,
+      "type": ["templates"],
+      "value": "Label"
+    },
+    {
+      "gid": 437,
+      "namespace": ["picmonkey"],
+      "legacy_id": 237,
+      "type": ["templates"],
+      "value": "Address Label"
+    },
+    {
+      "gid": 438,
+      "namespace": ["picmonkey"],
+      "legacy_id": 238,
+      "type": ["templates"],
+      "value": "Itinerary"
+    },
+    {
+      "gid": 439,
+      "namespace": ["picmonkey"],
+      "legacy_id": 239,
+      "type": ["templates"],
+      "value": "Travel Itinerary"
+    },
+    {
+      "gid": 440,
+      "namespace": ["picmonkey"],
+      "legacy_id": 240,
+      "type": ["templates"],
+      "value": "Trip Itinerary"
+    },
+    {
+      "gid": 441,
+      "namespace": ["picmonkey"],
+      "legacy_id": 241,
+      "type": ["templates"],
+      "value": "Instagram Profile"
+    },
+    {
+      "gid": 442,
+      "namespace": ["picmonkey"],
+      "legacy_id": 242,
+      "type": ["templates"],
+      "value": "YouTube Outro"
+    },
+    {
+      "gid": 443,
+      "namespace": ["picmonkey"],
+      "legacy_id": 243,
+      "type": ["templates"],
+      "value": "Youtube Header"
+    },
+    {
+      "gid": 444,
+      "namespace": ["picmonkey"],
+      "legacy_id": 244,
+      "type": ["templates"],
+      "value": "SWOT Analysis"
+    },
+    {
+      "gid": 445,
+      "namespace": ["picmonkey"],
+      "legacy_id": 245,
+      "type": ["templates"],
+      "value": "Wedding Program"
+    },
+    {
+      "gid": 446,
+      "namespace": ["picmonkey"],
+      "legacy_id": 246,
+      "type": ["templates"],
+      "value": "Wedding Ceremony Program"
+    },
+    {
+      "gid": 447,
+      "namespace": ["picmonkey"],
+      "legacy_id": 247,
+      "type": ["templates"],
+      "value": "Pamphlet"
+    },
+    {
+      "gid": 448,
+      "namespace": ["picmonkey"],
+      "legacy_id": 248,
+      "type": ["templates"],
+      "value": "Flow Chart"
+    },
+    {
+      "gid": 449,
+      "namespace": ["picmonkey"],
+      "legacy_id": 249,
+      "type": ["templates"],
+      "value": "Process Mapping"
+    },
+    {
+      "gid": 450,
+      "namespace": ["picmonkey"],
+      "legacy_id": 250,
+      "type": ["templates"],
+      "value": "Venn Diagram"
+    },
+    {
+      "gid": 451,
+      "namespace": ["picmonkey"],
+      "legacy_id": 251,
+      "type": ["templates"],
+      "value": "Twitter Banner"
+    },
+    {
+      "gid": 452,
+      "namespace": ["picmonkey"],
+      "legacy_id": 252,
+      "type": ["templates"],
+      "value": "Twitch"
+    },
+    {
+      "gid": 453,
+      "namespace": ["picmonkey"],
+      "legacy_id": 253,
+      "type": ["templates"],
+      "value": "Twitch Banner"
+    },
+    {
+      "gid": 454,
+      "namespace": ["picmonkey"],
+      "legacy_id": 254,
+      "type": ["templates"],
+      "value": "Twitch Overlay"
+    },
+    {
+      "gid": 455,
+      "namespace": ["picmonkey"],
+      "legacy_id": 255,
+      "type": ["templates"],
+      "value": "Valentine's Day"
+    },
+    {
+      "gid": 456,
+      "namespace": ["picmonkey"],
+      "legacy_id": 256,
+      "type": ["templates"],
+      "value": "President's Day"
+    },
+    {
+      "gid": 457,
+      "namespace": ["picmonkey"],
+      "legacy_id": 257,
+      "type": ["templates"],
+      "value": "Letterhead"
+    },
+    {
+      "gid": 458,
+      "namespace": ["picmonkey"],
+      "legacy_id": 258,
+      "type": ["templates"],
+      "value": "Draw Templates"
+    },
+    {
+      "gid": 459,
+      "namespace": ["picmonkey"],
+      "legacy_id": 259,
+      "type": ["templates"],
+      "value": "YouTube Intro"
+    },
+    {
+      "gid": 460,
+      "namespace": ["picmonkey"],
+      "legacy_id": 260,
+      "type": ["templates"],
+      "value": "Classic Real Estate"
+    },
+    {
+      "gid": 461,
+      "namespace": ["picmonkey"],
+      "legacy_id": 261,
+      "type": ["templates"],
+      "value": "Commercial Broker"
+    },
+    {
+      "gid": 462,
+      "namespace": ["picmonkey"],
+      "legacy_id": 262,
+      "type": ["templates"],
+      "value": "Modern Dwellers"
+    },
+    {
+      "gid": 463,
+      "namespace": ["picmonkey"],
+      "legacy_id": 263,
+      "type": ["templates"],
+      "value": "Easter"
+    },
+    {
+      "gid": 464,
+      "namespace": ["picmonkey"],
+      "legacy_id": 264,
+      "type": ["templates"],
+      "value": "Spring"
+    },
+    {
+      "gid": 465,
+      "namespace": ["picmonkey"],
+      "legacy_id": 265,
+      "type": ["templates"],
+      "value": "Mother's Day"
+    },
+    {
+      "gid": 466,
+      "namespace": ["picmonkey"],
+      "legacy_id": 266,
+      "type": ["templates"],
+      "value": "Real Estate"
+    },
+    {
+      "gid": 467,
+      "namespace": ["picmonkey"],
+      "legacy_id": 267,
+      "type": ["templates"],
+      "value": "Travel"
+    },
+    {
+      "gid": 468,
+      "namespace": ["picmonkey"],
+      "legacy_id": 268,
+      "type": ["templates"],
+      "value": "Pinterest Idea Pin"
+    },
+    {
+      "gid": 469,
+      "namespace": ["picmonkey"],
+      "legacy_id": 269,
+      "type": ["templates"],
+      "value": "Pride"
+    },
+    {
+      "gid": 470,
+      "namespace": ["picmonkey"],
+      "legacy_id": 270,
+      "type": ["templates"],
+      "value": "Beach Vibes"
+    },
+    {
+      "gid": 471,
+      "namespace": ["picmonkey"],
+      "legacy_id": 271,
+      "type": ["templates"],
+      "value": "Uplifting Quotes"
+    },
+    {
+      "gid": 472,
+      "namespace": ["picmonkey"],
+      "legacy_id": 272,
+      "type": ["templates"],
+      "value": "Fitness"
+    },
+    {
+      "gid": 473,
+      "namespace": ["picmonkey"],
+      "legacy_id": 273,
+      "type": ["templates"],
+      "value": "Top 10 Instagram Posts"
+    },
+    {
+      "gid": 474,
+      "namespace": ["picmonkey"],
+      "legacy_id": 274,
+      "type": ["templates"],
+      "value": "Profile Images"
+    },
+    {
+      "gid": 475,
+      "namespace": ["picmonkey"],
+      "legacy_id": 275,
+      "type": ["templates"],
+      "value": "Fall Feels"
+    },
+    {
+      "gid": 476,
+      "namespace": ["picmonkey"],
+      "legacy_id": 276,
+      "type": ["templates"],
+      "value": "Halloween"
+    },
+    {
+      "gid": 477,
+      "namespace": ["picmonkey"],
+      "legacy_id": 277,
+      "type": ["templates"],
+      "value": "Thanksgiving"
+    },
+    {
+      "gid": 478,
+      "namespace": ["picmonkey"],
+      "legacy_id": 278,
+      "type": ["templates"],
+      "value": "Sales Events"
+    },
+    {
+      "gid": 479,
+      "namespace": ["picmonkey"],
+      "legacy_id": 279,
+      "type": ["templates"],
+      "value": "Vision Board"
+    },
+    {
+      "gid": 480,
+      "namespace": ["picmonkey"],
+      "legacy_id": 280,
+      "type": ["templates"],
+      "value": "Digital Vision Board"
+    },
+    {
+      "gid": 481,
+      "namespace": ["picmonkey"],
+      "legacy_id": 281,
+      "type": ["templates"],
+      "value": "Goal Board"
+    },
+    {
+      "gid": 482,
+      "namespace": ["picmonkey"],
+      "legacy_id": 282,
+      "type": ["templates"],
+      "value": "Personal Vision Board"
+    },
+    {
+      "gid": 483,
+      "namespace": ["picmonkey"],
+      "legacy_id": 283,
+      "type": ["templates"],
+      "value": "Digital Brochure"
+    },
+    {
+      "gid": 484,
+      "namespace": ["picmonkey"],
+      "legacy_id": 284,
+      "type": ["templates"],
+      "value": "Real Estate Brochure"
+    },
+    {
+      "gid": 485,
+      "namespace": ["picmonkey"],
+      "legacy_id": 285,
+      "type": ["templates"],
+      "value": "Business Brochure"
+    },
+    {
+      "gid": 486,
+      "namespace": ["picmonkey"],
+      "legacy_id": 286,
+      "type": ["templates"],
+      "value": "Watermark"
+    },
+    {
+      "gid": 487,
+      "namespace": ["picmonkey"],
+      "legacy_id": 287,
+      "type": ["templates"],
+      "value": "Slide"
+    },
+    {
+      "gid": 488,
+      "namespace": ["picmonkey"],
+      "legacy_id": 288,
+      "type": ["templates"],
+      "value": "Itinerary"
+    },
+    {
+      "gid": 489,
+      "namespace": ["picmonkey"],
+      "legacy_id": 289,
+      "type": ["templates"],
+      "value": "Travel Itinerary"
+    },
+    {
+      "gid": 490,
+      "namespace": ["picmonkey"],
+      "legacy_id": 290,
+      "type": ["templates"],
+      "value": "Trip Itinerary"
+    },
+    {
+      "gid": 491,
+      "namespace": ["picmonkey"],
+      "legacy_id": 291,
+      "type": ["templates"],
+      "value": "Book Covers"
+    },
+    {
+      "gid": 492,
+      "namespace": ["picmonkey"],
+      "legacy_id": 292,
+      "type": ["templates"],
+      "value": "eBook Covers"
+    },
+    {
+      "gid": 493,
+      "namespace": ["picmonkey"],
+      "legacy_id": 293,
+      "type": ["templates"],
+      "value": "Blog Calendar"
+    },
+    {
+      "gid": 494,
+      "namespace": ["picmonkey"],
+      "legacy_id": 294,
+      "type": ["templates"],
+      "value": "Marketing Content Calendar"
+    },
+    {
+      "gid": 495,
+      "namespace": ["picmonkey"],
+      "legacy_id": 295,
+      "type": ["templates"],
+      "value": "Social Media Calendar"
+    },
+    {
+      "gid": 496,
+      "namespace": ["picmonkey"],
+      "legacy_id": 296,
+      "type": ["templates"],
+      "value": "Wedding Reception"
+    },
+    {
+      "gid": 497,
+      "namespace": ["picmonkey"],
+      "legacy_id": 297,
+      "type": ["templates"],
+      "value": "Anniversary Card"
+    },
+    {
+      "gid": 498,
+      "namespace": ["picmonkey"],
+      "legacy_id": 298,
+      "type": ["templates"],
+      "value": "Easter Card"
+    },
+    {
+      "gid": 499,
+      "namespace": ["picmonkey"],
+      "legacy_id": 299,
+      "type": ["templates"],
+      "value": "Thanksgiving Card"
+    },
+    {
+      "gid": 500,
+      "namespace": ["picmonkey"],
+      "legacy_id": 300,
+      "type": ["templates"],
+      "value": "Retirement Card"
+    },
+    {
+      "gid": 501,
+      "namespace": ["picmonkey"],
+      "legacy_id": 301,
+      "type": ["templates"],
+      "value": "Wedding Thank You Card"
+    },
+    {
+      "gid": 502,
+      "namespace": ["picmonkey"],
+      "legacy_id": 302,
+      "type": ["templates"],
+      "value": "Sympathy Card"
+    },
+    {
+      "gid": 503,
+      "namespace": ["picmonkey"],
+      "legacy_id": 304,
+      "type": ["templates"],
+      "value": "Get Well Soon Card"
+    },
+    {
+      "gid": 504,
+      "namespace": ["picmonkey"],
+      "legacy_id": 304,
+      "type": ["templates"],
+      "value": "Baby Shower Card"
+    },
+    {
+      "gid": 505,
+      "namespace": ["picmonkey"],
+      "legacy_id": 305,
+      "type": ["templates"],
+      "value": "Movie Poster"
+    },
+    {
+      "gid": 506,
+      "namespace": ["picmonkey"],
+      "legacy_id": 306,
+      "type": ["templates"],
+      "value": "Party Flyer"
+    },
+    {
+      "gid": 507,
+      "namespace": ["picmonkey"],
+      "legacy_id": 307,
+      "type": ["templates"],
+      "value": "Church Flyer"
+    },
+    {
+      "gid": 508,
+      "namespace": ["picmonkey"],
+      "legacy_id": 308,
+      "type": ["templates"],
+      "value": "Backgrounds"
+    },
+    {
+      "gid": 509,
+      "namespace": ["picmonkey"],
+      "legacy_id": 309,
+      "type": ["templates"],
+      "value": "Album Covers"
+    },
+    {
+      "gid": 510,
+      "namespace": ["picmonkey"],
+      "legacy_id": 310,
+      "type": ["templates"],
+      "value": "Gift Card"
+    },
+    {
+      "gid": 511,
+      "namespace": ["picmonkey"],
+      "legacy_id": 311,
+      "type": ["templates"],
+      "value": "Comic Strips"
+    },
+    {
+      "gid": 512,
+      "namespace": ["picmonkey"],
+      "legacy_id": 312,
+      "type": ["templates"],
+      "value": "Business Flyer"
+    },
+    {
+      "gid": 513,
+      "namespace": ["picmonkey"],
+      "legacy_id": 313,
+      "type": ["templates"],
+      "value": "Lost Pet Flyer"
+    },
+    {
+      "gid": 1000,
+      "namespace": ["ucs"],
+      "legacy_id": 0,
+      "type": ["sfx"],
+      "value": "Air"
+    },
+    {
+      "gid": 1001,
+      "namespace": ["ucs"],
+      "legacy_id": 1,
+      "type": ["sfx"],
+      "value": "Aircraft"
+    },
+    {
+      "gid": 1002,
+      "namespace": ["ucs"],
+      "legacy_id": 2,
+      "type": ["sfx"],
+      "value": "Alarms"
+    },
+    {
+      "gid": 1003,
+      "namespace": ["ucs"],
+      "legacy_id": 3,
+      "type": ["sfx"],
+      "value": "Ambience"
+    },
+    {
+      "gid": 1004,
+      "namespace": ["ucs"],
+      "legacy_id": 4,
+      "type": ["sfx"],
+      "value": "Animals"
+    },
+    {
+      "gid": 1005,
+      "namespace": ["ucs"],
+      "legacy_id": 5,
+      "type": ["sfx"],
+      "value": "Archived"
+    },
+    {
+      "gid": 1006,
+      "namespace": ["ucs"],
+      "legacy_id": 6,
+      "type": ["sfx"],
+      "value": "Beeps"
+    },
+    {
+      "gid": 1007,
+      "namespace": ["ucs"],
+      "legacy_id": 7,
+      "type": ["sfx"],
+      "value": "Bells"
+    },
+    {
+      "gid": 1008,
+      "namespace": ["ucs"],
+      "legacy_id": 8,
+      "type": ["sfx"],
+      "value": "Birds"
+    },
+    {
+      "gid": 1009,
+      "namespace": ["ucs"],
+      "legacy_id": 9,
+      "type": ["sfx"],
+      "value": "Boats"
+    },
+    {
+      "gid": 1010,
+      "namespace": ["ucs"],
+      "legacy_id": 10,
+      "type": ["sfx"],
+      "value": "Bullets"
+    },
+    {
+      "gid": 1011,
+      "namespace": ["ucs"],
+      "legacy_id": 11,
+      "type": ["sfx"],
+      "value": "Cartoon"
+    },
+    {
+      "gid": 1012,
+      "namespace": ["ucs"],
+      "legacy_id": 12,
+      "type": ["sfx"],
+      "value": "Ceramics"
+    },
+    {
+      "gid": 1013,
+      "namespace": ["ucs"],
+      "legacy_id": 13,
+      "type": ["sfx"],
+      "value": "Chains"
+    },
+    {
+      "gid": 1014,
+      "namespace": ["ucs"],
+      "legacy_id": 14,
+      "type": ["sfx"],
+      "value": "Chemicals"
+    },
+    {
+      "gid": 1015,
+      "namespace": ["ucs"],
+      "legacy_id": 15,
+      "type": ["sfx"],
+      "value": "Clocks"
+    },
+    {
+      "gid": 1016,
+      "namespace": ["ucs"],
+      "legacy_id": 16,
+      "type": ["sfx"],
+      "value": "Cloth"
+    },
+    {
+      "gid": 1017,
+      "namespace": ["ucs"],
+      "legacy_id": 17,
+      "type": ["sfx"],
+      "value": "Communications"
+    },
+    {
+      "gid": 1018,
+      "namespace": ["ucs"],
+      "legacy_id": 18,
+      "type": ["sfx"],
+      "value": "Computers"
+    },
+    {
+      "gid": 1019,
+      "namespace": ["ucs"],
+      "legacy_id": 19,
+      "type": ["sfx"],
+      "value": "Creatures"
+    },
+    {
+      "gid": 1020,
+      "namespace": ["ucs"],
+      "legacy_id": 20,
+      "type": ["sfx"],
+      "value": "Crowds"
+    },
+    {
+      "gid": 1021,
+      "namespace": ["ucs"],
+      "legacy_id": 21,
+      "type": ["sfx"],
+      "value": "Designed"
+    },
+    {
+      "gid": 1022,
+      "namespace": ["ucs"],
+      "legacy_id": 22,
+      "type": ["sfx"],
+      "value": "Destruction"
+    },
+    {
+      "gid": 1023,
+      "namespace": ["ucs"],
+      "legacy_id": 23,
+      "type": ["sfx"],
+      "value": "Dirt & Sand"
+    },
+    {
+      "gid": 1024,
+      "namespace": ["ucs"],
+      "legacy_id": 24,
+      "type": ["sfx"],
+      "value": "Doors"
+    },
+    {
+      "gid": 1025,
+      "namespace": ["ucs"],
+      "legacy_id": 25,
+      "type": ["sfx"],
+      "value": "Drawers"
+    },
+    {
+      "gid": 1026,
+      "namespace": ["ucs"],
+      "legacy_id": 26,
+      "type": ["sfx"],
+      "value": "Electricity"
+    },
+    {
+      "gid": 1027,
+      "namespace": ["ucs"],
+      "legacy_id": 27,
+      "type": ["sfx"],
+      "value": "Equipment"
+    },
+    {
+      "gid": 1028,
+      "namespace": ["ucs"],
+      "legacy_id": 28,
+      "type": ["sfx"],
+      "value": "Explosions"
+    },
+    {
+      "gid": 1029,
+      "namespace": ["ucs"],
+      "legacy_id": 29,
+      "type": ["sfx"],
+      "value": "Farts"
+    },
+    {
+      "gid": 1030,
+      "namespace": ["ucs"],
+      "legacy_id": 30,
+      "type": ["sfx"],
+      "value": "Fight"
+    },
+    {
+      "gid": 1031,
+      "namespace": ["ucs"],
+      "legacy_id": 31,
+      "type": ["sfx"],
+      "value": "Fire"
+    },
+    {
+      "gid": 1032,
+      "namespace": ["ucs"],
+      "legacy_id": 32,
+      "type": ["sfx"],
+      "value": "Fireworks"
+    },
+    {
+      "gid": 1033,
+      "namespace": ["ucs"],
+      "legacy_id": 33,
+      "type": ["sfx"],
+      "value": "Foley"
+    },
+    {
+      "gid": 1034,
+      "namespace": ["ucs"],
+      "legacy_id": 34,
+      "type": ["sfx"],
+      "value": "Food & Drink"
+    },
+    {
+      "gid": 1035,
+      "namespace": ["ucs"],
+      "legacy_id": 35,
+      "type": ["sfx"],
+      "value": "Footsteps"
+    },
+    {
+      "gid": 1036,
+      "namespace": ["ucs"],
+      "legacy_id": 36,
+      "type": ["sfx"],
+      "value": "Games"
+    },
+    {
+      "gid": 1037,
+      "namespace": ["ucs"],
+      "legacy_id": 37,
+      "type": ["sfx"],
+      "value": "Geothermal"
+    },
+    {
+      "gid": 1038,
+      "namespace": ["ucs"],
+      "legacy_id": 38,
+      "type": ["sfx"],
+      "value": "Glass"
+    },
+    {
+      "gid": 1039,
+      "namespace": ["ucs"],
+      "legacy_id": 39,
+      "type": ["sfx"],
+      "value": "Gore"
+    },
+    {
+      "gid": 1040,
+      "namespace": ["ucs"],
+      "legacy_id": 40,
+      "type": ["sfx"],
+      "value": "Guns"
+    },
+    {
+      "gid": 1041,
+      "namespace": ["ucs"],
+      "legacy_id": 41,
+      "type": ["sfx"],
+      "value": "Horns"
+    },
+    {
+      "gid": 1042,
+      "namespace": ["ucs"],
+      "legacy_id": 42,
+      "type": ["sfx"],
+      "value": "Human"
+    },
+    {
+      "gid": 1043,
+      "namespace": ["ucs"],
+      "legacy_id": 43,
+      "type": ["sfx"],
+      "value": "Ice"
+    },
+    {
+      "gid": 1044,
+      "namespace": ["ucs"],
+      "legacy_id": 44,
+      "type": ["sfx"],
+      "value": "Lasers"
+    },
+    {
+      "gid": 1045,
+      "namespace": ["ucs"],
+      "legacy_id": 45,
+      "type": ["sfx"],
+      "value": "Leather"
+    },
+    {
+      "gid": 1046,
+      "namespace": ["ucs"],
+      "legacy_id": 46,
+      "type": ["sfx"],
+      "value": "Liquid & Mud"
+    },
+    {
+      "gid": 1047,
+      "namespace": ["ucs"],
+      "legacy_id": 47,
+      "type": ["sfx"],
+      "value": "Machines"
+    },
+    {
+      "gid": 1048,
+      "namespace": ["ucs"],
+      "legacy_id": 48,
+      "type": ["sfx"],
+      "value": "Magic"
+    },
+    {
+      "gid": 1049,
+      "namespace": ["ucs"],
+      "legacy_id": 49,
+      "type": ["sfx"],
+      "value": "Mechanical"
+    },
+    {
+      "gid": 1050,
+      "namespace": ["ucs"],
+      "legacy_id": 50,
+      "type": ["sfx"],
+      "value": "Metal"
+    },
+    {
+      "gid": 1051,
+      "namespace": ["ucs"],
+      "legacy_id": 51,
+      "type": ["sfx"],
+      "value": "Motors"
+    },
+    {
+      "gid": 1052,
+      "namespace": ["ucs"],
+      "legacy_id": 52,
+      "type": ["sfx"],
+      "value": "Movement"
+    },
+    {
+      "gid": 1053,
+      "namespace": ["ucs"],
+      "legacy_id": 53,
+      "type": ["sfx"],
+      "value": "Musical"
+    },
+    {
+      "gid": 1054,
+      "namespace": ["ucs"],
+      "legacy_id": 54,
+      "type": ["sfx"],
+      "value": "Natural Disaster"
+    },
+    {
+      "gid": 1055,
+      "namespace": ["ucs"],
+      "legacy_id": 55,
+      "type": ["sfx"],
+      "value": "Objects"
+    },
+    {
+      "gid": 1056,
+      "namespace": ["ucs"],
+      "legacy_id": 56,
+      "type": ["sfx"],
+      "value": "Paper"
+    },
+    {
+      "gid": 1057,
+      "namespace": ["ucs"],
+      "legacy_id": 57,
+      "type": ["sfx"],
+      "value": "Plastic"
+    },
+    {
+      "gid": 1058,
+      "namespace": ["ucs"],
+      "legacy_id": 58,
+      "type": ["sfx"],
+      "value": "Rain"
+    },
+    {
+      "gid": 1059,
+      "namespace": ["ucs"],
+      "legacy_id": 59,
+      "type": ["sfx"],
+      "value": "Robots"
+    },
+    {
+      "gid": 1060,
+      "namespace": ["ucs"],
+      "legacy_id": 60,
+      "type": ["sfx"],
+      "value": "Rocks"
+    },
+    {
+      "gid": 1061,
+      "namespace": ["ucs"],
+      "legacy_id": 61,
+      "type": ["sfx"],
+      "value": "Rope"
+    },
+    {
+      "gid": 1062,
+      "namespace": ["ucs"],
+      "legacy_id": 62,
+      "type": ["sfx"],
+      "value": "Rubber"
+    },
+    {
+      "gid": 1063,
+      "namespace": ["ucs"],
+      "legacy_id": 63,
+      "type": ["sfx"],
+      "value": "Scifi"
+    },
+    {
+      "gid": 1064,
+      "namespace": ["ucs"],
+      "legacy_id": 64,
+      "type": ["sfx"],
+      "value": "Snow"
+    },
+    {
+      "gid": 1065,
+      "namespace": ["ucs"],
+      "legacy_id": 65,
+      "type": ["sfx"],
+      "value": "Sports"
+    },
+    {
+      "gid": 1066,
+      "namespace": ["ucs"],
+      "legacy_id": 66,
+      "type": ["sfx"],
+      "value": "Swooshes"
+    },
+    {
+      "gid": 1067,
+      "namespace": ["ucs"],
+      "legacy_id": 67,
+      "type": ["sfx"],
+      "value": "Tools"
+    },
+    {
+      "gid": 1068,
+      "namespace": ["ucs"],
+      "legacy_id": 68,
+      "type": ["sfx"],
+      "value": "Toys"
+    },
+    {
+      "gid": 1069,
+      "namespace": ["ucs"],
+      "legacy_id": 69,
+      "type": ["sfx"],
+      "value": "Trains"
+    },
+    {
+      "gid": 1070,
+      "namespace": ["ucs"],
+      "legacy_id": 70,
+      "type": ["sfx"],
+      "value": "User Interface"
+    },
+    {
+      "gid": 1071,
+      "namespace": ["ucs"],
+      "legacy_id": 71,
+      "type": ["sfx"],
+      "value": "Vegetation"
+    },
+    {
+      "gid": 1072,
+      "namespace": ["ucs"],
+      "legacy_id": 72,
+      "type": ["sfx"],
+      "value": "Vehicles"
+    },
+    {
+      "gid": 1073,
+      "namespace": ["ucs"],
+      "legacy_id": 73,
+      "type": ["sfx"],
+      "value": "Voices"
+    },
+    {
+      "gid": 1074,
+      "namespace": ["ucs"],
+      "legacy_id": 74,
+      "type": ["sfx"],
+      "value": "Water"
+    },
+    {
+      "gid": 1075,
+      "namespace": ["ucs"],
+      "legacy_id": 75,
+      "type": ["sfx"],
+      "value": "Weapons"
+    },
+    {
+      "gid": 1076,
+      "namespace": ["ucs"],
+      "legacy_id": 76,
+      "type": ["sfx"],
+      "value": "Weather"
+    },
+    {
+      "gid": 1077,
+      "namespace": ["ucs"],
+      "legacy_id": 77,
+      "type": ["sfx"],
+      "value": "Whistles"
+    },
+    {
+      "gid": 1078,
+      "namespace": ["ucs"],
+      "legacy_id": 78,
+      "type": ["sfx"],
+      "value": "Wind"
+    },
+    {
+      "gid": 1079,
+      "namespace": ["ucs"],
+      "legacy_id": 79,
+      "type": ["sfx"],
+      "value": "Windows"
+    },
+    {
+      "gid": 1080,
+      "namespace": ["ucs"],
+      "legacy_id": 80,
+      "type": ["sfx"],
+      "value": "Wings"
+    },
+    {
+      "gid": 1081,
+      "namespace": ["ucs"],
+      "legacy_id": 81,
+      "type": ["sfx"],
+      "value": "Wood"
+    },
+    {
+      "gid": 1500,
+      "namespace": ["ucs"],
+      "legacy_id": 500,
+      "type": ["sfx"],
+      "value": "Blow",
+      "parent_gid": 1000
+    },
+    {
+      "gid": 1501,
+      "namespace": ["ucs"],
+      "legacy_id": 501,
+      "type": ["sfx"],
+      "value": "Burst",
+      "parent_gid": 1000
+    },
+    {
+      "gid": 1502,
+      "namespace": ["ucs"],
+      "legacy_id": 502,
+      "type": ["sfx"],
+      "value": "Hiss",
+      "parent_gid": 1000
+    },
+    {
+      "gid": 1503,
+      "namespace": ["ucs"],
+      "legacy_id": 503,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1000
+    },
+    {
+      "gid": 1504,
+      "namespace": ["ucs"],
+      "legacy_id": 504,
+      "type": ["sfx"],
+      "value": "Suction",
+      "parent_gid": 1000
+    },
+    {
+      "gid": 1505,
+      "namespace": ["ucs"],
+      "legacy_id": 505,
+      "type": ["sfx"],
+      "value": "Helicopter",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1506,
+      "namespace": ["ucs"],
+      "legacy_id": 506,
+      "type": ["sfx"],
+      "value": "Interior",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1507,
+      "namespace": ["ucs"],
+      "legacy_id": 507,
+      "type": ["sfx"],
+      "value": "Jet",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1508,
+      "namespace": ["ucs"],
+      "legacy_id": 508,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1509,
+      "namespace": ["ucs"],
+      "legacy_id": 509,
+      "type": ["sfx"],
+      "value": "Military",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1510,
+      "namespace": ["ucs"],
+      "legacy_id": 510,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1511,
+      "namespace": ["ucs"],
+      "legacy_id": 511,
+      "type": ["sfx"],
+      "value": "Prop",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1512,
+      "namespace": ["ucs"],
+      "legacy_id": 512,
+      "type": ["sfx"],
+      "value": "Radio controlled",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1513,
+      "namespace": ["ucs"],
+      "legacy_id": 513,
+      "type": ["sfx"],
+      "value": "Rocket",
+      "parent_gid": 1001
+    },
+    {
+      "gid": 1514,
+      "namespace": ["ucs"],
+      "legacy_id": 514,
+      "type": ["sfx"],
+      "value": "Bell",
+      "parent_gid": 1002
+    },
+    {
+      "gid": 1515,
+      "namespace": ["ucs"],
+      "legacy_id": 515,
+      "type": ["sfx"],
+      "value": "Buzzer",
+      "parent_gid": 1002
+    },
+    {
+      "gid": 1516,
+      "namespace": ["ucs"],
+      "legacy_id": 516,
+      "type": ["sfx"],
+      "value": "Clock",
+      "parent_gid": 1002
+    },
+    {
+      "gid": 1517,
+      "namespace": ["ucs"],
+      "legacy_id": 517,
+      "type": ["sfx"],
+      "value": "Electronic",
+      "parent_gid": 1002
+    },
+    {
+      "gid": 1518,
+      "namespace": ["ucs"],
+      "legacy_id": 518,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1002
+    },
+    {
+      "gid": 1519,
+      "namespace": ["ucs"],
+      "legacy_id": 519,
+      "type": ["sfx"],
+      "value": "Siren",
+      "parent_gid": 1002
+    },
+    {
+      "gid": 1520,
+      "namespace": ["ucs"],
+      "legacy_id": 520,
+      "type": ["sfx"],
+      "value": "Air",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1521,
+      "namespace": ["ucs"],
+      "legacy_id": 521,
+      "type": ["sfx"],
+      "value": "Alpine",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1522,
+      "namespace": ["ucs"],
+      "legacy_id": 522,
+      "type": ["sfx"],
+      "value": "Amusement",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1523,
+      "namespace": ["ucs"],
+      "legacy_id": 523,
+      "type": ["sfx"],
+      "value": "Birdsong",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1524,
+      "namespace": ["ucs"],
+      "legacy_id": 524,
+      "type": ["sfx"],
+      "value": "Celebration",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1525,
+      "namespace": ["ucs"],
+      "legacy_id": 525,
+      "type": ["sfx"],
+      "value": "Construction",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1526,
+      "namespace": ["ucs"],
+      "legacy_id": 526,
+      "type": ["sfx"],
+      "value": "Desert",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1527,
+      "namespace": ["ucs"],
+      "legacy_id": 527,
+      "type": ["sfx"],
+      "value": "Designed",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1528,
+      "namespace": ["ucs"],
+      "legacy_id": 528,
+      "type": ["sfx"],
+      "value": "Emergency",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1529,
+      "namespace": ["ucs"],
+      "legacy_id": 529,
+      "type": ["sfx"],
+      "value": "Farm",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1530,
+      "namespace": ["ucs"],
+      "legacy_id": 530,
+      "type": ["sfx"],
+      "value": "Forest",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1531,
+      "namespace": ["ucs"],
+      "legacy_id": 531,
+      "type": ["sfx"],
+      "value": "Grassland",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1532,
+      "namespace": ["ucs"],
+      "legacy_id": 532,
+      "type": ["sfx"],
+      "value": "Historical",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1533,
+      "namespace": ["ucs"],
+      "legacy_id": 533,
+      "type": ["sfx"],
+      "value": "Hitech",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1534,
+      "namespace": ["ucs"],
+      "legacy_id": 534,
+      "type": ["sfx"],
+      "value": "Hospital",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1535,
+      "namespace": ["ucs"],
+      "legacy_id": 535,
+      "type": ["sfx"],
+      "value": "Industrial",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1536,
+      "namespace": ["ucs"],
+      "legacy_id": 536,
+      "type": ["sfx"],
+      "value": "Lakeside",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1537,
+      "namespace": ["ucs"],
+      "legacy_id": 537,
+      "type": ["sfx"],
+      "value": "Market",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1538,
+      "namespace": ["ucs"],
+      "legacy_id": 538,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1539,
+      "namespace": ["ucs"],
+      "legacy_id": 539,
+      "type": ["sfx"],
+      "value": "Nautical",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1540,
+      "namespace": ["ucs"],
+      "legacy_id": 540,
+      "type": ["sfx"],
+      "value": "Office",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1541,
+      "namespace": ["ucs"],
+      "legacy_id": 541,
+      "type": ["sfx"],
+      "value": "Park",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1542,
+      "namespace": ["ucs"],
+      "legacy_id": 542,
+      "type": ["sfx"],
+      "value": "Prison",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1543,
+      "namespace": ["ucs"],
+      "legacy_id": 543,
+      "type": ["sfx"],
+      "value": "Protest",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1544,
+      "namespace": ["ucs"],
+      "legacy_id": 544,
+      "type": ["sfx"],
+      "value": "Public place",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1545,
+      "namespace": ["ucs"],
+      "legacy_id": 545,
+      "type": ["sfx"],
+      "value": "Religious",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1546,
+      "namespace": ["ucs"],
+      "legacy_id": 546,
+      "type": ["sfx"],
+      "value": "Restaurant & bar",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1547,
+      "namespace": ["ucs"],
+      "legacy_id": 547,
+      "type": ["sfx"],
+      "value": "Room tone",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1548,
+      "namespace": ["ucs"],
+      "legacy_id": 548,
+      "type": ["sfx"],
+      "value": "Rural",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1549,
+      "namespace": ["ucs"],
+      "legacy_id": 549,
+      "type": ["sfx"],
+      "value": "School",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1550,
+      "namespace": ["ucs"],
+      "legacy_id": 550,
+      "type": ["sfx"],
+      "value": "Seaside",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1551,
+      "namespace": ["ucs"],
+      "legacy_id": 551,
+      "type": ["sfx"],
+      "value": "Sport",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1552,
+      "namespace": ["ucs"],
+      "legacy_id": 552,
+      "type": ["sfx"],
+      "value": "Suburban",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1553,
+      "namespace": ["ucs"],
+      "legacy_id": 553,
+      "type": ["sfx"],
+      "value": "Swamp",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1554,
+      "namespace": ["ucs"],
+      "legacy_id": 554,
+      "type": ["sfx"],
+      "value": "Town",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1555,
+      "namespace": ["ucs"],
+      "legacy_id": 555,
+      "type": ["sfx"],
+      "value": "Traffic",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1556,
+      "namespace": ["ucs"],
+      "legacy_id": 556,
+      "type": ["sfx"],
+      "value": "Transportation",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1557,
+      "namespace": ["ucs"],
+      "legacy_id": 557,
+      "type": ["sfx"],
+      "value": "Tropical",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1558,
+      "namespace": ["ucs"],
+      "legacy_id": 558,
+      "type": ["sfx"],
+      "value": "Tundra",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1559,
+      "namespace": ["ucs"],
+      "legacy_id": 559,
+      "type": ["sfx"],
+      "value": "Underground",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1560,
+      "namespace": ["ucs"],
+      "legacy_id": 560,
+      "type": ["sfx"],
+      "value": "Underwater",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1561,
+      "namespace": ["ucs"],
+      "legacy_id": 561,
+      "type": ["sfx"],
+      "value": "Urban",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1562,
+      "namespace": ["ucs"],
+      "legacy_id": 562,
+      "type": ["sfx"],
+      "value": "Warfare",
+      "parent_gid": 1003
+    },
+    {
+      "gid": 1563,
+      "namespace": ["ucs"],
+      "legacy_id": 563,
+      "type": ["sfx"],
+      "value": "Amphibian",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1564,
+      "namespace": ["ucs"],
+      "legacy_id": 564,
+      "type": ["sfx"],
+      "value": "Aquatic",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1565,
+      "namespace": ["ucs"],
+      "legacy_id": 565,
+      "type": ["sfx"],
+      "value": "Bat",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1566,
+      "namespace": ["ucs"],
+      "legacy_id": 566,
+      "type": ["sfx"],
+      "value": "Cat domestic",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1567,
+      "namespace": ["ucs"],
+      "legacy_id": 567,
+      "type": ["sfx"],
+      "value": "Cat wild",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1568,
+      "namespace": ["ucs"],
+      "legacy_id": 568,
+      "type": ["sfx"],
+      "value": "Dog",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1569,
+      "namespace": ["ucs"],
+      "legacy_id": 569,
+      "type": ["sfx"],
+      "value": "Farm",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1570,
+      "namespace": ["ucs"],
+      "legacy_id": 570,
+      "type": ["sfx"],
+      "value": "Horse",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1571,
+      "namespace": ["ucs"],
+      "legacy_id": 571,
+      "type": ["sfx"],
+      "value": "Insect",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1572,
+      "namespace": ["ucs"],
+      "legacy_id": 572,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1573,
+      "namespace": ["ucs"],
+      "legacy_id": 573,
+      "type": ["sfx"],
+      "value": "Primate",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1574,
+      "namespace": ["ucs"],
+      "legacy_id": 574,
+      "type": ["sfx"],
+      "value": "Reptile",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1575,
+      "namespace": ["ucs"],
+      "legacy_id": 575,
+      "type": ["sfx"],
+      "value": "Rodent",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1576,
+      "namespace": ["ucs"],
+      "legacy_id": 576,
+      "type": ["sfx"],
+      "value": "Wild",
+      "parent_gid": 1004
+    },
+    {
+      "gid": 1577,
+      "namespace": ["ucs"],
+      "legacy_id": 577,
+      "type": ["sfx"],
+      "value": "Asset",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1578,
+      "namespace": ["ucs"],
+      "legacy_id": 578,
+      "type": ["sfx"],
+      "value": "Bounce",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1579,
+      "namespace": ["ucs"],
+      "legacy_id": 579,
+      "type": ["sfx"],
+      "value": "Impulse response",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1580,
+      "namespace": ["ucs"],
+      "legacy_id": 580,
+      "type": ["sfx"],
+      "value": "Mix",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1581,
+      "namespace": ["ucs"],
+      "legacy_id": 581,
+      "type": ["sfx"],
+      "value": "Pfx",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1582,
+      "namespace": ["ucs"],
+      "legacy_id": 582,
+      "type": ["sfx"],
+      "value": "Raw",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1583,
+      "namespace": ["ucs"],
+      "legacy_id": 583,
+      "type": ["sfx"],
+      "value": "Reference",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1584,
+      "namespace": ["ucs"],
+      "legacy_id": 584,
+      "type": ["sfx"],
+      "value": "Scene",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1585,
+      "namespace": ["ucs"],
+      "legacy_id": 585,
+      "type": ["sfx"],
+      "value": "Test tone",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1586,
+      "namespace": ["ucs"],
+      "legacy_id": 586,
+      "type": ["sfx"],
+      "value": "Trademarked",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1587,
+      "namespace": ["ucs"],
+      "legacy_id": 587,
+      "type": ["sfx"],
+      "value": "Work in progress",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1588,
+      "namespace": ["ucs"],
+      "legacy_id": 588,
+      "type": ["sfx"],
+      "value": "Wtf",
+      "parent_gid": 1005
+    },
+    {
+      "gid": 1589,
+      "namespace": ["ucs"],
+      "legacy_id": 589,
+      "type": ["sfx"],
+      "value": "Appliance",
+      "parent_gid": 1006
+    },
+    {
+      "gid": 1590,
+      "namespace": ["ucs"],
+      "legacy_id": 590,
+      "type": ["sfx"],
+      "value": "General",
+      "parent_gid": 1006
+    },
+    {
+      "gid": 1591,
+      "namespace": ["ucs"],
+      "legacy_id": 591,
+      "type": ["sfx"],
+      "value": "Lofi",
+      "parent_gid": 1006
+    },
+    {
+      "gid": 1592,
+      "namespace": ["ucs"],
+      "legacy_id": 592,
+      "type": ["sfx"],
+      "value": "Medical",
+      "parent_gid": 1006
+    },
+    {
+      "gid": 1593,
+      "namespace": ["ucs"],
+      "legacy_id": 593,
+      "type": ["sfx"],
+      "value": "Timer",
+      "parent_gid": 1006
+    },
+    {
+      "gid": 1594,
+      "namespace": ["ucs"],
+      "legacy_id": 594,
+      "type": ["sfx"],
+      "value": "Vehicle",
+      "parent_gid": 1006
+    },
+    {
+      "gid": 1595,
+      "namespace": ["ucs"],
+      "legacy_id": 595,
+      "type": ["sfx"],
+      "value": "Animal",
+      "parent_gid": 1007
+    },
+    {
+      "gid": 1596,
+      "namespace": ["ucs"],
+      "legacy_id": 596,
+      "type": ["sfx"],
+      "value": "Doorbell",
+      "parent_gid": 1007
+    },
+    {
+      "gid": 1597,
+      "namespace": ["ucs"],
+      "legacy_id": 597,
+      "type": ["sfx"],
+      "value": "Gong",
+      "parent_gid": 1007
+    },
+    {
+      "gid": 1598,
+      "namespace": ["ucs"],
+      "legacy_id": 598,
+      "type": ["sfx"],
+      "value": "Handbell",
+      "parent_gid": 1007
+    },
+    {
+      "gid": 1599,
+      "namespace": ["ucs"],
+      "legacy_id": 599,
+      "type": ["sfx"],
+      "value": "Large",
+      "parent_gid": 1007
+    },
+    {
+      "gid": 1600,
+      "namespace": ["ucs"],
+      "legacy_id": 600,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1007
+    },
+    {
+      "gid": 1601,
+      "namespace": ["ucs"],
+      "legacy_id": 601,
+      "type": ["sfx"],
+      "value": "Bird of prey",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1602,
+      "namespace": ["ucs"],
+      "legacy_id": 602,
+      "type": ["sfx"],
+      "value": "Crow",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1603,
+      "namespace": ["ucs"],
+      "legacy_id": 603,
+      "type": ["sfx"],
+      "value": "Fowl",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1604,
+      "namespace": ["ucs"],
+      "legacy_id": 604,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1605,
+      "namespace": ["ucs"],
+      "legacy_id": 605,
+      "type": ["sfx"],
+      "value": "Sea",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1606,
+      "namespace": ["ucs"],
+      "legacy_id": 606,
+      "type": ["sfx"],
+      "value": "Songbird",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1607,
+      "namespace": ["ucs"],
+      "legacy_id": 607,
+      "type": ["sfx"],
+      "value": "Tropical",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1608,
+      "namespace": ["ucs"],
+      "legacy_id": 608,
+      "type": ["sfx"],
+      "value": "Wading",
+      "parent_gid": 1008
+    },
+    {
+      "gid": 1609,
+      "namespace": ["ucs"],
+      "legacy_id": 609,
+      "type": ["sfx"],
+      "value": "Air boat",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1610,
+      "namespace": ["ucs"],
+      "legacy_id": 610,
+      "type": ["sfx"],
+      "value": "Bow wash",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1611,
+      "namespace": ["ucs"],
+      "legacy_id": 611,
+      "type": ["sfx"],
+      "value": "Electric",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1612,
+      "namespace": ["ucs"],
+      "legacy_id": 612,
+      "type": ["sfx"],
+      "value": "Fishing",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1613,
+      "namespace": ["ucs"],
+      "legacy_id": 613,
+      "type": ["sfx"],
+      "value": "Horn",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1614,
+      "namespace": ["ucs"],
+      "legacy_id": 614,
+      "type": ["sfx"],
+      "value": "Interior",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1615,
+      "namespace": ["ucs"],
+      "legacy_id": 615,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1616,
+      "namespace": ["ucs"],
+      "legacy_id": 616,
+      "type": ["sfx"],
+      "value": "Military",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1617,
+      "namespace": ["ucs"],
+      "legacy_id": 617,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1618,
+      "namespace": ["ucs"],
+      "legacy_id": 618,
+      "type": ["sfx"],
+      "value": "Motorboat",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1619,
+      "namespace": ["ucs"],
+      "legacy_id": 619,
+      "type": ["sfx"],
+      "value": "Racing",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1620,
+      "namespace": ["ucs"],
+      "legacy_id": 620,
+      "type": ["sfx"],
+      "value": "Rowboat",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1621,
+      "namespace": ["ucs"],
+      "legacy_id": 621,
+      "type": ["sfx"],
+      "value": "Sailboat",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1622,
+      "namespace": ["ucs"],
+      "legacy_id": 622,
+      "type": ["sfx"],
+      "value": "Ship",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1623,
+      "namespace": ["ucs"],
+      "legacy_id": 623,
+      "type": ["sfx"],
+      "value": "Steam",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1624,
+      "namespace": ["ucs"],
+      "legacy_id": 624,
+      "type": ["sfx"],
+      "value": "Submarine",
+      "parent_gid": 1009
+    },
+    {
+      "gid": 1625,
+      "namespace": ["ucs"],
+      "legacy_id": 625,
+      "type": ["sfx"],
+      "value": "By",
+      "parent_gid": 1010
+    },
+    {
+      "gid": 1626,
+      "namespace": ["ucs"],
+      "legacy_id": 626,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1010
+    },
+    {
+      "gid": 1627,
+      "namespace": ["ucs"],
+      "legacy_id": 627,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1010
+    },
+    {
+      "gid": 1628,
+      "namespace": ["ucs"],
+      "legacy_id": 628,
+      "type": ["sfx"],
+      "value": "Ricochet",
+      "parent_gid": 1010
+    },
+    {
+      "gid": 1629,
+      "namespace": ["ucs"],
+      "legacy_id": 629,
+      "type": ["sfx"],
+      "value": "Shell",
+      "parent_gid": 1010
+    },
+    {
+      "gid": 1630,
+      "namespace": ["ucs"],
+      "legacy_id": 630,
+      "type": ["sfx"],
+      "value": "Boing",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1631,
+      "namespace": ["ucs"],
+      "legacy_id": 631,
+      "type": ["sfx"],
+      "value": "Clang",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1632,
+      "namespace": ["ucs"],
+      "legacy_id": 632,
+      "type": ["sfx"],
+      "value": "Creak",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1633,
+      "namespace": ["ucs"],
+      "legacy_id": 633,
+      "type": ["sfx"],
+      "value": "Horn",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1634,
+      "namespace": ["ucs"],
+      "legacy_id": 634,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1635,
+      "namespace": ["ucs"],
+      "legacy_id": 635,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1636,
+      "namespace": ["ucs"],
+      "legacy_id": 636,
+      "type": ["sfx"],
+      "value": "Musical",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1637,
+      "namespace": ["ucs"],
+      "legacy_id": 637,
+      "type": ["sfx"],
+      "value": "Pluck",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1638,
+      "namespace": ["ucs"],
+      "legacy_id": 638,
+      "type": ["sfx"],
+      "value": "Pop",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1639,
+      "namespace": ["ucs"],
+      "legacy_id": 639,
+      "type": ["sfx"],
+      "value": "Shake",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1640,
+      "namespace": ["ucs"],
+      "legacy_id": 640,
+      "type": ["sfx"],
+      "value": "Splat",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1641,
+      "namespace": ["ucs"],
+      "legacy_id": 641,
+      "type": ["sfx"],
+      "value": "Squeak",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1642,
+      "namespace": ["ucs"],
+      "legacy_id": 642,
+      "type": ["sfx"],
+      "value": "Stretch",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1643,
+      "namespace": ["ucs"],
+      "legacy_id": 643,
+      "type": ["sfx"],
+      "value": "Swish",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1644,
+      "namespace": ["ucs"],
+      "legacy_id": 644,
+      "type": ["sfx"],
+      "value": "Twang",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1645,
+      "namespace": ["ucs"],
+      "legacy_id": 645,
+      "type": ["sfx"],
+      "value": "Warble",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1646,
+      "namespace": ["ucs"],
+      "legacy_id": 646,
+      "type": ["sfx"],
+      "value": "Whistle",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1647,
+      "namespace": ["ucs"],
+      "legacy_id": 647,
+      "type": ["sfx"],
+      "value": "Zip",
+      "parent_gid": 1011
+    },
+    {
+      "gid": 1648,
+      "namespace": ["ucs"],
+      "legacy_id": 648,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1649,
+      "namespace": ["ucs"],
+      "legacy_id": 649,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1650,
+      "namespace": ["ucs"],
+      "legacy_id": 650,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1651,
+      "namespace": ["ucs"],
+      "legacy_id": 651,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1652,
+      "namespace": ["ucs"],
+      "legacy_id": 652,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1653,
+      "namespace": ["ucs"],
+      "legacy_id": 653,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1654,
+      "namespace": ["ucs"],
+      "legacy_id": 654,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1012
+    },
+    {
+      "gid": 1655,
+      "namespace": ["ucs"],
+      "legacy_id": 655,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1013
+    },
+    {
+      "gid": 1656,
+      "namespace": ["ucs"],
+      "legacy_id": 656,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1013
+    },
+    {
+      "gid": 1657,
+      "namespace": ["ucs"],
+      "legacy_id": 657,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1013
+    },
+    {
+      "gid": 1658,
+      "namespace": ["ucs"],
+      "legacy_id": 658,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1013
+    },
+    {
+      "gid": 1659,
+      "namespace": ["ucs"],
+      "legacy_id": 659,
+      "type": ["sfx"],
+      "value": "Acid",
+      "parent_gid": 1014
+    },
+    {
+      "gid": 1660,
+      "namespace": ["ucs"],
+      "legacy_id": 660,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1014
+    },
+    {
+      "gid": 1661,
+      "namespace": ["ucs"],
+      "legacy_id": 661,
+      "type": ["sfx"],
+      "value": "Reaction",
+      "parent_gid": 1014
+    },
+    {
+      "gid": 1662,
+      "namespace": ["ucs"],
+      "legacy_id": 662,
+      "type": ["sfx"],
+      "value": "Chime",
+      "parent_gid": 1015
+    },
+    {
+      "gid": 1663,
+      "namespace": ["ucs"],
+      "legacy_id": 663,
+      "type": ["sfx"],
+      "value": "Mechanics",
+      "parent_gid": 1015
+    },
+    {
+      "gid": 1664,
+      "namespace": ["ucs"],
+      "legacy_id": 664,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1015
+    },
+    {
+      "gid": 1665,
+      "namespace": ["ucs"],
+      "legacy_id": 665,
+      "type": ["sfx"],
+      "value": "Tick",
+      "parent_gid": 1015
+    },
+    {
+      "gid": 1666,
+      "namespace": ["ucs"],
+      "legacy_id": 666,
+      "type": ["sfx"],
+      "value": "Flap",
+      "parent_gid": 1016
+    },
+    {
+      "gid": 1667,
+      "namespace": ["ucs"],
+      "legacy_id": 667,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1016
+    },
+    {
+      "gid": 1668,
+      "namespace": ["ucs"],
+      "legacy_id": 668,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1016
+    },
+    {
+      "gid": 1669,
+      "namespace": ["ucs"],
+      "legacy_id": 669,
+      "type": ["sfx"],
+      "value": "Rip",
+      "parent_gid": 1016
+    },
+    {
+      "gid": 1670,
+      "namespace": ["ucs"],
+      "legacy_id": 670,
+      "type": ["sfx"],
+      "value": "Audio visual",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1671,
+      "namespace": ["ucs"],
+      "legacy_id": 671,
+      "type": ["sfx"],
+      "value": "Camera",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1672,
+      "namespace": ["ucs"],
+      "legacy_id": 672,
+      "type": ["sfx"],
+      "value": "Cellphone",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1673,
+      "namespace": ["ucs"],
+      "legacy_id": 673,
+      "type": ["sfx"],
+      "value": "Microphone",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1674,
+      "namespace": ["ucs"],
+      "legacy_id": 674,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1675,
+      "namespace": ["ucs"],
+      "legacy_id": 675,
+      "type": ["sfx"],
+      "value": "Phonograph",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1676,
+      "namespace": ["ucs"],
+      "legacy_id": 676,
+      "type": ["sfx"],
+      "value": "Radio",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1677,
+      "namespace": ["ucs"],
+      "legacy_id": 677,
+      "type": ["sfx"],
+      "value": "Static",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1678,
+      "namespace": ["ucs"],
+      "legacy_id": 678,
+      "type": ["sfx"],
+      "value": "Telemetry",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1679,
+      "namespace": ["ucs"],
+      "legacy_id": 679,
+      "type": ["sfx"],
+      "value": "Telephone",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1680,
+      "namespace": ["ucs"],
+      "legacy_id": 680,
+      "type": ["sfx"],
+      "value": "Television",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1681,
+      "namespace": ["ucs"],
+      "legacy_id": 681,
+      "type": ["sfx"],
+      "value": "Transceiver",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1682,
+      "namespace": ["ucs"],
+      "legacy_id": 682,
+      "type": ["sfx"],
+      "value": "Typewriter",
+      "parent_gid": 1017
+    },
+    {
+      "gid": 1683,
+      "namespace": ["ucs"],
+      "legacy_id": 683,
+      "type": ["sfx"],
+      "value": "Hard drive",
+      "parent_gid": 1018
+    },
+    {
+      "gid": 1684,
+      "namespace": ["ucs"],
+      "legacy_id": 684,
+      "type": ["sfx"],
+      "value": "Keyboard & mouse",
+      "parent_gid": 1018
+    },
+    {
+      "gid": 1685,
+      "namespace": ["ucs"],
+      "legacy_id": 685,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1018
+    },
+    {
+      "gid": 1686,
+      "namespace": ["ucs"],
+      "legacy_id": 686,
+      "type": ["sfx"],
+      "value": "Aquatic",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1687,
+      "namespace": ["ucs"],
+      "legacy_id": 687,
+      "type": ["sfx"],
+      "value": "Avian",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1688,
+      "namespace": ["ucs"],
+      "legacy_id": 688,
+      "type": ["sfx"],
+      "value": "Beast",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1689,
+      "namespace": ["ucs"],
+      "legacy_id": 689,
+      "type": ["sfx"],
+      "value": "Blob",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1690,
+      "namespace": ["ucs"],
+      "legacy_id": 690,
+      "type": ["sfx"],
+      "value": "Dinosaur",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1691,
+      "namespace": ["ucs"],
+      "legacy_id": 691,
+      "type": ["sfx"],
+      "value": "Dragon",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1692,
+      "namespace": ["ucs"],
+      "legacy_id": 692,
+      "type": ["sfx"],
+      "value": "Elemental",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1693,
+      "namespace": ["ucs"],
+      "legacy_id": 693,
+      "type": ["sfx"],
+      "value": "Ethereal",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1694,
+      "namespace": ["ucs"],
+      "legacy_id": 694,
+      "type": ["sfx"],
+      "value": "Humanoid",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1695,
+      "namespace": ["ucs"],
+      "legacy_id": 695,
+      "type": ["sfx"],
+      "value": "Insectoid",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1696,
+      "namespace": ["ucs"],
+      "legacy_id": 696,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1697,
+      "namespace": ["ucs"],
+      "legacy_id": 697,
+      "type": ["sfx"],
+      "value": "Monster",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1698,
+      "namespace": ["ucs"],
+      "legacy_id": 698,
+      "type": ["sfx"],
+      "value": "Reptilian",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1699,
+      "namespace": ["ucs"],
+      "legacy_id": 699,
+      "type": ["sfx"],
+      "value": "Small",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1700,
+      "namespace": ["ucs"],
+      "legacy_id": 700,
+      "type": ["sfx"],
+      "value": "Source",
+      "parent_gid": 1019
+    },
+    {
+      "gid": 1701,
+      "namespace": ["ucs"],
+      "legacy_id": 701,
+      "type": ["sfx"],
+      "value": "Angry",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1702,
+      "namespace": ["ucs"],
+      "legacy_id": 702,
+      "type": ["sfx"],
+      "value": "Applause",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1703,
+      "namespace": ["ucs"],
+      "legacy_id": 703,
+      "type": ["sfx"],
+      "value": "Battle",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1704,
+      "namespace": ["ucs"],
+      "legacy_id": 704,
+      "type": ["sfx"],
+      "value": "Celebration",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1705,
+      "namespace": ["ucs"],
+      "legacy_id": 705,
+      "type": ["sfx"],
+      "value": "Cheering",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1706,
+      "namespace": ["ucs"],
+      "legacy_id": 706,
+      "type": ["sfx"],
+      "value": "Children",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1707,
+      "namespace": ["ucs"],
+      "legacy_id": 707,
+      "type": ["sfx"],
+      "value": "Conversation",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1708,
+      "namespace": ["ucs"],
+      "legacy_id": 708,
+      "type": ["sfx"],
+      "value": "Laughter",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1709,
+      "namespace": ["ucs"],
+      "legacy_id": 709,
+      "type": ["sfx"],
+      "value": "Loop group",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1710,
+      "namespace": ["ucs"],
+      "legacy_id": 710,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1711,
+      "namespace": ["ucs"],
+      "legacy_id": 711,
+      "type": ["sfx"],
+      "value": "Panic",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1712,
+      "namespace": ["ucs"],
+      "legacy_id": 712,
+      "type": ["sfx"],
+      "value": "Quiet",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1713,
+      "namespace": ["ucs"],
+      "legacy_id": 713,
+      "type": ["sfx"],
+      "value": "Reaction",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1714,
+      "namespace": ["ucs"],
+      "legacy_id": 714,
+      "type": ["sfx"],
+      "value": "Singing",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1715,
+      "namespace": ["ucs"],
+      "legacy_id": 715,
+      "type": ["sfx"],
+      "value": "Sport",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1716,
+      "namespace": ["ucs"],
+      "legacy_id": 716,
+      "type": ["sfx"],
+      "value": "Walla",
+      "parent_gid": 1020
+    },
+    {
+      "gid": 1717,
+      "namespace": ["ucs"],
+      "legacy_id": 717,
+      "type": ["sfx"],
+      "value": "Bass dive",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1718,
+      "namespace": ["ucs"],
+      "legacy_id": 718,
+      "type": ["sfx"],
+      "value": "Boom",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1719,
+      "namespace": ["ucs"],
+      "legacy_id": 719,
+      "type": ["sfx"],
+      "value": "Braam",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1720,
+      "namespace": ["ucs"],
+      "legacy_id": 720,
+      "type": ["sfx"],
+      "value": "Distortion",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1721,
+      "namespace": ["ucs"],
+      "legacy_id": 721,
+      "type": ["sfx"],
+      "value": "Drone",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1722,
+      "namespace": ["ucs"],
+      "legacy_id": 722,
+      "type": ["sfx"],
+      "value": "Eerie",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1723,
+      "namespace": ["ucs"],
+      "legacy_id": 723,
+      "type": ["sfx"],
+      "value": "Ethereal",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1724,
+      "namespace": ["ucs"],
+      "legacy_id": 724,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1725,
+      "namespace": ["ucs"],
+      "legacy_id": 725,
+      "type": ["sfx"],
+      "value": "Riser",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1726,
+      "namespace": ["ucs"],
+      "legacy_id": 726,
+      "type": ["sfx"],
+      "value": "Rumble",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1727,
+      "namespace": ["ucs"],
+      "legacy_id": 727,
+      "type": ["sfx"],
+      "value": "Source",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1728,
+      "namespace": ["ucs"],
+      "legacy_id": 728,
+      "type": ["sfx"],
+      "value": "Stinger",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1729,
+      "namespace": ["ucs"],
+      "legacy_id": 729,
+      "type": ["sfx"],
+      "value": "Synthetic",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1730,
+      "namespace": ["ucs"],
+      "legacy_id": 730,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1731,
+      "namespace": ["ucs"],
+      "legacy_id": 731,
+      "type": ["sfx"],
+      "value": "Vocal",
+      "parent_gid": 1021
+    },
+    {
+      "gid": 1732,
+      "namespace": ["ucs"],
+      "legacy_id": 732,
+      "type": ["sfx"],
+      "value": "Collapse",
+      "parent_gid": 1022
+    },
+    {
+      "gid": 1733,
+      "namespace": ["ucs"],
+      "legacy_id": 733,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1022
+    },
+    {
+      "gid": 1734,
+      "namespace": ["ucs"],
+      "legacy_id": 734,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1022
+    },
+    {
+      "gid": 1735,
+      "namespace": ["ucs"],
+      "legacy_id": 735,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1023
+    },
+    {
+      "gid": 1736,
+      "namespace": ["ucs"],
+      "legacy_id": 736,
+      "type": ["sfx"],
+      "value": "Dust",
+      "parent_gid": 1023
+    },
+    {
+      "gid": 1737,
+      "namespace": ["ucs"],
+      "legacy_id": 737,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1023
+    },
+    {
+      "gid": 1738,
+      "namespace": ["ucs"],
+      "legacy_id": 738,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1023
+    },
+    {
+      "gid": 1739,
+      "namespace": ["ucs"],
+      "legacy_id": 739,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1023
+    },
+    {
+      "gid": 1740,
+      "namespace": ["ucs"],
+      "legacy_id": 740,
+      "type": ["sfx"],
+      "value": "Antique",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1741,
+      "namespace": ["ucs"],
+      "legacy_id": 741,
+      "type": ["sfx"],
+      "value": "Appliance",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1742,
+      "namespace": ["ucs"],
+      "legacy_id": 742,
+      "type": ["sfx"],
+      "value": "Cabinet",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1743,
+      "namespace": ["ucs"],
+      "legacy_id": 743,
+      "type": ["sfx"],
+      "value": "Creak",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1744,
+      "namespace": ["ucs"],
+      "legacy_id": 744,
+      "type": ["sfx"],
+      "value": "Dungeon",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1745,
+      "namespace": ["ucs"],
+      "legacy_id": 745,
+      "type": ["sfx"],
+      "value": "Electric",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1746,
+      "namespace": ["ucs"],
+      "legacy_id": 746,
+      "type": ["sfx"],
+      "value": "Gate",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1747,
+      "namespace": ["ucs"],
+      "legacy_id": 747,
+      "type": ["sfx"],
+      "value": "Glass",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1748,
+      "namespace": ["ucs"],
+      "legacy_id": 748,
+      "type": ["sfx"],
+      "value": "Hardware",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1749,
+      "namespace": ["ucs"],
+      "legacy_id": 749,
+      "type": ["sfx"],
+      "value": "Hitech",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1750,
+      "namespace": ["ucs"],
+      "legacy_id": 750,
+      "type": ["sfx"],
+      "value": "Hydraulic & pneumatic",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1751,
+      "namespace": ["ucs"],
+      "legacy_id": 751,
+      "type": ["sfx"],
+      "value": "Knock",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1752,
+      "namespace": ["ucs"],
+      "legacy_id": 752,
+      "type": ["sfx"],
+      "value": "Metal",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1753,
+      "namespace": ["ucs"],
+      "legacy_id": 753,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1754,
+      "namespace": ["ucs"],
+      "legacy_id": 754,
+      "type": ["sfx"],
+      "value": "Plastic",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1755,
+      "namespace": ["ucs"],
+      "legacy_id": 755,
+      "type": ["sfx"],
+      "value": "Prison",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1756,
+      "namespace": ["ucs"],
+      "legacy_id": 756,
+      "type": ["sfx"],
+      "value": "Revolving",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1757,
+      "namespace": ["ucs"],
+      "legacy_id": 757,
+      "type": ["sfx"],
+      "value": "Sliding",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1758,
+      "namespace": ["ucs"],
+      "legacy_id": 758,
+      "type": ["sfx"],
+      "value": "Stone",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1759,
+      "namespace": ["ucs"],
+      "legacy_id": 759,
+      "type": ["sfx"],
+      "value": "Swinging",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1760,
+      "namespace": ["ucs"],
+      "legacy_id": 760,
+      "type": ["sfx"],
+      "value": "Wood",
+      "parent_gid": 1024
+    },
+    {
+      "gid": 1761,
+      "namespace": ["ucs"],
+      "legacy_id": 761,
+      "type": ["sfx"],
+      "value": "Metal",
+      "parent_gid": 1025
+    },
+    {
+      "gid": 1762,
+      "namespace": ["ucs"],
+      "legacy_id": 762,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1025
+    },
+    {
+      "gid": 1763,
+      "namespace": ["ucs"],
+      "legacy_id": 763,
+      "type": ["sfx"],
+      "value": "Plastic",
+      "parent_gid": 1025
+    },
+    {
+      "gid": 1764,
+      "namespace": ["ucs"],
+      "legacy_id": 764,
+      "type": ["sfx"],
+      "value": "Wood",
+      "parent_gid": 1025
+    },
+    {
+      "gid": 1765,
+      "namespace": ["ucs"],
+      "legacy_id": 765,
+      "type": ["sfx"],
+      "value": "Arc",
+      "parent_gid": 1026
+    },
+    {
+      "gid": 1766,
+      "namespace": ["ucs"],
+      "legacy_id": 766,
+      "type": ["sfx"],
+      "value": "Buzz & hum",
+      "parent_gid": 1026
+    },
+    {
+      "gid": 1767,
+      "namespace": ["ucs"],
+      "legacy_id": 767,
+      "type": ["sfx"],
+      "value": "Electromagnetic",
+      "parent_gid": 1026
+    },
+    {
+      "gid": 1768,
+      "namespace": ["ucs"],
+      "legacy_id": 768,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1026
+    },
+    {
+      "gid": 1769,
+      "namespace": ["ucs"],
+      "legacy_id": 769,
+      "type": ["sfx"],
+      "value": "Sparks",
+      "parent_gid": 1026
+    },
+    {
+      "gid": 1770,
+      "namespace": ["ucs"],
+      "legacy_id": 770,
+      "type": ["sfx"],
+      "value": "Zap",
+      "parent_gid": 1026
+    },
+    {
+      "gid": 1771,
+      "namespace": ["ucs"],
+      "legacy_id": 771,
+      "type": ["sfx"],
+      "value": "Bridle & tack",
+      "parent_gid": 1027
+    },
+    {
+      "gid": 1772,
+      "namespace": ["ucs"],
+      "legacy_id": 772,
+      "type": ["sfx"],
+      "value": "Hitech",
+      "parent_gid": 1027
+    },
+    {
+      "gid": 1773,
+      "namespace": ["ucs"],
+      "legacy_id": 773,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1027
+    },
+    {
+      "gid": 1774,
+      "namespace": ["ucs"],
+      "legacy_id": 774,
+      "type": ["sfx"],
+      "value": "Recreational",
+      "parent_gid": 1027
+    },
+    {
+      "gid": 1775,
+      "namespace": ["ucs"],
+      "legacy_id": 775,
+      "type": ["sfx"],
+      "value": "Sport",
+      "parent_gid": 1027
+    },
+    {
+      "gid": 1776,
+      "namespace": ["ucs"],
+      "legacy_id": 776,
+      "type": ["sfx"],
+      "value": "Tactical",
+      "parent_gid": 1027
+    },
+    {
+      "gid": 1777,
+      "namespace": ["ucs"],
+      "legacy_id": 777,
+      "type": ["sfx"],
+      "value": "Designed",
+      "parent_gid": 1028
+    },
+    {
+      "gid": 1778,
+      "namespace": ["ucs"],
+      "legacy_id": 778,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1028
+    },
+    {
+      "gid": 1779,
+      "namespace": ["ucs"],
+      "legacy_id": 779,
+      "type": ["sfx"],
+      "value": "Real",
+      "parent_gid": 1028
+    },
+    {
+      "gid": 1780,
+      "namespace": ["ucs"],
+      "legacy_id": 780,
+      "type": ["sfx"],
+      "value": "Designed",
+      "parent_gid": 1029
+    },
+    {
+      "gid": 1781,
+      "namespace": ["ucs"],
+      "legacy_id": 781,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1029
+    },
+    {
+      "gid": 1782,
+      "namespace": ["ucs"],
+      "legacy_id": 782,
+      "type": ["sfx"],
+      "value": "Real",
+      "parent_gid": 1029
+    },
+    {
+      "gid": 1783,
+      "namespace": ["ucs"],
+      "legacy_id": 783,
+      "type": ["sfx"],
+      "value": "Bodyfall",
+      "parent_gid": 1030
+    },
+    {
+      "gid": 1784,
+      "namespace": ["ucs"],
+      "legacy_id": 784,
+      "type": ["sfx"],
+      "value": "Cloth",
+      "parent_gid": 1030
+    },
+    {
+      "gid": 1785,
+      "namespace": ["ucs"],
+      "legacy_id": 785,
+      "type": ["sfx"],
+      "value": "Grab",
+      "parent_gid": 1030
+    },
+    {
+      "gid": 1786,
+      "namespace": ["ucs"],
+      "legacy_id": 786,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1030
+    },
+    {
+      "gid": 1787,
+      "namespace": ["ucs"],
+      "legacy_id": 787,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1030
+    },
+    {
+      "gid": 1788,
+      "namespace": ["ucs"],
+      "legacy_id": 788,
+      "type": ["sfx"],
+      "value": "Burning",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1789,
+      "namespace": ["ucs"],
+      "legacy_id": 789,
+      "type": ["sfx"],
+      "value": "Burst",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1790,
+      "namespace": ["ucs"],
+      "legacy_id": 790,
+      "type": ["sfx"],
+      "value": "Crackle",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1791,
+      "namespace": ["ucs"],
+      "legacy_id": 791,
+      "type": ["sfx"],
+      "value": "Gas",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1792,
+      "namespace": ["ucs"],
+      "legacy_id": 792,
+      "type": ["sfx"],
+      "value": "Ignite",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1793,
+      "namespace": ["ucs"],
+      "legacy_id": 793,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1794,
+      "namespace": ["ucs"],
+      "legacy_id": 794,
+      "type": ["sfx"],
+      "value": "Sizzle",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1795,
+      "namespace": ["ucs"],
+      "legacy_id": 795,
+      "type": ["sfx"],
+      "value": "Torch",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1796,
+      "namespace": ["ucs"],
+      "legacy_id": 796,
+      "type": ["sfx"],
+      "value": "Whoosh",
+      "parent_gid": 1031
+    },
+    {
+      "gid": 1797,
+      "namespace": ["ucs"],
+      "legacy_id": 797,
+      "type": ["sfx"],
+      "value": "Commercial",
+      "parent_gid": 1032
+    },
+    {
+      "gid": 1798,
+      "namespace": ["ucs"],
+      "legacy_id": 798,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1032
+    },
+    {
+      "gid": 1799,
+      "namespace": ["ucs"],
+      "legacy_id": 799,
+      "type": ["sfx"],
+      "value": "Recreational",
+      "parent_gid": 1032
+    },
+    {
+      "gid": 1800,
+      "namespace": ["ucs"],
+      "legacy_id": 800,
+      "type": ["sfx"],
+      "value": "Cloth",
+      "parent_gid": 1033
+    },
+    {
+      "gid": 1801,
+      "namespace": ["ucs"],
+      "legacy_id": 801,
+      "type": ["sfx"],
+      "value": "Feet",
+      "parent_gid": 1033
+    },
+    {
+      "gid": 1802,
+      "namespace": ["ucs"],
+      "legacy_id": 802,
+      "type": ["sfx"],
+      "value": "Hands",
+      "parent_gid": 1033
+    },
+    {
+      "gid": 1803,
+      "namespace": ["ucs"],
+      "legacy_id": 803,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1033
+    },
+    {
+      "gid": 1804,
+      "namespace": ["ucs"],
+      "legacy_id": 804,
+      "type": ["sfx"],
+      "value": "Prop",
+      "parent_gid": 1033
+    },
+    {
+      "gid": 1805,
+      "namespace": ["ucs"],
+      "legacy_id": 805,
+      "type": ["sfx"],
+      "value": "Cooking",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1806,
+      "namespace": ["ucs"],
+      "legacy_id": 806,
+      "type": ["sfx"],
+      "value": "Drinking",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1807,
+      "namespace": ["ucs"],
+      "legacy_id": 807,
+      "type": ["sfx"],
+      "value": "Eating",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1808,
+      "namespace": ["ucs"],
+      "legacy_id": 808,
+      "type": ["sfx"],
+      "value": "Glassware",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1809,
+      "namespace": ["ucs"],
+      "legacy_id": 809,
+      "type": ["sfx"],
+      "value": "Ingredients",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1810,
+      "namespace": ["ucs"],
+      "legacy_id": 810,
+      "type": ["sfx"],
+      "value": "Kitchenware",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1811,
+      "namespace": ["ucs"],
+      "legacy_id": 811,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1812,
+      "namespace": ["ucs"],
+      "legacy_id": 812,
+      "type": ["sfx"],
+      "value": "Tableware",
+      "parent_gid": 1034
+    },
+    {
+      "gid": 1813,
+      "namespace": ["ucs"],
+      "legacy_id": 813,
+      "type": ["sfx"],
+      "value": "Animal",
+      "parent_gid": 1035
+    },
+    {
+      "gid": 1814,
+      "namespace": ["ucs"],
+      "legacy_id": 814,
+      "type": ["sfx"],
+      "value": "Creature",
+      "parent_gid": 1035
+    },
+    {
+      "gid": 1815,
+      "namespace": ["ucs"],
+      "legacy_id": 815,
+      "type": ["sfx"],
+      "value": "Horse",
+      "parent_gid": 1035
+    },
+    {
+      "gid": 1816,
+      "namespace": ["ucs"],
+      "legacy_id": 816,
+      "type": ["sfx"],
+      "value": "Human",
+      "parent_gid": 1035
+    },
+    {
+      "gid": 1817,
+      "namespace": ["ucs"],
+      "legacy_id": 817,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1035
+    },
+    {
+      "gid": 1818,
+      "namespace": ["ucs"],
+      "legacy_id": 818,
+      "type": ["sfx"],
+      "value": "Arcade",
+      "parent_gid": 1036
+    },
+    {
+      "gid": 1819,
+      "namespace": ["ucs"],
+      "legacy_id": 819,
+      "type": ["sfx"],
+      "value": "Board",
+      "parent_gid": 1036
+    },
+    {
+      "gid": 1820,
+      "namespace": ["ucs"],
+      "legacy_id": 820,
+      "type": ["sfx"],
+      "value": "Casino",
+      "parent_gid": 1036
+    },
+    {
+      "gid": 1821,
+      "namespace": ["ucs"],
+      "legacy_id": 821,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1036
+    },
+    {
+      "gid": 1822,
+      "namespace": ["ucs"],
+      "legacy_id": 822,
+      "type": ["sfx"],
+      "value": "Video",
+      "parent_gid": 1036
+    },
+    {
+      "gid": 1823,
+      "namespace": ["ucs"],
+      "legacy_id": 823,
+      "type": ["sfx"],
+      "value": "Fumarole",
+      "parent_gid": 1037
+    },
+    {
+      "gid": 1824,
+      "namespace": ["ucs"],
+      "legacy_id": 824,
+      "type": ["sfx"],
+      "value": "Geyser",
+      "parent_gid": 1037
+    },
+    {
+      "gid": 1825,
+      "namespace": ["ucs"],
+      "legacy_id": 825,
+      "type": ["sfx"],
+      "value": "Lava",
+      "parent_gid": 1037
+    },
+    {
+      "gid": 1826,
+      "namespace": ["ucs"],
+      "legacy_id": 826,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1037
+    },
+    {
+      "gid": 1827,
+      "namespace": ["ucs"],
+      "legacy_id": 827,
+      "type": ["sfx"],
+      "value": "Mud pots",
+      "parent_gid": 1037
+    },
+    {
+      "gid": 1828,
+      "namespace": ["ucs"],
+      "legacy_id": 828,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1829,
+      "namespace": ["ucs"],
+      "legacy_id": 829,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1830,
+      "namespace": ["ucs"],
+      "legacy_id": 830,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1831,
+      "namespace": ["ucs"],
+      "legacy_id": 831,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1832,
+      "namespace": ["ucs"],
+      "legacy_id": 832,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1833,
+      "namespace": ["ucs"],
+      "legacy_id": 833,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1834,
+      "namespace": ["ucs"],
+      "legacy_id": 834,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1038
+    },
+    {
+      "gid": 1835,
+      "namespace": ["ucs"],
+      "legacy_id": 835,
+      "type": ["sfx"],
+      "value": "Blood",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1836,
+      "namespace": ["ucs"],
+      "legacy_id": 836,
+      "type": ["sfx"],
+      "value": "Bone",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1837,
+      "namespace": ["ucs"],
+      "legacy_id": 837,
+      "type": ["sfx"],
+      "value": "Burn",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1838,
+      "namespace": ["ucs"],
+      "legacy_id": 838,
+      "type": ["sfx"],
+      "value": "Flesh",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1839,
+      "namespace": ["ucs"],
+      "legacy_id": 839,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1840,
+      "namespace": ["ucs"],
+      "legacy_id": 840,
+      "type": ["sfx"],
+      "value": "Ooze",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1841,
+      "namespace": ["ucs"],
+      "legacy_id": 841,
+      "type": ["sfx"],
+      "value": "Source",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1842,
+      "namespace": ["ucs"],
+      "legacy_id": 842,
+      "type": ["sfx"],
+      "value": "Splat",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1843,
+      "namespace": ["ucs"],
+      "legacy_id": 843,
+      "type": ["sfx"],
+      "value": "Squish",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1844,
+      "namespace": ["ucs"],
+      "legacy_id": 844,
+      "type": ["sfx"],
+      "value": "Stab",
+      "parent_gid": 1039
+    },
+    {
+      "gid": 1845,
+      "namespace": ["ucs"],
+      "legacy_id": 845,
+      "type": ["sfx"],
+      "value": "Antique",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1846,
+      "namespace": ["ucs"],
+      "legacy_id": 846,
+      "type": ["sfx"],
+      "value": "Artillery",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1847,
+      "namespace": ["ucs"],
+      "legacy_id": 847,
+      "type": ["sfx"],
+      "value": "Automatic",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1848,
+      "namespace": ["ucs"],
+      "legacy_id": 848,
+      "type": ["sfx"],
+      "value": "Cannon",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1849,
+      "namespace": ["ucs"],
+      "legacy_id": 849,
+      "type": ["sfx"],
+      "value": "Handle",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1850,
+      "namespace": ["ucs"],
+      "legacy_id": 850,
+      "type": ["sfx"],
+      "value": "Hitech",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1851,
+      "namespace": ["ucs"],
+      "legacy_id": 851,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1852,
+      "namespace": ["ucs"],
+      "legacy_id": 852,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1853,
+      "namespace": ["ucs"],
+      "legacy_id": 853,
+      "type": ["sfx"],
+      "value": "Pistol",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1854,
+      "namespace": ["ucs"],
+      "legacy_id": 854,
+      "type": ["sfx"],
+      "value": "Rifle",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1855,
+      "namespace": ["ucs"],
+      "legacy_id": 855,
+      "type": ["sfx"],
+      "value": "Shotgun",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1856,
+      "namespace": ["ucs"],
+      "legacy_id": 856,
+      "type": ["sfx"],
+      "value": "Suppressed",
+      "parent_gid": 1040
+    },
+    {
+      "gid": 1857,
+      "namespace": ["ucs"],
+      "legacy_id": 857,
+      "type": ["sfx"],
+      "value": "Air powered",
+      "parent_gid": 1041
+    },
+    {
+      "gid": 1858,
+      "namespace": ["ucs"],
+      "legacy_id": 858,
+      "type": ["sfx"],
+      "value": "Celebration",
+      "parent_gid": 1041
+    },
+    {
+      "gid": 1859,
+      "namespace": ["ucs"],
+      "legacy_id": 859,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1041
+    },
+    {
+      "gid": 1860,
+      "namespace": ["ucs"],
+      "legacy_id": 860,
+      "type": ["sfx"],
+      "value": "Traditional",
+      "parent_gid": 1041
+    },
+    {
+      "gid": 1861,
+      "namespace": ["ucs"],
+      "legacy_id": 861,
+      "type": ["sfx"],
+      "value": "Breath",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1862,
+      "namespace": ["ucs"],
+      "legacy_id": 862,
+      "type": ["sfx"],
+      "value": "Burp",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1863,
+      "namespace": ["ucs"],
+      "legacy_id": 863,
+      "type": ["sfx"],
+      "value": "Cough",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1864,
+      "namespace": ["ucs"],
+      "legacy_id": 864,
+      "type": ["sfx"],
+      "value": "Heartbeat",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1865,
+      "namespace": ["ucs"],
+      "legacy_id": 865,
+      "type": ["sfx"],
+      "value": "Kiss",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1866,
+      "namespace": ["ucs"],
+      "legacy_id": 866,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1867,
+      "namespace": ["ucs"],
+      "legacy_id": 867,
+      "type": ["sfx"],
+      "value": "Sneeze",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1868,
+      "namespace": ["ucs"],
+      "legacy_id": 868,
+      "type": ["sfx"],
+      "value": "Snore",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1869,
+      "namespace": ["ucs"],
+      "legacy_id": 869,
+      "type": ["sfx"],
+      "value": "Spit",
+      "parent_gid": 1042
+    },
+    {
+      "gid": 1870,
+      "namespace": ["ucs"],
+      "legacy_id": 870,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1871,
+      "namespace": ["ucs"],
+      "legacy_id": 871,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1872,
+      "namespace": ["ucs"],
+      "legacy_id": 872,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1873,
+      "namespace": ["ucs"],
+      "legacy_id": 873,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1874,
+      "namespace": ["ucs"],
+      "legacy_id": 874,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1875,
+      "namespace": ["ucs"],
+      "legacy_id": 875,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1876,
+      "namespace": ["ucs"],
+      "legacy_id": 876,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1043
+    },
+    {
+      "gid": 1877,
+      "namespace": ["ucs"],
+      "legacy_id": 877,
+      "type": ["sfx"],
+      "value": "Beam",
+      "parent_gid": 1044
+    },
+    {
+      "gid": 1878,
+      "namespace": ["ucs"],
+      "legacy_id": 878,
+      "type": ["sfx"],
+      "value": "Gun",
+      "parent_gid": 1044
+    },
+    {
+      "gid": 1879,
+      "namespace": ["ucs"],
+      "legacy_id": 879,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1044
+    },
+    {
+      "gid": 1880,
+      "namespace": ["ucs"],
+      "legacy_id": 880,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1044
+    },
+    {
+      "gid": 1881,
+      "namespace": ["ucs"],
+      "legacy_id": 881,
+      "type": ["sfx"],
+      "value": "Creak",
+      "parent_gid": 1045
+    },
+    {
+      "gid": 1882,
+      "namespace": ["ucs"],
+      "legacy_id": 882,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1045
+    },
+    {
+      "gid": 1883,
+      "namespace": ["ucs"],
+      "legacy_id": 883,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1045
+    },
+    {
+      "gid": 1884,
+      "namespace": ["ucs"],
+      "legacy_id": 884,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1045
+    },
+    {
+      "gid": 1885,
+      "namespace": ["ucs"],
+      "legacy_id": 885,
+      "type": ["sfx"],
+      "value": "Bubbles",
+      "parent_gid": 1046
+    },
+    {
+      "gid": 1886,
+      "namespace": ["ucs"],
+      "legacy_id": 886,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1046
+    },
+    {
+      "gid": 1887,
+      "namespace": ["ucs"],
+      "legacy_id": 887,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1046
+    },
+    {
+      "gid": 1888,
+      "namespace": ["ucs"],
+      "legacy_id": 888,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1046
+    },
+    {
+      "gid": 1889,
+      "namespace": ["ucs"],
+      "legacy_id": 889,
+      "type": ["sfx"],
+      "value": "Suction",
+      "parent_gid": 1046
+    },
+    {
+      "gid": 1890,
+      "namespace": ["ucs"],
+      "legacy_id": 890,
+      "type": ["sfx"],
+      "value": "Amusement",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1891,
+      "namespace": ["ucs"],
+      "legacy_id": 891,
+      "type": ["sfx"],
+      "value": "Antique",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1892,
+      "namespace": ["ucs"],
+      "legacy_id": 892,
+      "type": ["sfx"],
+      "value": "Appliance",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1893,
+      "namespace": ["ucs"],
+      "legacy_id": 893,
+      "type": ["sfx"],
+      "value": "Construction",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1894,
+      "namespace": ["ucs"],
+      "legacy_id": 894,
+      "type": ["sfx"],
+      "value": "Elevator",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1895,
+      "namespace": ["ucs"],
+      "legacy_id": 895,
+      "type": ["sfx"],
+      "value": "Escalator",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1896,
+      "namespace": ["ucs"],
+      "legacy_id": 896,
+      "type": ["sfx"],
+      "value": "Fan",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1897,
+      "namespace": ["ucs"],
+      "legacy_id": 897,
+      "type": ["sfx"],
+      "value": "Hitech",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1898,
+      "namespace": ["ucs"],
+      "legacy_id": 898,
+      "type": ["sfx"],
+      "value": "Hvac",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1899,
+      "namespace": ["ucs"],
+      "legacy_id": 899,
+      "type": ["sfx"],
+      "value": "Industrial",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1900,
+      "namespace": ["ucs"],
+      "legacy_id": 900,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1901,
+      "namespace": ["ucs"],
+      "legacy_id": 901,
+      "type": ["sfx"],
+      "value": "Medical",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1902,
+      "namespace": ["ucs"],
+      "legacy_id": 902,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1903,
+      "namespace": ["ucs"],
+      "legacy_id": 903,
+      "type": ["sfx"],
+      "value": "Office",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1904,
+      "namespace": ["ucs"],
+      "legacy_id": 904,
+      "type": ["sfx"],
+      "value": "Pump",
+      "parent_gid": 1047
+    },
+    {
+      "gid": 1905,
+      "namespace": ["ucs"],
+      "legacy_id": 905,
+      "type": ["sfx"],
+      "value": "Angelic",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1906,
+      "namespace": ["ucs"],
+      "legacy_id": 906,
+      "type": ["sfx"],
+      "value": "Elemental",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1907,
+      "namespace": ["ucs"],
+      "legacy_id": 907,
+      "type": ["sfx"],
+      "value": "Evil",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1908,
+      "namespace": ["ucs"],
+      "legacy_id": 908,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1909,
+      "namespace": ["ucs"],
+      "legacy_id": 909,
+      "type": ["sfx"],
+      "value": "Poof",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1910,
+      "namespace": ["ucs"],
+      "legacy_id": 910,
+      "type": ["sfx"],
+      "value": "Shimmer",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1911,
+      "namespace": ["ucs"],
+      "legacy_id": 911,
+      "type": ["sfx"],
+      "value": "Spell",
+      "parent_gid": 1048
+    },
+    {
+      "gid": 1912,
+      "namespace": ["ucs"],
+      "legacy_id": 912,
+      "type": ["sfx"],
+      "value": "Click",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1913,
+      "namespace": ["ucs"],
+      "legacy_id": 913,
+      "type": ["sfx"],
+      "value": "Gears",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1914,
+      "namespace": ["ucs"],
+      "legacy_id": 914,
+      "type": ["sfx"],
+      "value": "Hydraulic & pneumatic",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1915,
+      "namespace": ["ucs"],
+      "legacy_id": 915,
+      "type": ["sfx"],
+      "value": "Latch",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1916,
+      "namespace": ["ucs"],
+      "legacy_id": 916,
+      "type": ["sfx"],
+      "value": "Lever",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1917,
+      "namespace": ["ucs"],
+      "legacy_id": 917,
+      "type": ["sfx"],
+      "value": "Lock",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1918,
+      "namespace": ["ucs"],
+      "legacy_id": 918,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1919,
+      "namespace": ["ucs"],
+      "legacy_id": 919,
+      "type": ["sfx"],
+      "value": "Pulley",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1920,
+      "namespace": ["ucs"],
+      "legacy_id": 920,
+      "type": ["sfx"],
+      "value": "Ratchet",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1921,
+      "namespace": ["ucs"],
+      "legacy_id": 921,
+      "type": ["sfx"],
+      "value": "Relay",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1922,
+      "namespace": ["ucs"],
+      "legacy_id": 922,
+      "type": ["sfx"],
+      "value": "Roller",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1923,
+      "namespace": ["ucs"],
+      "legacy_id": 923,
+      "type": ["sfx"],
+      "value": "Switch",
+      "parent_gid": 1049
+    },
+    {
+      "gid": 1924,
+      "namespace": ["ucs"],
+      "legacy_id": 924,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1925,
+      "namespace": ["ucs"],
+      "legacy_id": 925,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1926,
+      "namespace": ["ucs"],
+      "legacy_id": 926,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1927,
+      "namespace": ["ucs"],
+      "legacy_id": 927,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1928,
+      "namespace": ["ucs"],
+      "legacy_id": 928,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1929,
+      "namespace": ["ucs"],
+      "legacy_id": 929,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1930,
+      "namespace": ["ucs"],
+      "legacy_id": 930,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1050
+    },
+    {
+      "gid": 1931,
+      "namespace": ["ucs"],
+      "legacy_id": 931,
+      "type": ["sfx"],
+      "value": "Antique",
+      "parent_gid": 1051
+    },
+    {
+      "gid": 1932,
+      "namespace": ["ucs"],
+      "legacy_id": 932,
+      "type": ["sfx"],
+      "value": "Combustion",
+      "parent_gid": 1051
+    },
+    {
+      "gid": 1933,
+      "namespace": ["ucs"],
+      "legacy_id": 933,
+      "type": ["sfx"],
+      "value": "Electric",
+      "parent_gid": 1051
+    },
+    {
+      "gid": 1934,
+      "namespace": ["ucs"],
+      "legacy_id": 934,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1051
+    },
+    {
+      "gid": 1935,
+      "namespace": ["ucs"],
+      "legacy_id": 935,
+      "type": ["sfx"],
+      "value": "Servo",
+      "parent_gid": 1051
+    },
+    {
+      "gid": 1936,
+      "namespace": ["ucs"],
+      "legacy_id": 936,
+      "type": ["sfx"],
+      "value": "Turbine",
+      "parent_gid": 1051
+    },
+    {
+      "gid": 1937,
+      "namespace": ["ucs"],
+      "legacy_id": 937,
+      "type": ["sfx"],
+      "value": "Activity",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1938,
+      "namespace": ["ucs"],
+      "legacy_id": 938,
+      "type": ["sfx"],
+      "value": "Animal",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1939,
+      "namespace": ["ucs"],
+      "legacy_id": 939,
+      "type": ["sfx"],
+      "value": "Creature",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1940,
+      "namespace": ["ucs"],
+      "legacy_id": 940,
+      "type": ["sfx"],
+      "value": "Crowd",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1941,
+      "namespace": ["ucs"],
+      "legacy_id": 941,
+      "type": ["sfx"],
+      "value": "Insect",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1942,
+      "namespace": ["ucs"],
+      "legacy_id": 942,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1943,
+      "namespace": ["ucs"],
+      "legacy_id": 943,
+      "type": ["sfx"],
+      "value": "Presence",
+      "parent_gid": 1052
+    },
+    {
+      "gid": 1944,
+      "namespace": ["ucs"],
+      "legacy_id": 944,
+      "type": ["sfx"],
+      "value": "Brass",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1945,
+      "namespace": ["ucs"],
+      "legacy_id": 945,
+      "type": ["sfx"],
+      "value": "Chime",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1946,
+      "namespace": ["ucs"],
+      "legacy_id": 946,
+      "type": ["sfx"],
+      "value": "Choral",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1947,
+      "namespace": ["ucs"],
+      "legacy_id": 947,
+      "type": ["sfx"],
+      "value": "Instrument",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1948,
+      "namespace": ["ucs"],
+      "legacy_id": 948,
+      "type": ["sfx"],
+      "value": "Loop",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1949,
+      "namespace": ["ucs"],
+      "legacy_id": 949,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1950,
+      "namespace": ["ucs"],
+      "legacy_id": 950,
+      "type": ["sfx"],
+      "value": "Percussion",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1951,
+      "namespace": ["ucs"],
+      "legacy_id": 951,
+      "type": ["sfx"],
+      "value": "Sample",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1952,
+      "namespace": ["ucs"],
+      "legacy_id": 952,
+      "type": ["sfx"],
+      "value": "Song & phrase",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1953,
+      "namespace": ["ucs"],
+      "legacy_id": 953,
+      "type": ["sfx"],
+      "value": "Stinger",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1954,
+      "namespace": ["ucs"],
+      "legacy_id": 954,
+      "type": ["sfx"],
+      "value": "Stringed",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1955,
+      "namespace": ["ucs"],
+      "legacy_id": 955,
+      "type": ["sfx"],
+      "value": "Toy",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1956,
+      "namespace": ["ucs"],
+      "legacy_id": 956,
+      "type": ["sfx"],
+      "value": "Woodwind",
+      "parent_gid": 1053
+    },
+    {
+      "gid": 1957,
+      "namespace": ["ucs"],
+      "legacy_id": 957,
+      "type": ["sfx"],
+      "value": "Avalanche",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1958,
+      "namespace": ["ucs"],
+      "legacy_id": 958,
+      "type": ["sfx"],
+      "value": "Earthquake",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1959,
+      "namespace": ["ucs"],
+      "legacy_id": 959,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1960,
+      "namespace": ["ucs"],
+      "legacy_id": 960,
+      "type": ["sfx"],
+      "value": "Tornado",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1961,
+      "namespace": ["ucs"],
+      "legacy_id": 961,
+      "type": ["sfx"],
+      "value": "Tsunami",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1962,
+      "namespace": ["ucs"],
+      "legacy_id": 962,
+      "type": ["sfx"],
+      "value": "Typhoon",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1963,
+      "namespace": ["ucs"],
+      "legacy_id": 963,
+      "type": ["sfx"],
+      "value": "Volcano",
+      "parent_gid": 1054
+    },
+    {
+      "gid": 1964,
+      "namespace": ["ucs"],
+      "legacy_id": 964,
+      "type": ["sfx"],
+      "value": "Bag",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1965,
+      "namespace": ["ucs"],
+      "legacy_id": 965,
+      "type": ["sfx"],
+      "value": "Book",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1966,
+      "namespace": ["ucs"],
+      "legacy_id": 966,
+      "type": ["sfx"],
+      "value": "Coin",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1967,
+      "namespace": ["ucs"],
+      "legacy_id": 967,
+      "type": ["sfx"],
+      "value": "Container",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1968,
+      "namespace": ["ucs"],
+      "legacy_id": 968,
+      "type": ["sfx"],
+      "value": "Furniture",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1969,
+      "namespace": ["ucs"],
+      "legacy_id": 969,
+      "type": ["sfx"],
+      "value": "Household",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1970,
+      "namespace": ["ucs"],
+      "legacy_id": 970,
+      "type": ["sfx"],
+      "value": "Jewelry",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1971,
+      "namespace": ["ucs"],
+      "legacy_id": 971,
+      "type": ["sfx"],
+      "value": "Keys",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1972,
+      "namespace": ["ucs"],
+      "legacy_id": 972,
+      "type": ["sfx"],
+      "value": "Luggage",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1973,
+      "namespace": ["ucs"],
+      "legacy_id": 973,
+      "type": ["sfx"],
+      "value": "Medical",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1974,
+      "namespace": ["ucs"],
+      "legacy_id": 974,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1975,
+      "namespace": ["ucs"],
+      "legacy_id": 975,
+      "type": ["sfx"],
+      "value": "Packaging",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1976,
+      "namespace": ["ucs"],
+      "legacy_id": 976,
+      "type": ["sfx"],
+      "value": "Tape",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1977,
+      "namespace": ["ucs"],
+      "legacy_id": 977,
+      "type": ["sfx"],
+      "value": "Umbrella",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1978,
+      "namespace": ["ucs"],
+      "legacy_id": 978,
+      "type": ["sfx"],
+      "value": "Wheeled",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1979,
+      "namespace": ["ucs"],
+      "legacy_id": 979,
+      "type": ["sfx"],
+      "value": "Writing",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1980,
+      "namespace": ["ucs"],
+      "legacy_id": 980,
+      "type": ["sfx"],
+      "value": "Zipper",
+      "parent_gid": 1055
+    },
+    {
+      "gid": 1981,
+      "namespace": ["ucs"],
+      "legacy_id": 981,
+      "type": ["sfx"],
+      "value": "Flutter",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1982,
+      "namespace": ["ucs"],
+      "legacy_id": 982,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1983,
+      "namespace": ["ucs"],
+      "legacy_id": 983,
+      "type": ["sfx"],
+      "value": "Handle",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1984,
+      "namespace": ["ucs"],
+      "legacy_id": 984,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1985,
+      "namespace": ["ucs"],
+      "legacy_id": 985,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1986,
+      "namespace": ["ucs"],
+      "legacy_id": 986,
+      "type": ["sfx"],
+      "value": "Rip",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1987,
+      "namespace": ["ucs"],
+      "legacy_id": 987,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1056
+    },
+    {
+      "gid": 1988,
+      "namespace": ["ucs"],
+      "legacy_id": 988,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1057
+    },
+    {
+      "gid": 1989,
+      "namespace": ["ucs"],
+      "legacy_id": 989,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1057
+    },
+    {
+      "gid": 1990,
+      "namespace": ["ucs"],
+      "legacy_id": 990,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1057
+    },
+    {
+      "gid": 1991,
+      "namespace": ["ucs"],
+      "legacy_id": 991,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1057
+    },
+    {
+      "gid": 1992,
+      "namespace": ["ucs"],
+      "legacy_id": 992,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1057
+    },
+    {
+      "gid": 1993,
+      "namespace": ["ucs"],
+      "legacy_id": 993,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1057
+    },
+    {
+      "gid": 1994,
+      "namespace": ["ucs"],
+      "legacy_id": 994,
+      "type": ["sfx"],
+      "value": "Cloth",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 1995,
+      "namespace": ["ucs"],
+      "legacy_id": 995,
+      "type": ["sfx"],
+      "value": "Concrete",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 1996,
+      "namespace": ["ucs"],
+      "legacy_id": 996,
+      "type": ["sfx"],
+      "value": "General",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 1997,
+      "namespace": ["ucs"],
+      "legacy_id": 997,
+      "type": ["sfx"],
+      "value": "Glass",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 1998,
+      "namespace": ["ucs"],
+      "legacy_id": 998,
+      "type": ["sfx"],
+      "value": "Metal",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 1999,
+      "namespace": ["ucs"],
+      "legacy_id": 999,
+      "type": ["sfx"],
+      "value": "Plastic",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 2000,
+      "namespace": ["ucs"],
+      "legacy_id": 1000,
+      "type": ["sfx"],
+      "value": "Vegetation",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 2001,
+      "namespace": ["ucs"],
+      "legacy_id": 1001,
+      "type": ["sfx"],
+      "value": "Water",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 2002,
+      "namespace": ["ucs"],
+      "legacy_id": 1002,
+      "type": ["sfx"],
+      "value": "Wood",
+      "parent_gid": 1058
+    },
+    {
+      "gid": 2003,
+      "namespace": ["ucs"],
+      "legacy_id": 1003,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1059
+    },
+    {
+      "gid": 2004,
+      "namespace": ["ucs"],
+      "legacy_id": 1004,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1059
+    },
+    {
+      "gid": 2005,
+      "namespace": ["ucs"],
+      "legacy_id": 1005,
+      "type": ["sfx"],
+      "value": "Vocal",
+      "parent_gid": 1059
+    },
+    {
+      "gid": 2006,
+      "namespace": ["ucs"],
+      "legacy_id": 1006,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2007,
+      "namespace": ["ucs"],
+      "legacy_id": 1007,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2008,
+      "namespace": ["ucs"],
+      "legacy_id": 1008,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2009,
+      "namespace": ["ucs"],
+      "legacy_id": 1009,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2010,
+      "namespace": ["ucs"],
+      "legacy_id": 1010,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2011,
+      "namespace": ["ucs"],
+      "legacy_id": 1011,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2012,
+      "namespace": ["ucs"],
+      "legacy_id": 1012,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1060
+    },
+    {
+      "gid": 2013,
+      "namespace": ["ucs"],
+      "legacy_id": 1013,
+      "type": ["sfx"],
+      "value": "Creak",
+      "parent_gid": 1061
+    },
+    {
+      "gid": 2014,
+      "namespace": ["ucs"],
+      "legacy_id": 1014,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1061
+    },
+    {
+      "gid": 2015,
+      "namespace": ["ucs"],
+      "legacy_id": 1015,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1061
+    },
+    {
+      "gid": 2016,
+      "namespace": ["ucs"],
+      "legacy_id": 1016,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1062
+    },
+    {
+      "gid": 2017,
+      "namespace": ["ucs"],
+      "legacy_id": 1017,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1062
+    },
+    {
+      "gid": 2018,
+      "namespace": ["ucs"],
+      "legacy_id": 1018,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1062
+    },
+    {
+      "gid": 2019,
+      "namespace": ["ucs"],
+      "legacy_id": 1019,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1062
+    },
+    {
+      "gid": 2020,
+      "namespace": ["ucs"],
+      "legacy_id": 1020,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1062
+    },
+    {
+      "gid": 2021,
+      "namespace": ["ucs"],
+      "legacy_id": 1021,
+      "type": ["sfx"],
+      "value": "Alarm",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2022,
+      "namespace": ["ucs"],
+      "legacy_id": 1022,
+      "type": ["sfx"],
+      "value": "Computer",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2023,
+      "namespace": ["ucs"],
+      "legacy_id": 1023,
+      "type": ["sfx"],
+      "value": "Door",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2024,
+      "namespace": ["ucs"],
+      "legacy_id": 1024,
+      "type": ["sfx"],
+      "value": "Energy",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2025,
+      "namespace": ["ucs"],
+      "legacy_id": 1025,
+      "type": ["sfx"],
+      "value": "Machine",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2026,
+      "namespace": ["ucs"],
+      "legacy_id": 1026,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2027,
+      "namespace": ["ucs"],
+      "legacy_id": 1027,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2028,
+      "namespace": ["ucs"],
+      "legacy_id": 1028,
+      "type": ["sfx"],
+      "value": "Retro",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2029,
+      "namespace": ["ucs"],
+      "legacy_id": 1029,
+      "type": ["sfx"],
+      "value": "Spaceship",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2030,
+      "namespace": ["ucs"],
+      "legacy_id": 1030,
+      "type": ["sfx"],
+      "value": "Vehicle",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2031,
+      "namespace": ["ucs"],
+      "legacy_id": 1031,
+      "type": ["sfx"],
+      "value": "Weapon",
+      "parent_gid": 1063
+    },
+    {
+      "gid": 2032,
+      "namespace": ["ucs"],
+      "legacy_id": 1032,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1064
+    },
+    {
+      "gid": 2033,
+      "namespace": ["ucs"],
+      "legacy_id": 1033,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1064
+    },
+    {
+      "gid": 2034,
+      "namespace": ["ucs"],
+      "legacy_id": 1034,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1064
+    },
+    {
+      "gid": 2035,
+      "namespace": ["ucs"],
+      "legacy_id": 1035,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1064
+    },
+    {
+      "gid": 2036,
+      "namespace": ["ucs"],
+      "legacy_id": 1036,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1064
+    },
+    {
+      "gid": 2037,
+      "namespace": ["ucs"],
+      "legacy_id": 1037,
+      "type": ["sfx"],
+      "value": "Court",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2038,
+      "namespace": ["ucs"],
+      "legacy_id": 1038,
+      "type": ["sfx"],
+      "value": "Field",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2039,
+      "namespace": ["ucs"],
+      "legacy_id": 1039,
+      "type": ["sfx"],
+      "value": "Gym",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2040,
+      "namespace": ["ucs"],
+      "legacy_id": 1040,
+      "type": ["sfx"],
+      "value": "Indoor",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2041,
+      "namespace": ["ucs"],
+      "legacy_id": 1041,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2042,
+      "namespace": ["ucs"],
+      "legacy_id": 1042,
+      "type": ["sfx"],
+      "value": "Skate",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2043,
+      "namespace": ["ucs"],
+      "legacy_id": 1043,
+      "type": ["sfx"],
+      "value": "Track & field",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2044,
+      "namespace": ["ucs"],
+      "legacy_id": 1044,
+      "type": ["sfx"],
+      "value": "Water",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2045,
+      "namespace": ["ucs"],
+      "legacy_id": 1045,
+      "type": ["sfx"],
+      "value": "Winter",
+      "parent_gid": 1065
+    },
+    {
+      "gid": 2046,
+      "namespace": ["ucs"],
+      "legacy_id": 1046,
+      "type": ["sfx"],
+      "value": "Swish",
+      "parent_gid": 1066
+    },
+    {
+      "gid": 2047,
+      "namespace": ["ucs"],
+      "legacy_id": 1047,
+      "type": ["sfx"],
+      "value": "Whoosh",
+      "parent_gid": 1066
+    },
+    {
+      "gid": 2048,
+      "namespace": ["ucs"],
+      "legacy_id": 1048,
+      "type": ["sfx"],
+      "value": "Hand",
+      "parent_gid": 1067
+    },
+    {
+      "gid": 2049,
+      "namespace": ["ucs"],
+      "legacy_id": 1049,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1067
+    },
+    {
+      "gid": 2050,
+      "namespace": ["ucs"],
+      "legacy_id": 1050,
+      "type": ["sfx"],
+      "value": "Pneumatic",
+      "parent_gid": 1067
+    },
+    {
+      "gid": 2051,
+      "namespace": ["ucs"],
+      "legacy_id": 1051,
+      "type": ["sfx"],
+      "value": "Power",
+      "parent_gid": 1067
+    },
+    {
+      "gid": 2052,
+      "namespace": ["ucs"],
+      "legacy_id": 1052,
+      "type": ["sfx"],
+      "value": "Electronic",
+      "parent_gid": 1068
+    },
+    {
+      "gid": 2053,
+      "namespace": ["ucs"],
+      "legacy_id": 1053,
+      "type": ["sfx"],
+      "value": "Mechanical",
+      "parent_gid": 1068
+    },
+    {
+      "gid": 2054,
+      "namespace": ["ucs"],
+      "legacy_id": 1054,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1068
+    },
+    {
+      "gid": 2055,
+      "namespace": ["ucs"],
+      "legacy_id": 1055,
+      "type": ["sfx"],
+      "value": "Brake",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2056,
+      "namespace": ["ucs"],
+      "legacy_id": 1056,
+      "type": ["sfx"],
+      "value": "Clack",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2057,
+      "namespace": ["ucs"],
+      "legacy_id": 1057,
+      "type": ["sfx"],
+      "value": "Diesel",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2058,
+      "namespace": ["ucs"],
+      "legacy_id": 1058,
+      "type": ["sfx"],
+      "value": "Electric",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2059,
+      "namespace": ["ucs"],
+      "legacy_id": 1059,
+      "type": ["sfx"],
+      "value": "High speed",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2060,
+      "namespace": ["ucs"],
+      "legacy_id": 1060,
+      "type": ["sfx"],
+      "value": "Horn",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2061,
+      "namespace": ["ucs"],
+      "legacy_id": 1061,
+      "type": ["sfx"],
+      "value": "Interior",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2062,
+      "namespace": ["ucs"],
+      "legacy_id": 1062,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2063,
+      "namespace": ["ucs"],
+      "legacy_id": 1063,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2064,
+      "namespace": ["ucs"],
+      "legacy_id": 1064,
+      "type": ["sfx"],
+      "value": "Steam",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2065,
+      "namespace": ["ucs"],
+      "legacy_id": 1065,
+      "type": ["sfx"],
+      "value": "Subway",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2066,
+      "namespace": ["ucs"],
+      "legacy_id": 1066,
+      "type": ["sfx"],
+      "value": "Tram",
+      "parent_gid": 1069
+    },
+    {
+      "gid": 2067,
+      "namespace": ["ucs"],
+      "legacy_id": 1067,
+      "type": ["sfx"],
+      "value": "Alert",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2068,
+      "namespace": ["ucs"],
+      "legacy_id": 1068,
+      "type": ["sfx"],
+      "value": "Beep",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2069,
+      "namespace": ["ucs"],
+      "legacy_id": 1069,
+      "type": ["sfx"],
+      "value": "Click",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2070,
+      "namespace": ["ucs"],
+      "legacy_id": 1070,
+      "type": ["sfx"],
+      "value": "Data",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2071,
+      "namespace": ["ucs"],
+      "legacy_id": 1071,
+      "type": ["sfx"],
+      "value": "Glitch",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2072,
+      "namespace": ["ucs"],
+      "legacy_id": 1072,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2073,
+      "namespace": ["ucs"],
+      "legacy_id": 1073,
+      "type": ["sfx"],
+      "value": "Motion",
+      "parent_gid": 1070
+    },
+    {
+      "gid": 2074,
+      "namespace": ["ucs"],
+      "legacy_id": 1074,
+      "type": ["sfx"],
+      "value": "Grass",
+      "parent_gid": 1071
+    },
+    {
+      "gid": 2075,
+      "namespace": ["ucs"],
+      "legacy_id": 1075,
+      "type": ["sfx"],
+      "value": "Leaves",
+      "parent_gid": 1071
+    },
+    {
+      "gid": 2076,
+      "namespace": ["ucs"],
+      "legacy_id": 1076,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1071
+    },
+    {
+      "gid": 2077,
+      "namespace": ["ucs"],
+      "legacy_id": 1077,
+      "type": ["sfx"],
+      "value": "Tree",
+      "parent_gid": 1071
+    },
+    {
+      "gid": 2078,
+      "namespace": ["ucs"],
+      "legacy_id": 1078,
+      "type": ["sfx"],
+      "value": "Alarm",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2079,
+      "namespace": ["ucs"],
+      "legacy_id": 1079,
+      "type": ["sfx"],
+      "value": "Antique",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2080,
+      "namespace": ["ucs"],
+      "legacy_id": 1080,
+      "type": ["sfx"],
+      "value": "Atv",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2081,
+      "namespace": ["ucs"],
+      "legacy_id": 1081,
+      "type": ["sfx"],
+      "value": "Bicycle",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2082,
+      "namespace": ["ucs"],
+      "legacy_id": 1082,
+      "type": ["sfx"],
+      "value": "Brake",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2083,
+      "namespace": ["ucs"],
+      "legacy_id": 1083,
+      "type": ["sfx"],
+      "value": "Bus",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2084,
+      "namespace": ["ucs"],
+      "legacy_id": 1084,
+      "type": ["sfx"],
+      "value": "Car",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2085,
+      "namespace": ["ucs"],
+      "legacy_id": 1085,
+      "type": ["sfx"],
+      "value": "Construction",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2086,
+      "namespace": ["ucs"],
+      "legacy_id": 1086,
+      "type": ["sfx"],
+      "value": "Door",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2087,
+      "namespace": ["ucs"],
+      "legacy_id": 1087,
+      "type": ["sfx"],
+      "value": "Electric",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2088,
+      "namespace": ["ucs"],
+      "legacy_id": 1088,
+      "type": ["sfx"],
+      "value": "Farm",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2089,
+      "namespace": ["ucs"],
+      "legacy_id": 1089,
+      "type": ["sfx"],
+      "value": "Freight",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2090,
+      "namespace": ["ucs"],
+      "legacy_id": 1090,
+      "type": ["sfx"],
+      "value": "Generic by",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2091,
+      "namespace": ["ucs"],
+      "legacy_id": 1091,
+      "type": ["sfx"],
+      "value": "Horn",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2092,
+      "namespace": ["ucs"],
+      "legacy_id": 1092,
+      "type": ["sfx"],
+      "value": "Interior",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2093,
+      "namespace": ["ucs"],
+      "legacy_id": 1093,
+      "type": ["sfx"],
+      "value": "Jalopy",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2094,
+      "namespace": ["ucs"],
+      "legacy_id": 1094,
+      "type": ["sfx"],
+      "value": "Mechanism",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2095,
+      "namespace": ["ucs"],
+      "legacy_id": 1095,
+      "type": ["sfx"],
+      "value": "Military",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2096,
+      "namespace": ["ucs"],
+      "legacy_id": 1096,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2097,
+      "namespace": ["ucs"],
+      "legacy_id": 1097,
+      "type": ["sfx"],
+      "value": "Motorcycle",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2098,
+      "namespace": ["ucs"],
+      "legacy_id": 1098,
+      "type": ["sfx"],
+      "value": "Racing",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2099,
+      "namespace": ["ucs"],
+      "legacy_id": 1099,
+      "type": ["sfx"],
+      "value": "Siren",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2100,
+      "namespace": ["ucs"],
+      "legacy_id": 1100,
+      "type": ["sfx"],
+      "value": "Skid",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2101,
+      "namespace": ["ucs"],
+      "legacy_id": 1101,
+      "type": ["sfx"],
+      "value": "Suspension",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2102,
+      "namespace": ["ucs"],
+      "legacy_id": 1102,
+      "type": ["sfx"],
+      "value": "Tire",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2103,
+      "namespace": ["ucs"],
+      "legacy_id": 1103,
+      "type": ["sfx"],
+      "value": "Truck van & suv",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2104,
+      "namespace": ["ucs"],
+      "legacy_id": 1104,
+      "type": ["sfx"],
+      "value": "Utility",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2105,
+      "namespace": ["ucs"],
+      "legacy_id": 1105,
+      "type": ["sfx"],
+      "value": "Wagon",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2106,
+      "namespace": ["ucs"],
+      "legacy_id": 1106,
+      "type": ["sfx"],
+      "value": "Window",
+      "parent_gid": 1072
+    },
+    {
+      "gid": 2107,
+      "namespace": ["ucs"],
+      "legacy_id": 1107,
+      "type": ["sfx"],
+      "value": "Alien",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2108,
+      "namespace": ["ucs"],
+      "legacy_id": 1108,
+      "type": ["sfx"],
+      "value": "Baby",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2109,
+      "namespace": ["ucs"],
+      "legacy_id": 1109,
+      "type": ["sfx"],
+      "value": "Cheer",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2110,
+      "namespace": ["ucs"],
+      "legacy_id": 1110,
+      "type": ["sfx"],
+      "value": "Child",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2111,
+      "namespace": ["ucs"],
+      "legacy_id": 1111,
+      "type": ["sfx"],
+      "value": "Crying",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2112,
+      "namespace": ["ucs"],
+      "legacy_id": 1112,
+      "type": ["sfx"],
+      "value": "Efforts",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2113,
+      "namespace": ["ucs"],
+      "legacy_id": 1113,
+      "type": ["sfx"],
+      "value": "Female",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2114,
+      "namespace": ["ucs"],
+      "legacy_id": 1114,
+      "type": ["sfx"],
+      "value": "Futzed",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2115,
+      "namespace": ["ucs"],
+      "legacy_id": 1115,
+      "type": ["sfx"],
+      "value": "Historical",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2116,
+      "namespace": ["ucs"],
+      "legacy_id": 1116,
+      "type": ["sfx"],
+      "value": "Laugh",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2117,
+      "namespace": ["ucs"],
+      "legacy_id": 1117,
+      "type": ["sfx"],
+      "value": "Male",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2118,
+      "namespace": ["ucs"],
+      "legacy_id": 1118,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2119,
+      "namespace": ["ucs"],
+      "legacy_id": 1119,
+      "type": ["sfx"],
+      "value": "Reaction",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2120,
+      "namespace": ["ucs"],
+      "legacy_id": 1120,
+      "type": ["sfx"],
+      "value": "Scream",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2121,
+      "namespace": ["ucs"],
+      "legacy_id": 1121,
+      "type": ["sfx"],
+      "value": "Singing",
+      "parent_gid": 1073
+    },
+    {
+      "gid": 2122,
+      "namespace": ["ucs"],
+      "legacy_id": 1122,
+      "type": ["sfx"],
+      "value": "Bubbles",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2123,
+      "namespace": ["ucs"],
+      "legacy_id": 1123,
+      "type": ["sfx"],
+      "value": "Drain",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2124,
+      "namespace": ["ucs"],
+      "legacy_id": 1124,
+      "type": ["sfx"],
+      "value": "Drip",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2125,
+      "namespace": ["ucs"],
+      "legacy_id": 1125,
+      "type": ["sfx"],
+      "value": "Fizz",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2126,
+      "namespace": ["ucs"],
+      "legacy_id": 1126,
+      "type": ["sfx"],
+      "value": "Flow",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2127,
+      "namespace": ["ucs"],
+      "legacy_id": 1127,
+      "type": ["sfx"],
+      "value": "Fountain",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2128,
+      "namespace": ["ucs"],
+      "legacy_id": 1128,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2129,
+      "namespace": ["ucs"],
+      "legacy_id": 1129,
+      "type": ["sfx"],
+      "value": "Lap",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2130,
+      "namespace": ["ucs"],
+      "legacy_id": 1130,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2131,
+      "namespace": ["ucs"],
+      "legacy_id": 1131,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2132,
+      "namespace": ["ucs"],
+      "legacy_id": 1132,
+      "type": ["sfx"],
+      "value": "Plumbing",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2133,
+      "namespace": ["ucs"],
+      "legacy_id": 1133,
+      "type": ["sfx"],
+      "value": "Pour",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2134,
+      "namespace": ["ucs"],
+      "legacy_id": 1134,
+      "type": ["sfx"],
+      "value": "Splash",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2135,
+      "namespace": ["ucs"],
+      "legacy_id": 1135,
+      "type": ["sfx"],
+      "value": "Spray",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2136,
+      "namespace": ["ucs"],
+      "legacy_id": 1136,
+      "type": ["sfx"],
+      "value": "Steam",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2137,
+      "namespace": ["ucs"],
+      "legacy_id": 1137,
+      "type": ["sfx"],
+      "value": "Surf",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2138,
+      "namespace": ["ucs"],
+      "legacy_id": 1138,
+      "type": ["sfx"],
+      "value": "Turbulent",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2139,
+      "namespace": ["ucs"],
+      "legacy_id": 1139,
+      "type": ["sfx"],
+      "value": "Waterfall",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2140,
+      "namespace": ["ucs"],
+      "legacy_id": 1140,
+      "type": ["sfx"],
+      "value": "Wave",
+      "parent_gid": 1074
+    },
+    {
+      "gid": 2141,
+      "namespace": ["ucs"],
+      "legacy_id": 1141,
+      "type": ["sfx"],
+      "value": "Armor",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2142,
+      "namespace": ["ucs"],
+      "legacy_id": 1142,
+      "type": ["sfx"],
+      "value": "Arrow",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2143,
+      "namespace": ["ucs"],
+      "legacy_id": 1143,
+      "type": ["sfx"],
+      "value": "Blunt",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2144,
+      "namespace": ["ucs"],
+      "legacy_id": 1144,
+      "type": ["sfx"],
+      "value": "Bow",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2145,
+      "namespace": ["ucs"],
+      "legacy_id": 1145,
+      "type": ["sfx"],
+      "value": "Knife",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2146,
+      "namespace": ["ucs"],
+      "legacy_id": 1146,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2147,
+      "namespace": ["ucs"],
+      "legacy_id": 1147,
+      "type": ["sfx"],
+      "value": "Polearm",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2148,
+      "namespace": ["ucs"],
+      "legacy_id": 1148,
+      "type": ["sfx"],
+      "value": "Siege",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2149,
+      "namespace": ["ucs"],
+      "legacy_id": 1149,
+      "type": ["sfx"],
+      "value": "Sword",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2150,
+      "namespace": ["ucs"],
+      "legacy_id": 1150,
+      "type": ["sfx"],
+      "value": "Whip",
+      "parent_gid": 1075
+    },
+    {
+      "gid": 2151,
+      "namespace": ["ucs"],
+      "legacy_id": 1151,
+      "type": ["sfx"],
+      "value": "Hail",
+      "parent_gid": 1076
+    },
+    {
+      "gid": 2152,
+      "namespace": ["ucs"],
+      "legacy_id": 1152,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1076
+    },
+    {
+      "gid": 2153,
+      "namespace": ["ucs"],
+      "legacy_id": 1153,
+      "type": ["sfx"],
+      "value": "Storm",
+      "parent_gid": 1076
+    },
+    {
+      "gid": 2154,
+      "namespace": ["ucs"],
+      "legacy_id": 1154,
+      "type": ["sfx"],
+      "value": "Thunder",
+      "parent_gid": 1076
+    },
+    {
+      "gid": 2155,
+      "namespace": ["ucs"],
+      "legacy_id": 1155,
+      "type": ["sfx"],
+      "value": "Human",
+      "parent_gid": 1077
+    },
+    {
+      "gid": 2156,
+      "namespace": ["ucs"],
+      "legacy_id": 1156,
+      "type": ["sfx"],
+      "value": "Mechanical",
+      "parent_gid": 1077
+    },
+    {
+      "gid": 2157,
+      "namespace": ["ucs"],
+      "legacy_id": 1157,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1077
+    },
+    {
+      "gid": 2158,
+      "namespace": ["ucs"],
+      "legacy_id": 1158,
+      "type": ["sfx"],
+      "value": "Designed",
+      "parent_gid": 1078
+    },
+    {
+      "gid": 2159,
+      "namespace": ["ucs"],
+      "legacy_id": 1159,
+      "type": ["sfx"],
+      "value": "General",
+      "parent_gid": 1078
+    },
+    {
+      "gid": 2160,
+      "namespace": ["ucs"],
+      "legacy_id": 1160,
+      "type": ["sfx"],
+      "value": "Gust",
+      "parent_gid": 1078
+    },
+    {
+      "gid": 2161,
+      "namespace": ["ucs"],
+      "legacy_id": 1161,
+      "type": ["sfx"],
+      "value": "Interior",
+      "parent_gid": 1078
+    },
+    {
+      "gid": 2162,
+      "namespace": ["ucs"],
+      "legacy_id": 1162,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1078
+    },
+    {
+      "gid": 2163,
+      "namespace": ["ucs"],
+      "legacy_id": 1163,
+      "type": ["sfx"],
+      "value": "Vegetation",
+      "parent_gid": 1078
+    },
+    {
+      "gid": 2164,
+      "namespace": ["ucs"],
+      "legacy_id": 1164,
+      "type": ["sfx"],
+      "value": "Covering",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2165,
+      "namespace": ["ucs"],
+      "legacy_id": 1165,
+      "type": ["sfx"],
+      "value": "Hardware",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2166,
+      "namespace": ["ucs"],
+      "legacy_id": 1166,
+      "type": ["sfx"],
+      "value": "Knock",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2167,
+      "namespace": ["ucs"],
+      "legacy_id": 1167,
+      "type": ["sfx"],
+      "value": "Metal",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2168,
+      "namespace": ["ucs"],
+      "legacy_id": 1168,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2169,
+      "namespace": ["ucs"],
+      "legacy_id": 1169,
+      "type": ["sfx"],
+      "value": "Plastic",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2170,
+      "namespace": ["ucs"],
+      "legacy_id": 1170,
+      "type": ["sfx"],
+      "value": "Wood",
+      "parent_gid": 1079
+    },
+    {
+      "gid": 2171,
+      "namespace": ["ucs"],
+      "legacy_id": 1171,
+      "type": ["sfx"],
+      "value": "Bird",
+      "parent_gid": 1080
+    },
+    {
+      "gid": 2172,
+      "namespace": ["ucs"],
+      "legacy_id": 1172,
+      "type": ["sfx"],
+      "value": "Creature",
+      "parent_gid": 1080
+    },
+    {
+      "gid": 2173,
+      "namespace": ["ucs"],
+      "legacy_id": 1173,
+      "type": ["sfx"],
+      "value": "Insect",
+      "parent_gid": 1080
+    },
+    {
+      "gid": 2174,
+      "namespace": ["ucs"],
+      "legacy_id": 1174,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1080
+    },
+    {
+      "gid": 2175,
+      "namespace": ["ucs"],
+      "legacy_id": 1175,
+      "type": ["sfx"],
+      "value": "Break",
+      "parent_gid": 1081
+    },
+    {
+      "gid": 2176,
+      "namespace": ["ucs"],
+      "legacy_id": 1176,
+      "type": ["sfx"],
+      "value": "Crash & debris",
+      "parent_gid": 1081
+    },
+    {
+      "gid": 2177,
+      "namespace": ["ucs"],
+      "legacy_id": 1177,
+      "type": ["sfx"],
+      "value": "Friction",
+      "parent_gid": 1081
+    },
+    {
+      "gid": 2178,
+      "namespace": ["ucs"],
+      "legacy_id": 1178,
+      "type": ["sfx"],
+      "value": "Impact",
+      "parent_gid": 1081
+    },
+    {
+      "gid": 2179,
+      "namespace": ["ucs"],
+      "legacy_id": 1179,
+      "type": ["sfx"],
+      "value": "Misc",
+      "parent_gid": 1081
+    },
+    {
+      "gid": 2180,
+      "namespace": ["ucs"],
+      "legacy_id": 1180,
+      "type": ["sfx"],
+      "value": "Movement",
+      "parent_gid": 1081
+    },
+    {
+      "gid": 2181,
+      "namespace": ["ucs"],
+      "legacy_id": 1181,
+      "type": ["sfx"],
+      "value": "Tonal",
+      "parent_gid": 1081
+    }
+  ]
+}

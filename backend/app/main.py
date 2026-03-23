@@ -8,7 +8,7 @@ from pathlib import Path
 
 from app.config import settings
 from app.routers import chat, conversations
-from app.services.conversation_store import ConversationStore
+from app.services.conversation_store import get_conversation_store
 
 # Configure logging
 logging.basicConfig(
@@ -45,7 +45,7 @@ async def startup_event():
     logger.info("Starting Gen-Aperture application...")
     
     # Initialize conversation store and create index if needed
-    conversation_store = ConversationStore()
+    conversation_store = get_conversation_store()
     await conversation_store.ensure_index_exists()
     
     logger.info("Application started successfully")
@@ -54,7 +54,7 @@ async def startup_event():
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    conversation_store = ConversationStore()
+    conversation_store = get_conversation_store()
     opensearch_healthy = await conversation_store.check_connection()
     
     return {
