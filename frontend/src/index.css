@@ -535,6 +535,26 @@ body {
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
+  position: relative;
+}
+
+.image-card--ai-generated {
+  background: #f0f4ff;
+  border-color: #c7d7f9;
+}
+
+.ai-generated-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(99, 132, 255, 0.85);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
 }
 
 .image-card:hover {

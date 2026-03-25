@@ -193,6 +193,15 @@ class SearchServiceMCP:
         # Increase size to get enough results for reranking
         debug_request["size"] = 50
 
+        # Ensure is_generated is included in docvalue_fields
+        if "docvalue_fields" not in debug_request:
+            debug_request["docvalue_fields"] = []
+        if not any(
+            (f.get("field") == "is_generated" if isinstance(f, dict) else f == "is_generated")
+            for f in debug_request["docvalue_fields"]
+        ):
+            debug_request["docvalue_fields"].append({"field": "is_generated"})
+
         # Remove script_fields we don't need (uid is computed client-side)
         debug_request.pop("script_fields", None)
 

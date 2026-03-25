@@ -614,7 +614,7 @@ function App() {
 
                       <div className="image-grid">
                         {activeResults.slice(0, 10).map((result, resultIdx) => (
-                          <div key={resultIdx} className="image-card">
+                          <div key={resultIdx} className={`image-card${result.is_generated ? ' image-card--ai-generated' : ''}`}>
                             <img 
                               src={result.thumbnail_url} 
                               alt={result.description}
@@ -622,6 +622,9 @@ function App() {
                               onClick={() => window.open(result.image_url, '_blank')}
                               style={{ cursor: 'pointer' }}
                             />
+                            {result.is_generated && (
+                              <div className="ai-generated-badge">✨ AI Generated</div>
+                            )}
                             <div className="image-info">
                               <div className="image-description" title={result.description}>
                                 {result.description}

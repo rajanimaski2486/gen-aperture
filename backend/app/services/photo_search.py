@@ -147,6 +147,10 @@ class PhotoSearchService:
                 ext_id = source.get('ext_id') or (fields.get('ext_id', [None])[0] if fields.get('ext_id') else None)
                 hadron_id = source.get('hadron_id') or (fields.get('hadron_id', [None])[0] if fields.get('hadron_id') else None)
                 media_type = source.get('media_type', 'image')
+                is_generated_raw = source.get('is_generated')
+                if is_generated_raw is None and fields.get('is_generated'):
+                    is_generated_raw = fields['is_generated'][0]
+                is_generated = bool(is_generated_raw) if is_generated_raw is not None else False
                 
                 results.append({
                     'hadron_id': hadron_id,
@@ -159,7 +163,8 @@ class PhotoSearchService:
                     'categories': source.get('categories') or source.get('global_category_ids', []),
                     'keywords': source.get('keywords') or source.get('keywords_en', []),
                     'orientation': source.get('orientation'),
-                    'score': hit.get('_score', 0.0)
+                    'score': hit.get('_score', 0.0),
+                    'is_generated': is_generated,
                 })
             
             logger.info(f"Raw query: Found {total} photos in {took_ms}ms, returning {len(results)} results")

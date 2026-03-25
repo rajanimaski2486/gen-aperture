@@ -14,6 +14,7 @@ from app.services.photo_search import photo_search_service
 from app.services.search_service_mcp import search_service_mcp
 from app.services.category_filter import category_filter as _category_filter
 from app.services.query_refinement import extract_refinement_filters, describe_filters
+from app.services.query_intent import detect_text_query_intent, QueryIntentResult
 from app.services.reranker import ReflectionReranker, RerankerConfig, should_rerank, _run_async_from_sync
 from app.config import settings
 import dataclasses
@@ -110,6 +111,9 @@ class AgentState(TypedDict):
     refinement_filters: List[Dict[str, Any]] | None
     exclusion_terms: List[str] | None          # keywords_en terms for must_not
     show_generated: bool | None                # inject is_generated=true filter when True
+    media_type: str | None                     # "image" | "video" | "both" | None (informational)
+    boolean_query: str | None                  # Lucene boolean string with AND/OR (≤6 terms)
+    named_entities: Dict[str, List[str]] | None  # locations, brands_trademarks, celebrities, seasons
 
     # Search intent (determined by LLM)
     search_mode: Literal["relevance", "popular"] | None
@@ -231,13 +235,16 @@ If there is conversation history, consider the full context when classifying int
                 intent_messages.append(AIMessage(content=hist_msg["content"]))
         intent_messages.append(HumanMessage(content=state["user_query"]))
         
+        is_first_search = len(state.get("conversation_history", [])) == 0
+
         try:
             intent_response = self.llm.invoke(intent_messages)
             raw_intent = intent_response.content.strip().lower()
-            search_mode = "popular" if "popular" in raw_intent else "relevance"
+            search_mode = "popular" if "popular" in raw_intent else ("popular" if is_first_search else "relevance")
         except Exception as e:
-            logger.warning(f"Router: Intent detection failed ({e}), defaulting to relevance")
-            search_mode = "relevance"
+            default_mode = "popular" if is_first_search else "relevance"
+            logger.warning(f"Router: Intent detection failed ({e}), defaulting to {default_mode}")
+            search_mode = default_mode
         
         state["search_mode"] = search_mode
         logger.info(f"Router: Detected search intent -> {search_mode}")
@@ -321,12 +328,13 @@ Your task:
 
 1. **Identify the domain**: What industry/sector does the brand operate in? What concrete subjects would they need images of?
 
-2. **lexical_query**: A single string of 3-5 key entity terms (nouns) separated by spaces.
+2. **lexical_query**: A single string of 3-6 key entity terms (nouns) separated by spaces.
    These are the CORE subjects for keyword matching. No style/quality words.
    If the user typed a query, its subject matter takes HIGHEST priority.
 
-3. **semantic_query**: A single string of 5-6 terms for semantic/neural vector search.
+3. **semantic_query**: A single string of 5-7 terms for semantic/neural vector search.
    Includes the lexical entities PLUS closely related synonyms or contextual terms.
+   Scale term count by brief complexity: 5 for focused briefs, 7 for complex multi-faceted ones.
    Richer context helps vector search — but still only subject matter, no style words.
 
 4. **Visual requirements** (style properties: candid, authentic, natural lighting, etc.)
@@ -340,6 +348,23 @@ Your task:
 {category_list}
    Return category names EXACTLY as shown.
 
+10. **Media type**: What type of media does the brief need?
+    - "image" for photos/images, "video" for video/footage, "both" for mixed, null if not specified.
+
+11. **Generated content**: Does the brief explicitly request AI-generated or explicitly authentic/real photos?
+    - true if brief requests AI-generated content, false if brief explicitly requires authentic/real photos, null if not specified.
+
+12. **Boolean query**: Construct a Lucene boolean query string from the lexical_query terms.
+    - Use AND between distinct concepts, OR between synonyms/alternatives.
+    - Group alternatives with parentheses. Maximum 6 total terms.
+    - Example: "(shipping OR logistics) AND containers AND port AND workers"
+
+13. **Named entities**: Extract specific named entities found in the brief or user query:
+    - locations: Geographic places, cities, countries (e.g. "New York", "Japan")
+    - brands_trademarks: Brand names, company names mentioned (e.g. "Maersk", "JetBlue")
+    - celebrities: Famous people's names
+    - seasons: Seasonal references (e.g. "summer", "winter", "holiday season")
+
 Respond in this EXACT format — structured analysis followed by a JSON block:
 
 **Structured Analysis:**
@@ -348,8 +373,12 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
 ```json
 {{
   "brand_domain": "industry or sector the brand operates in",
-  "lexical_query": "3-5 key entity terms",
-  "semantic_query": "5-6 terms with synonyms for neural search",
+  "lexical_query": "3-6 key entity terms",
+  "semantic_query": "5-7 terms with synonyms for neural search",
+  "boolean_query": "Lucene boolean string with AND/OR, max 6 terms",
+  "media_type": null,
+  "is_generated": null,
+  "named_entities": {{"locations": [], "brands_trademarks": [], "celebrities": [], "seasons": []}},
   "visual_requirements": ["requirement1", "requirement2"],
   "quality_requirements": ["requirement1"],
   "themes_moods": ["theme1", "mood1"],
@@ -392,7 +421,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         except Exception as e:
             logger.warning(f"Project Manager: Could not parse JSON block: {e}")
 
-        # Extract dual queries — lexical (3-5 terms) and semantic (5-6 terms)
+        # Extract dual queries — lexical (3-6 terms) and semantic (5-7 terms)
         lexical_q = structured_data.get("lexical_query", "").strip()
         semantic_q = structured_data.get("semantic_query", "").strip()
 
@@ -402,12 +431,12 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             lexical_q = " ".join(fallback_queries[:1]) if fallback_queries else state["user_query"]
             semantic_q = " ".join(fallback_queries[:2]) if fallback_queries else state["user_query"]
 
-        # Ensure lexical is capped at 5 terms
-        lexical_terms = lexical_q.split()[:5]
+        # Ensure lexical is capped at 6 terms
+        lexical_terms = lexical_q.split()[:6]
         lexical_q = " ".join(lexical_terms)
 
-        # Ensure semantic is capped at 6 terms
-        semantic_terms = semantic_q.split()[:6]
+        # Ensure semantic is capped at 7 terms
+        semantic_terms = semantic_q.split()[:7]
         semantic_q = " ".join(semantic_terms)
 
         state["lexical_query"] = lexical_q
@@ -417,11 +446,15 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         logger.info(
             f"Project Manager: lexical_query='{lexical_q}', semantic_query='{semantic_q}'"
         )
+
+        # Extract is_generated early — needed by requirements dict and state
+        pm_is_generated = structured_data.get("is_generated")
         
         state["requirements"] = {
             "analysis": analysis,
             "file_type": state.get("file_type"),
             "brand_domain": structured_data.get("brand_domain", ""),
+            "is_generated": pm_is_generated,
             "visual_requirements": structured_data.get("visual_requirements", []),
             "quality_requirements": structured_data.get("quality_requirements", []),
             "themes_moods": structured_data.get("themes_moods", []),
@@ -436,6 +469,28 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             if str(t).strip()
         ]
         state["exclusion_terms"] = brief_exclusions
+
+        # ── New PM fields: boolean_query, media_type, named_entities, is_generated ──
+        pm_boolean_query = structured_data.get("boolean_query", "").strip()
+        if not pm_boolean_query and lexical_q:
+            pm_boolean_query = " AND ".join(lexical_terms)
+        state["boolean_query"] = pm_boolean_query
+        state["media_type"] = (
+            str(structured_data.get("media_type")).lower()
+            if structured_data.get("media_type")
+            and str(structured_data.get("media_type")).lower() in ("image", "video", "both")
+            else None
+        )
+        raw_ne = structured_data.get("named_entities") or {}
+        state["named_entities"] = {
+            "locations": [str(v) for v in (raw_ne.get("locations") or []) if str(v).strip()],
+            "brands_trademarks": [str(v) for v in (raw_ne.get("brands_trademarks") or []) if str(v).strip()],
+            "celebrities": [str(v) for v in (raw_ne.get("celebrities") or []) if str(v).strip()],
+            "seasons": [str(v) for v in (raw_ne.get("seasons") or []) if str(v).strip()],
+        }
+
+        # Derive show_generated from PM analysis + regex on user query
+        state["show_generated"] = (pm_is_generated is True) or _is_show_generated_query(state.get("user_query", ""))
 
         # ── Category extraction — LLM suggestions + text matching ────────────
         # First try LLM-suggested categories
@@ -481,16 +536,23 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             "reasoning": (
                 f"Analyzed the uploaded {state.get('file_type', 'unknown')} file and user query. "
                 f"Identified brand domain: '{structured_data.get('brand_domain', 'unknown')}'. "
-                f"Generated lexical query (3-5 terms): '{lexical_q}'. "
-                f"Generated semantic query (5-6 terms): '{semantic_q}'. "
+                f"Generated lexical query (3-6 terms): '{lexical_q}'. "
+                f"Generated semantic query (5-7 terms): '{semantic_q}'. "
+                f"Generated boolean query: '{pm_boolean_query}'. "
                 f"Matched {len(cat_gids)} categories: {cat_names}. "
                 f"Found {len(brief_exclusions)} exclusion term(s): {brief_exclusions}. "
-                f"Extracted {len(state['refinement_filters'])} refinement filter(s)."
+                f"Extracted {len(state['refinement_filters'])} refinement filter(s). "
+                f"Named entities: {state.get('named_entities', {})}. "
+                f"Media type: {state.get('media_type')}. Is generated: {pm_is_generated}."
             ),
             "output": {
                 "brand_domain": structured_data.get("brand_domain", ""),
                 "lexical_query": lexical_q,
                 "semantic_query": semantic_q,
+                "boolean_query": pm_boolean_query,
+                "named_entities": state.get("named_entities", {}),
+                "media_type": state.get("media_type"),
+                "is_generated": pm_is_generated,
                 "matched_categories": cat_names,
                 "category_gids": cat_gids,
                 "exclusion_terms": brief_exclusions,
@@ -553,30 +615,40 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             raw_query = state["user_query"]
             query_source = "user_direct"
 
-        # Detect "show AI-generated" intent (no LLM needed)
-        show_generated = _is_show_generated_query(raw_query)
+        # --- Step 2: Full LLM intent analysis ---
+        intent_result = detect_text_query_intent(raw_query, self.llm, _category_filter)
+
+        entity_terms = intent_result.entity_terms
+        expanded_semantic_query = intent_result.semantic_query
+        lexical_query_string = intent_result.boolean_query or (
+            " AND ".join(entity_terms) if entity_terms else expanded_semantic_query
+        )
+
+        # Derive is_generated intent — LLM result + regex fallback
+        show_generated = (intent_result.is_generated is True) or _is_show_generated_query(raw_query)
+        explicit_not_generated = intent_result.is_generated is False
         if show_generated:
             logger.info("Search Specialist [TEXT-ONLY]: 'show generated' intent detected")
 
-        # --- Step 2: Full LLM intent analysis ---
-        entity_terms, expanded_semantic_query, query_analysis = self._understand_and_expand_query(raw_query)
-        lexical_query_string = " AND ".join(entity_terms) if entity_terms else expanded_semantic_query
-
-        # Pull out the resolved data from analysis
-        category_gids = query_analysis.get("_resolved_category_gids", [])
-        category_names = query_analysis.get("_resolved_category_names", [])
-        exclusion_terms = query_analysis.get("_exclusion_terms", [])
-        refinement_clauses = query_analysis.get("_refinement_clauses", [])
+        category_gids = intent_result.category_gids
+        category_names = intent_result.category_names
+        exclusion_terms = intent_result.exclusion_terms
+        refinement_clauses = intent_result.refinement_filters
 
         # Store in state
         state["category_gids"] = category_gids
         state["exclusion_terms"] = exclusion_terms
         state["refinement_filters"] = refinement_clauses
+        state["boolean_query"] = intent_result.boolean_query
+        state["media_type"] = intent_result.media_type
+        state["named_entities"] = intent_result.named_entities
 
         logger.info(
             f"Search Specialist [TEXT-ONLY]: entities={entity_terms}, "
-            f"semantic='{expanded_semantic_query}', exclusions={exclusion_terms}, "
-            f"categories={category_names}, filters={len(refinement_clauses)}"
+            f"semantic='{expanded_semantic_query}', boolean='{lexical_query_string}', "
+            f"exclusions={exclusion_terms}, categories={category_names}, "
+            f"filters={len(refinement_clauses)}, media_type={intent_result.media_type}, "
+            f"is_generated={intent_result.is_generated}"
         )
 
         # Record intent analysis step
@@ -585,25 +657,31 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             "action": "Query Intent Analysis (Text-Only)",
             "reasoning": (
                 f"Performed full intent analysis on \"{raw_query}\". "
-                f"Extracted {len(entity_terms)} entity terms: {entity_terms} (limit 5). "
+                f"Extracted {len(entity_terms)} entity terms: {entity_terms} (limit 6). "
+                f"Generated boolean query: \"{lexical_query_string}\". "
                 f"Generated semantic query: \"{expanded_semantic_query}\". "
                 f"Detected {len(exclusion_terms)} exclusion term(s): {exclusion_terms}. "
                 f"Matched {len(category_gids)} categories: {category_names} (gids: {category_gids}). "
                 f"Extracted {len(refinement_clauses)} filter(s): {describe_filters(refinement_clauses)}. "
-                f"Lexical sub-query will use: \"{lexical_query_string}\" (AND operator)."
+                f"Named entities: {intent_result.named_entities}. "
+                f"Media type: {intent_result.media_type}. Is generated: {intent_result.is_generated}."
             ),
             "input": {"raw_query": raw_query, "query_source": query_source},
             "output": {
-                "intent": query_analysis.get("intent"),
+                "intent": intent_result.intent,
                 "entity_terms": entity_terms,
+                "boolean_query": lexical_query_string,
                 "expanded_semantic_query": expanded_semantic_query,
+                "named_entities": intent_result.named_entities,
+                "media_type": intent_result.media_type,
+                "is_generated": intent_result.is_generated,
                 "exclusion_terms": exclusion_terms,
                 "suggested_categories": category_names,
                 "category_gids": category_gids,
                 "filters_extracted": describe_filters(refinement_clauses),
                 "lexical_query": lexical_query_string,
                 "lexical_operator": "AND",
-                "mood_style": query_analysis.get("mood_style", []),
+                "mood_style": intent_result.mood_style,
             },
         })
 
@@ -652,6 +730,8 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 exclusion_terms=exclusion_terms,
                 refinement_filters=refinement_clauses,
                 show_generated=show_generated,
+                boolean_query_string=intent_result.boolean_query,
+                is_not_generated=explicit_not_generated,
             )
 
             # Record payload modification step
@@ -821,9 +901,14 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         logger.info("Search Specialist [BRIEF]: Starting brief workflow...")
 
         # Detect "show AI-generated" intent from the user's original message
-        show_generated = _is_show_generated_query(state.get("user_query", ""))
+        # PM node already sets state["show_generated"] — use that if available
+        show_generated = state.get("show_generated") or _is_show_generated_query(state.get("user_query", ""))
         if show_generated:
             logger.info("Search Specialist [BRIEF]: 'show generated' intent detected")
+
+        # Determine explicit not-generated flag from PM's is_generated analysis
+        pm_is_generated = (state.get("requirements") or {}).get("is_generated")
+        explicit_not_generated = pm_is_generated is False
 
         # --- Step 1: Get PM-generated queries directly ---
         semantic_query = state.get("semantic_query") or ""
@@ -835,9 +920,12 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         if not lexical_query.strip():
             lexical_query = state["user_query"]
 
-        # Parse lexical into terms (already capped at 5 by PM)
-        entity_terms = lexical_query.split()[:5]
+        # Parse lexical into terms (already capped at 6 by PM)
+        entity_terms = lexical_query.split()[:6]
         lexical_query_string = " OR ".join(entity_terms)
+
+        # Use PM-generated boolean_query if available, otherwise fall back to OR-joined terms
+        boolean_query_string = state.get("boolean_query") or lexical_query_string
 
         # Gather PM-extracted filters, categories, exclusions from state
         category_gids = state.get("category_gids") or []
@@ -921,6 +1009,8 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 exclusion_terms=exclusion_terms,
                 refinement_filters=refinement_filters,
                 show_generated=show_generated,
+                boolean_query_string=boolean_query_string,
+                is_not_generated=explicit_not_generated,
             )
 
             steps.append({
@@ -945,7 +1035,10 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "opensearch_payload": opensearch_query,
             })
 
-            search_result = photo_search_service.execute_raw_query(opensearch_query=opensearch_query)
+            search_result = photo_search_service.execute_raw_query(
+                opensearch_query=opensearch_query,
+                search_pipeline="hybrid_10_90",
+            )
 
             # Fallback: if zero results and categories were applied, retry once
             # with only category filters removed.
@@ -954,7 +1047,8 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 removed_count = self._remove_category_filters(fallback_query)
                 if removed_count > 0:
                     fallback_result = photo_search_service.execute_raw_query(
-                        opensearch_query=fallback_query
+                        opensearch_query=fallback_query,
+                        search_pipeline="hybrid_10_90",
                     )
 
                     steps.append({
@@ -1015,7 +1109,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             "opensearch_payload": opensearch_query,
             "opensearch_url": (
                 f"{settings.opensearch_endpoint}/{settings.opensearch_photo_index}/_search"
-                f"?search_pipeline=hybrid-rrf-60"
+                f"?search_pipeline=hybrid_10_90"
             ),
         })
 
@@ -1082,13 +1176,19 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         exclusion_terms: List[str],
         refinement_filters: List[Dict[str, Any]],
         show_generated: bool = False,
+        boolean_query_string: str | None = None,
+        is_not_generated: bool = False,
     ) -> Dict[str, str]:
         """
         Apply ALL modifications to the OpenSearch payload in-place:
-        1. Patch lexical sub-query text with entity terms + operator
+        1. Patch lexical sub-query text (boolean_query_string or entity terms + operator)
         2. Inject category_gids filter (terms on global_category_ids)
         3. Inject refinement filters (orientation, recency, popularity)
         4. Add must_not clause for exclusion terms on keywords_en
+        5. Inject is_generated=true filter (and strip from must_not) when show_generated
+        6. Set minimum_should_match on lexical query_string
+        7. Inject is_generated=false filter when explicitly requested (is_not_generated)
+        8. Add collapse on cluster_id_5
 
         Args:
             opensearch_query: The MCP-returned OpenSearch query (mutated in-place)
@@ -1097,6 +1197,11 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             category_gids:    List of category GID ints for filtering
             exclusion_terms:  Keywords to exclude via must_not on keywords_en
             refinement_filters: Additional filter clauses (orientation, date, etc.)
+            show_generated:   When True, inject is_generated=true and strip from must_not
+            boolean_query_string: Pre-built Lucene boolean string; when provided, used
+                                  directly as the lexical sub-query text instead of
+                                  constructing from entity_terms + operator.
+            is_not_generated: When True, inject explicit is_generated=false filter
 
         Returns:
             dict with "descriptions": list of human-readable modification descriptions
@@ -1104,7 +1209,15 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         descriptions: List[str] = []
 
         # 1. Patch lexical sub-query
-        if entity_terms:
+        if boolean_query_string:
+            # Use the pre-built boolean query string directly
+            self._patch_match_nodes(opensearch_query, boolean_query_string, "and")
+            descriptions.append(
+                f"Patched lexical sub-query → \"{boolean_query_string}\" "
+                f"(pre-built boolean query)"
+            )
+            logger.info(f"Payload mod: Patched lexical → \"{boolean_query_string}\" (boolean)")
+        elif entity_terms:
             join_str = f" {lexical_operator.upper()} ".join(entity_terms)
             self._patch_lexical_subquery_with_operator(
                 opensearch_query, entity_terms, lexical_operator
@@ -1170,6 +1283,24 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             logger.info("Payload mod: Set minimum_should_match=75% on hybrid.queries[1] query_string")
         except (KeyError, IndexError, TypeError):
             logger.debug("Payload mod: Could not set minimum_should_match — path not found in payload")
+
+        # 7. Inject explicit is_generated=false filter when user wants non-generated only
+        if is_not_generated and not show_generated:
+            self._inject_filter(opensearch_query, {"term": {"is_generated": False}})
+            descriptions.append(
+                "Added explicit is_generated=false filter (user requested non-generated content)"
+            )
+            logger.info("Payload mod: Injected is_generated=false filter (explicit non-generated)")
+
+        # 8. (temporarily disabled) collapse + exists filter on cluster_id_5
+        # exists_filter = {"exists": {"field": "cluster_id_5"}}
+        # self._inject_filter_all_bools(opensearch_query, exists_filter)
+        # opensearch_query["collapse"] = {"field": "cluster_id_5"}
+        # descriptions.append(
+        #     "Added exists filter on cluster_id_5 to both hybrid sub-queries; "
+        #     "added collapse on cluster_id_5 for visual deduplication"
+        # )
+        # logger.info("Payload mod: Added exists+collapse on cluster_id_5")
 
         if not descriptions:
             descriptions.append("No modifications needed")
@@ -1285,6 +1416,33 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             return True
 
         return False
+
+    def _inject_filter_all_bools(
+        self, node: Any, filter_clause: Dict[str, Any]
+    ) -> None:
+        """Inject a filter clause into EVERY bool.filter array in the query tree.
+
+        Unlike ``_inject_filter`` (which targets only the primary bool), this
+        walks all nested bool clauses — covering both sub-queries inside a
+        hybrid query.  Skips injection if an identical clause is already present.
+        """
+        if isinstance(node, list):
+            for item in node:
+                self._inject_filter_all_bools(item, filter_clause)
+            return
+        if not isinstance(node, dict):
+            return
+        if "bool" in node:
+            b = node["bool"]
+            if isinstance(b, dict):
+                existing = b.get("filter", [])
+                if not isinstance(existing, list):
+                    existing = [existing]
+                if filter_clause not in existing:
+                    existing.append(filter_clause)
+                    b["filter"] = existing
+        for value in node.values():
+            self._inject_filter_all_bools(value, filter_clause)
 
     def _walk_bools_for_is_generated(
         self, node: Any, filter_clause: Dict[str, Any]
@@ -1469,6 +1627,9 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
     
     def _understand_and_expand_query(self, raw_query: str) -> tuple:
         """
+        DEPRECATED: Use ``detect_text_query_intent()`` from ``query_intent.py`` instead.
+        Kept for backward compatibility. Will be removed in a future release.
+
         Use LLM to perform full query intent analysis for TEXT-ONLY searches:
 
         1a. Extract entities / keywords (max 5)
@@ -1803,6 +1964,10 @@ Rules:
                 category_gids=None,
                 refinement_filters=None,
                 exclusion_terms=None,
+                show_generated=None,
+                media_type=None,
+                boolean_query=None,
+                named_entities=None,
                 search_results=None,
                 total_results=0,
                 # Reranker state — defaults to None/False until triggered
