@@ -23,6 +23,7 @@ class PhotoResult(BaseModel):
     categories: List[Any] = []
     keywords: List[str] = []
     score: float = 0.0
+    is_generated: bool = False
 
 
 class AgentWorkflowStep(BaseModel):

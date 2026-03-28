@@ -278,9 +278,11 @@ function App() {
       await loadRecentConversations();
 
       // Restore the last active conversation after page reload.
+      // Use silent mode so a missing conversation (e.g. after backend restart)
+      // doesn't surface as an error toast.
       const storedConversationId = sessionStorage.getItem(ACTIVE_CONVERSATION_KEY);
       if (storedConversationId) {
-        const loaded = await loadConversation(storedConversationId);
+        const loaded = await loadConversation(storedConversationId, { silent: true });
         if (!loaded) {
           sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
         }
@@ -301,7 +303,7 @@ function App() {
     }
   };
 
-  const loadConversation = async (convId) => {
+  const loadConversation = async (convId, { silent = false } = {}) => {
     try {
       setIsLoading(true);
       const conversation = await conversationsAPI.getConversation(convId);
@@ -332,7 +334,13 @@ function App() {
       return true;
     } catch (err) {
       console.error('Failed to load conversation:', err);
-      showError('Failed to load conversation history');
+      // Don't surface a 404 as an error — the conversation simply no longer
+      // exists (e.g. backend was restarted and in-memory history was cleared).
+      // Only show an error toast for unexpected failures.
+      const isNotFound = err?.response?.status === 404;
+      if (!silent && !isNotFound) {
+        showError('Failed to load conversation history');
+      }
       return false;
     } finally {
       setIsLoading(false);
@@ -631,6 +639,9 @@ function App() {
                               </div>
                               <div className="image-meta">
                                 <span>🏆 {result.license_count || 0} licenses</span>
+                                {result.date_added && (
+                                  <span>📅 {new Date(result.date_added).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                                )}
                                 {result.score && (
                                   <span>⭐ {result.score.toFixed(2)}</span>
                                 )}

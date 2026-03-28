@@ -6,9 +6,12 @@ from typing import Optional
 class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
-    # OpenSearch
+    # OpenSearch — photo search (read-only production cluster)
     opensearch_endpoint: str = "http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org"
     opensearch_photo_index: str = "web-index-v9"
+
+    # OpenSearch — conversation storage (separate writable cluster)
+    opensearch_conversation_endpoint: str = "http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org"
     opensearch_conversation_index: str = "gen-aperture-conversations"
 
     # OpenSearch guardrails

@@ -156,7 +156,8 @@ async def chat(
                 license_count=photo.get('license_count', 0),
                 categories=photo.get('categories', []),
                 keywords=photo.get('keywords', []),
-                score=photo.get('score', 0.0)
+                score=photo.get('score', 0.0),
+                is_generated=photo.get('is_generated', False)
             ))
 
         # Format workflow steps

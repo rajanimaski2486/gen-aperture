@@ -6,7 +6,7 @@ import uuid
 import logging
 
 from app.config import settings
-from app.services.opensearch_guardrails import create_opensearch_client, is_readonly_endpoint
+from app.services.opensearch_guardrails import create_opensearch_client
 
 logger = logging.getLogger(__name__)
 
@@ -15,26 +15,18 @@ class ConversationStore:
     """Manages conversation storage in OpenSearch"""
     
     def __init__(self):
-        self.readonly = is_readonly_endpoint(
-            endpoint=settings.opensearch_endpoint,
-            forced_readonly=settings.opensearch_readonly,
-            readonly_hosts=settings.opensearch_readonly_hosts,
-        )
-
-        # Always create a client so health checks and read endpoints can work.
-        # In read-only mode, the transport is patched to block any write requests.
+        # The conversation cluster (mmr-test) is a dedicated writable cluster —
+        # it is intentionally NOT in the readonly_hosts list.
         self.client = create_opensearch_client(
-            endpoint=settings.opensearch_endpoint,
-            readonly=self.readonly,
+            endpoint=settings.opensearch_conversation_endpoint,
+            readonly=False,
             timeout_seconds=10.0,
         )
         self.index = settings.opensearch_conversation_index
+        self.readonly = False
 
-        # In read-only mode, we keep new conversations/messages in memory only.
+        # In-memory fallback used only when the conversation cluster is unreachable.
         self._memory_conversations: Dict[str, Dict] = {}
-        # Tombstone set: IDs deleted by the user during this session (used to
-        # hide OpenSearch-sourced convos that can't be physically deleted in
-        # read-only mode).
         self._deleted_ids: set = set()
     
     async def check_connection(self) -> bool:
@@ -47,12 +39,6 @@ class ConversationStore:
     
     async def ensure_index_exists(self) -> None:
         """Create conversation index if it doesn't exist"""
-        if self.readonly:
-            logger.warning(
-                "OpenSearch guardrails: read-only mode enabled; skipping conversation index creation"
-            )
-            return
-
         try:
             if self.client.indices.exists(index=self.index):
                 logger.info(f"Index {self.index} already exists")
@@ -167,11 +153,8 @@ class ConversationStore:
             "messages": []
         }
 
-        if self.readonly:
+        if self.readonly:  # pragma: no cover — conversation cluster is always writable
             self._memory_conversations[conversation_id] = doc
-            logger.info(
-                f"Created in-memory conversation (read-only OpenSearch): {conversation_id[:8]}..."
-            )
             return conversation_id
 
         try:
@@ -184,12 +167,6 @@ class ConversationStore:
     
     async def set_title(self, conversation_id: str, title: str) -> None:
         """Set the permanent title for a conversation (generated from first prompt)"""
-        if self.readonly:
-            conv = self._memory_conversations.get(conversation_id)
-            if conv:
-                conv["title"] = title
-            return
-
         try:
             self.client.update(
                 index=self.index,
@@ -208,13 +185,6 @@ class ConversationStore:
     ) -> None:
         """Update the file content stored at the conversation level (e.g. when a new
         file is uploaded mid-conversation, overwriting the previous one)."""
-        if self.readonly:
-            conv = self._memory_conversations.get(conversation_id)
-            if conv:
-                conv["file_name"] = file_name
-                conv["file_content"] = file_content
-            return
-
         try:
             self.client.update(
                 index=self.index,
@@ -236,34 +206,6 @@ class ConversationStore:
         file_name: Optional[str] = None
     ) -> None:
         """Append message to conversation"""
-        if self.readonly:
-            conv = self._memory_conversations.get(conversation_id)
-            if not conv:
-                logger.warning(
-                    "OpenSearch guardrails: read-only mode enabled; "
-                    f"skipping persistence for conversation {conversation_id[:8]}..."
-                )
-                return
-
-            # Update file info if provided and not already set
-            if file_name and not conv.get("file_name"):
-                conv["file_name"] = file_name
-
-            now = datetime.utcnow().isoformat()
-            new_message = {
-                "message_number": conv.get("message_count", 0) + 1,
-                "timestamp": now,
-                "user_message": user_message,
-                "agent_response": agent_response,
-                "search_results_count": search_results_count,
-                "processing_time_ms": processing_time_ms,
-            }
-            conv.setdefault("messages", []).append(new_message)
-            conv["message_count"] = conv.get("message_count", 0) + 1
-            conv["last_message_at"] = now
-            conv["last_user_query"] = user_message
-            return
-
         try:
             # Get existing conversation
             doc = self.client.get(index=self.index, id=conversation_id)
@@ -324,22 +266,8 @@ class ConversationStore:
     
     async def delete_conversation(self, conversation_id: str) -> bool:
         """Delete a conversation by ID. Returns True if deleted, False if not found."""
-        # Remove from in-memory store
-        if conversation_id in self._memory_conversations:
-            del self._memory_conversations[conversation_id]
-            self._deleted_ids.add(conversation_id)
-            return True
-
-        if self.readonly:
-            # Can't physically delete from OpenSearch in read-only mode.
-            # Record a tombstone so it disappears from the sidebar listing.
-            self._deleted_ids.add(conversation_id)
-            logger.info(f"Tombstoned conversation {conversation_id[:8]}... (read-only mode)")
-            return True
-
         try:
             self.client.delete(index=self.index, id=conversation_id)
-            self._deleted_ids.add(conversation_id)
             logger.info(f"Deleted conversation {conversation_id[:8]}...")
             return True
         except exceptions.NotFoundError:
@@ -352,28 +280,14 @@ class ConversationStore:
     async def list_recent_conversations(self, limit: int = 5) -> List[Dict]:
         """Get recent conversations for sidebar"""
         try:
-            # Pull from memory first (read-only mode creates conversations in-memory).
-            mem_previews: List[Dict] = []
-            for conv in self._memory_conversations.values():
-                mem_previews.append(
-                    {
-                        "conversation_id": conv.get("conversation_id"),
-                        "last_user_query": conv.get("last_user_query", ""),
-                        "title": conv.get("title"),
-                        "last_message_at": conv.get("last_message_at"),
-                        "message_count": conv.get("message_count", 0),
-                    }
-                )
-
             query = {
                 "query": {"match_all": {}},
                 "sort": [{"last_message_at": {"order": "desc"}}],
                 "size": limit,
                 "_source": ["conversation_id", "last_user_query", "title", "last_message_at", "message_count"]
             }
-            
             result = self.client.search(index=self.index, body=query)
-            os_previews = [
+            return [
                 {
                     "conversation_id": h["_source"].get("conversation_id"),
                     "last_user_query": h["_source"].get("last_user_query", ""),
@@ -383,30 +297,10 @@ class ConversationStore:
                 }
                 for h in result.get("hits", {}).get("hits", [])
             ]
-
-            combined = mem_previews + os_previews
-            combined.sort(key=lambda d: d.get("last_message_at") or "", reverse=True)
-            # Filter tombstoned conversations
-            combined = [c for c in combined if c.get("conversation_id") not in self._deleted_ids]
-            return combined[:limit]
             
         except Exception as e:
             logger.error(f"Failed to list conversations: {e}")
-            # Fall back to memory only
-            mem_only = [
-                {
-                    "conversation_id": conv.get("conversation_id"),
-                    "last_user_query": conv.get("last_user_query", ""),
-                    "title": conv.get("title"),
-                    "last_message_at": conv.get("last_message_at"),
-                    "message_count": conv.get("message_count", 0),
-                }
-                for conv in self._memory_conversations.values()
-            ]
-            mem_only.sort(key=lambda d: d.get("last_message_at") or "", reverse=True)
-            # Filter tombstoned conversations
-            mem_only = [c for c in mem_only if c.get("conversation_id") not in self._deleted_ids]
-            return mem_only[:limit]
+            return []
 
 
 # Module-level singleton so all routers share the same in-memory state
