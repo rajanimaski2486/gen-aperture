@@ -158,6 +158,8 @@ class PhotoSearchService:
                     'description': source.get('description_en', 'No description available'),
                     'image_url': self._build_image_url(ext_id, media_type),
                     'thumbnail_url': self._build_thumbnail_url(ext_id, media_type),
+                    'video_url': self._build_video_url(ext_id, media_type),
+                    'media_type': media_type,
                     'date_added': source.get('date_added'),
                     'license_count': source.get('total_paid_license_count_all_time', 0),
                     'categories': source.get('categories') or source.get('global_category_ids', []),
@@ -282,7 +284,7 @@ class PhotoSearchService:
         if media_type == 'video':
             return f"https://ak.picdn.net/shutterstock/videos/{ext_id}/thumb/1.jpg"
         return f"https://image.shutterstock.com/image-photo/image-250nw-{ext_id}.jpg"
-    
+
     def _build_thumbnail_url(self, ext_id: str, media_type: str = 'image') -> str:
         """Build thumbnail URL from ext_id."""
         if not ext_id:
@@ -290,6 +292,12 @@ class PhotoSearchService:
         if media_type == 'video':
             return f"https://ak.picdn.net/shutterstock/videos/{ext_id}/thumb/1.jpg"
         return f"https://image.shutterstock.com/image-photo/image-150nw-{ext_id}.jpg"
+
+    def _build_video_url(self, ext_id: str, media_type: str = 'image') -> str:
+        """Build MP4 preview URL for video assets."""
+        if not ext_id or media_type != 'video':
+            return ''
+        return f"https://ak.picdn.net/shutterstock/videos/{ext_id}/preview/_.mp4"
 
 
 # Singleton instance

@@ -29,13 +29,18 @@ class Settings(BaseSettings):
     # Environment
     environment: str = "development"
 
+    # Main agent LLM — primary model then fallback
+    agent_model: str = "qwen-plus"             # Primary model (Qwen via OpenAI-compatible API)
+    agent_model_base_url: Optional[str] = None  # Override base URL (e.g. DashScope, Together AI)
+    agent_fallback_model: str = "gpt-4o-mini"   # Fallback if primary fails
+
     # Reflection Reranker
     # Minimum number of results the reranker should try to return
     rerank_min_results_target: int = 10
     # Normalised score (0-10) below which a result is considered a poor match
-    rerank_relevance_threshold: float = 5.0
+    rerank_relevance_threshold: float = 3.0
     # Scores in [borderline_threshold, relevance_threshold) may be promoted to hit min_results_target
-    rerank_borderline_threshold: float = 3.5
+    rerank_borderline_threshold: float = 2.0
     # Jaccard similarity above which two results are treated as near-duplicates
     rerank_duplicate_similarity_threshold: float = 0.5
 
@@ -86,7 +91,10 @@ class Settings(BaseSettings):
     # Soft penalty applied per prior pick from the same lane during shortlist
     # interleaving. Higher => more diversity, lower => stronger score dominance.
     searchbybrief_curator_diversity_penalty: float = 0.4
-    
+
+    # Model used by the reflection reranker LLM passes
+    rerank_model: str = "Qwen3-VL-Reranker-8B"
+
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
     bifrost_api_key: str | None = None
     bifrost_base_url: str = "https://bifrost.shuttercorp.net/openai"

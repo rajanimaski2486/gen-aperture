@@ -33,6 +33,53 @@ function PayloadModal({ title, payload, url, method, onClose }) {
   );
 }
 
+/** Collapsible Brief Analysis section inside an assistant message */
+function BriefAnalysisSection({ content }) {
+  const [expanded, setExpanded] = useState(true);
+
+  const BRIEF_MARKER = '**Brief Analysis:**';
+  const briefStart = content.indexOf(BRIEF_MARKER);
+
+  if (briefStart === -1) {
+    return (
+      <div className="markdown-body">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+      </div>
+    );
+  }
+
+  const before = content.slice(0, briefStart).trim();
+  // Find where the next top-level section begins (e.g. "**Search Results")
+  const afterBriefRaw = content.slice(briefStart + BRIEF_MARKER.length);
+  const nextSectionMatch = afterBriefRaw.match(/\n\n\*\*(?!Structured Analysis)/);
+  const splitIdx = nextSectionMatch ? nextSectionMatch.index : afterBriefRaw.length;
+  const briefContent = afterBriefRaw.slice(0, splitIdx).trim();
+  const after = afterBriefRaw.slice(splitIdx).trim();
+
+  return (
+    <div className="markdown-body">
+      {before && <ReactMarkdown remarkPlugins={[remarkGfm]}>{before}</ReactMarkdown>}
+
+      <div className="brief-analysis-panel">
+        <button
+          className="brief-analysis-toggle"
+          onClick={() => setExpanded(prev => !prev)}
+        >
+          <span>📋 Brief Analysis</span>
+          <span style={{ marginLeft: 'auto' }}>{expanded ? '▾' : '▸'}</span>
+        </button>
+        {expanded && (
+          <div className="brief-analysis-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{briefContent}</ReactMarkdown>
+          </div>
+        )}
+      </div>
+
+      {after && <ReactMarkdown remarkPlugins={[remarkGfm]}>{after}</ReactMarkdown>}
+    </div>
+  );
+}
+
 /** Reflection Reranker log panel */
 function RerankLogPanel({ decisions, explanation }) {
   const [expanded, setExpanded] = useState(false);
@@ -214,6 +261,11 @@ function AgentWorkflowPanel({ steps }) {
                     <span className="workflow-step-action">
                       — {step.action}
                     </span>
+                    {step.model && (
+                      <span className="workflow-step-model" title={`Model: ${step.model}`}>
+                        🤖 {step.model}
+                      </span>
+                    )}
                   </div>
                   <span className="workflow-step-expand">
                     {expandedSteps[idx] ? "▾" : "▸"}
@@ -314,6 +366,15 @@ function App() {
   const [tempApiKey, setTempApiKey] = useState("");
   const [error, setError] = useState(null);
   const [workflowMode, setWorkflowMode] = useState('agent_squad');
+  // Model selection
+  const [selectedModel, setSelectedModel] = useState('qwen-plus');
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const availableModels = [
+    { id: 'qwen-plus', name: 'Qwen Plus', description: 'Fast & efficient reasoning' },
+    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'High-quality responses' },
+  ];
+  // Tracks the index of the video card currently being hovered (for hover-play)
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   // Check for API key on mount
   useEffect(() => {
@@ -323,6 +384,12 @@ function App() {
         setShowApiKeyModal(true);
       } else {
         setApiKey(storedApiKey);
+      }
+
+      // Load stored model preference
+      const storedModel = sessionStorage.getItem('selected_model');
+      if (storedModel) {
+        setSelectedModel(storedModel);
       }
 
       await loadRecentConversations();
@@ -420,11 +487,32 @@ function App() {
     }
   }, [showApiKeyModal]);
 
+  // Close model selector when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      const modelSelector = document.querySelector('.model-selector-container');
+      if (modelSelector && !modelSelector.contains(e.target)) {
+        setShowModelSelector(false);
+      }
+    };
+
+    if (showModelSelector) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showModelSelector]);
+
   const handleNewChat = () => {
     setConversationId(null);
     sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setMessages([]);
     setSelectedFile(null);
+  };
+
+  const handleModelSelect = (modelId) => {
+    setSelectedModel(modelId);
+    sessionStorage.setItem('selected_model', modelId);
+    setShowModelSelector(false);
   };
 
   const handleDeleteConversation = async (e, convId) => {
@@ -480,31 +568,34 @@ function App() {
     setMessages((prev) => [...prev, newUserMessage]);
 
     setIsLoading(true);
+  const requestStart = Date.now();
 
-    try {
+  try {
       const response = await chatAPI.sendMessage(
         userMessage,
         conversationId,
         apiKey, // Always send API key to extend session
-        selectedFile,
+        fileToSend,
+        selectedModel,
         workflowMode,
       );
+  const generationMs = Date.now() - requestStart;
 
       // Add agent response
       setMessages((prev) => [
         ...prev,
         {
-          role: "assistant",
+          role: 'assistant',
           content: response.response,
           results: response.results,
           filter_metadata: response.filter_metadata || null,
           pdf_search_detail: response.pdf_search_detail || null,
           workflow_steps: response.workflow_steps || [],
-          search_mode: response.search_mode || "relevance",
+          search_mode: response.search_mode || 'relevance',
           rerank_applied: response.rerank_applied || false,
           rerank_decisions: response.rerank_decisions || [],
           rerank_explanation: response.rerank_explanation || null,
-          workflow_mode: workflowMode,
+          generation_ms: generationMs,
         },
       ]);
 
@@ -579,6 +670,32 @@ function App() {
     }
   };
 
+  const buildImageVariantUrl = (extId, size = '600w') => {
+    if (!extId) return '';
+    return `https://image.shutterstock.com/image-photo/image-${size}-${extId}.jpg`;
+  };
+
+  const getImageVariants = (result) => {
+    const extId = result?.ext_id;
+    if (!extId) {
+      return {
+        src: result?.image_url || result?.thumbnail_url || '',
+        srcSet: '',
+        previewUrl: result?.image_url || result?.thumbnail_url || '',
+      };
+    }
+
+    const small = buildImageVariantUrl(extId, '250nw');
+    const medium = buildImageVariantUrl(extId, '600w');
+    const large = buildImageVariantUrl(extId, '1000w');
+
+    return {
+      src: medium,
+      srcSet: `${small} 250w, ${medium} 600w, ${large} 1000w`,
+      previewUrl: large,
+    };
+  };
+
   return (
     <div className="app">
       {/* Sidebar */}
@@ -618,6 +735,35 @@ function App() {
       <div className="chat-container">
         <div className="header">
           <h1>Gen-Aperture</h1>
+          
+          {/* Model Selector */}
+          <div className="model-selector-container">
+            <button 
+              className="model-selector-btn"
+              onClick={() => setShowModelSelector(!showModelSelector)}
+              title="Select AI model"
+            >
+              🤖 {availableModels.find(m => m.id === selectedModel)?.name || 'Model'}
+              <span className="model-selector-icon">{showModelSelector ? '▾' : '▸'}</span>
+            </button>
+            
+            {showModelSelector && (
+              <div className="model-selector-dropdown">
+                {availableModels.map(model => (
+                  <div
+                    key={model.id}
+                    className={`model-option ${model.id === selectedModel ? 'active' : ''}`}
+                    onClick={() => handleModelSelect(model.id)}
+                  >
+                    <div className="model-option-name">{model.name}</div>
+                    <div className="model-option-desc">{model.description}</div>
+                    {model.id === selectedModel && <span className="model-checkmark">✓</span>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button className="new-chat-btn" onClick={handleNewChat}>
             + New Chat
           </button>
@@ -639,38 +785,8 @@ function App() {
                 {msg.role === "user" ? "U" : "A"}
               </div>
               <div className="message-content">
-                {msg.role === "assistant" ? (
-                  <div className="markdown-body">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        p: ({ children, ...props }) => {
-                          const text = Array.isArray(children)
-                            ? children
-                                .map((child) => (typeof child === "string" ? child : ""))
-                                .join("")
-                            : typeof children === "string"
-                              ? children
-                              : "";
-                          const isWarningLine =
-                            text.startsWith("Warning:") ||
-                            text.startsWith("Warning Readiness:") ||
-                            text.startsWith("Warning Gaps:");
-
-                          return (
-                            <p
-                              {...props}
-                              className={isWarningLine ? "warning-line" : undefined}
-                            >
-                              {children}
-                            </p>
-                          );
-                        },
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
-                  </div>
+                {msg.role === 'assistant' ? (
+                  <BriefAnalysisSection content={msg.content} />
                 ) : (
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
                 )}
@@ -734,101 +850,76 @@ function App() {
                     explanation={msg.rerank_explanation}
                   />
                 )}
-                {/* Image results - show up to 10 with filters applied inline */}
-                {msg.results &&
-                  msg.results.length > 0 &&
-                  (() => {
-                    const activeResults = msg.results;
-                    return (
-                      <div className="image-results">
-                        <div className="image-results-header">
-                          📸 Showing {Math.min(activeResults.length, MAX_RESULTS_DISPLAYED)} images
-                          {msg.search_mode && (
-                            <span
-                              className={`search-mode-badge ${msg.search_mode}`}
-                            >
-                              {msg.search_mode === "popular"
-                                ? "🔥 Popular"
-                                : "🎯 Relevant"}
-                            </span>
+
+                {/* Mixed image + video results */}
+                {msg.results && msg.results.length > 0 && (() => {
+                  const activeResults = msg.results;
+                  const imageCount = activeResults.filter(r => r.media_type !== 'video').length;
+                  const videoCount = activeResults.filter(r => r.media_type === 'video').length;
+                  return (
+                    <div className="image-results">
+                      <div className="image-results-header">
+                        Showing {activeResults.length} results
+                        {imageCount > 0 && <span className="result-type-pill result-type-pill--image">📸 {imageCount} images</span>}
+                        {videoCount > 0 && <span className="result-type-pill result-type-pill--video">🎬 {videoCount} videos</span>}
+                        {msg.search_mode && (
+                          <span className={`search-mode-badge ${msg.search_mode}`}>
+                            {msg.search_mode === 'popular' ? '🔥 Popular' : '🎯 Relevant'}
+                          </span>
+                        )}
+                        {msg.rerank_applied && (
+                          <span className="rerank-badge">🎯 Reranked</span>
+                        )}
+                        {msg.generation_ms != null && (
+                          <span className="generation-time-badge">⏱ {(msg.generation_ms / 1000).toFixed(1)}s</span>
+                        )}
+                      </div>
+
+                      {msg.filter_metadata?.filters_applied && (
+                        <div className="filter-metadata-banner">
+                          {msg.filter_metadata.category_values?.length > 0 && (
+                            <span>🏷️ {msg.filter_metadata.category_values.join(', ')}</span>
                           )}
-                          {msg.rerank_applied && (
-                            <span className="rerank-badge">🎯 Reranked</span>
+                          {msg.filter_metadata.exclusion_terms?.length > 0 && (
+                            <span>🚫 Excluded: {msg.filter_metadata.exclusion_terms.join(', ')}</span>
+                          )}
+                          {msg.filter_metadata.refinement_filter_descriptions?.length > 0 && (
+                            <span>🔧 {msg.filter_metadata.refinement_filter_descriptions.join(' · ')}</span>
                           )}
                         </div>
+                      )}
 
-                        {msg.filter_metadata?.filters_applied && (
-                          <div className="filter-metadata-banner">
-                            {msg.filter_metadata.category_values?.length >
-                              0 && (
-                              <span>
-                                🏷️{" "}
-                                {msg.filter_metadata.category_values.join(", ")}
-                              </span>
-                            )}
-                            {msg.filter_metadata.exclusion_terms?.length >
-                              0 && (
-                              <span>
-                                🚫 Excluded:{" "}
-                                {msg.filter_metadata.exclusion_terms.join(", ")}
-                              </span>
-                            )}
-                            {msg.filter_metadata.refinement_filter_descriptions
-                              ?.length > 0 && (
-                              <span>
-                                🔧{" "}
-                                {msg.filter_metadata.refinement_filter_descriptions.join(
-                                  " · ",
-                                )}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                      <div className="image-grid">
+                        {activeResults.slice(0, 10).map((result, resultIdx) => {
+                          const isVideo = result.media_type === 'video';
+                          const cardKey = `${idx}-${resultIdx}`;
 
-                        <div className="image-grid">
-                          {activeResults
-                            .slice(0, MAX_RESULTS_DISPLAYED)
-                            .map((result, resultIdx) => (
+                          if (isVideo) {
+                            return (
                               <div
                                 key={resultIdx}
-                                className={`image-card${result.is_generated ? " image-card--ai-generated" : ""}`}
+                                className="image-card image-card--video"
+                                onClick={() => window.open(result.video_url, '_blank')}
                               >
-                                <img
-                                  src={result.thumbnail_url}
-                                  alt={result.description}
-                                  loading="lazy"
-                                  onClick={() =>
-                                    window.open(result.image_url, "_blank")
-                                  }
-                                  style={{ cursor: "pointer" }}
-                                />
-                                {result.is_generated && (
-                                  <div className="ai-generated-badge">
-                                    ✨ AI Generated
-                                  </div>
+                                {result.video_url && (
+                                  <video
+                                    className="video-card-player"
+                                    src={result.video_url}
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                  />
                                 )}
+                                <div className="video-badge">🎬 Video</div>
                                 <div className="image-info">
-                                  <div
-                                    className="image-description"
-                                    title={result.description}
-                                  >
+                                  <div className="image-description" title={result.description}>
                                     {result.description}
                                   </div>
                                   <div className="image-meta">
-                                    <span>
-                                      🏆 {result.license_count || 0} licenses
-                                    </span>
+                                    <span>🏆 {result.license_count || 0} licenses</span>
                                     {result.date_added && (
-                                      <span>
-                                        📅{" "}
-                                        {new Date(
-                                          result.date_added,
-                                        ).toLocaleDateString("en-US", {
-                                          year: "numeric",
-                                          month: "short",
-                                          day: "numeric",
-                                        })}
-                                      </span>
+                                      <span>📅 {new Date(result.date_added).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                                     )}
                                     {result.score && (
                                       <span>⭐ {result.score.toFixed(2)}</span>
@@ -836,11 +927,50 @@ function App() {
                                   </div>
                                 </div>
                               </div>
-                            ))}
-                        </div>
+                            );
+                          }
+
+                          // Image tile
+                          return (
+                            <div key={resultIdx} className={`image-card${result.is_generated ? ' image-card--ai-generated' : ''}`}>
+                              {(() => {
+                                const imageVariants = getImageVariants(result);
+                                return (
+                                  <img
+                                    src={imageVariants.src}
+                                    srcSet={imageVariants.srcSet || undefined}
+                                    sizes="(max-width: 600px) 50vw, (max-width: 900px) 45vw, (max-width: 1200px) 30vw, 22vw"
+                                    alt={result.description}
+                                    loading="lazy"
+                                    onClick={() => window.open(imageVariants.previewUrl, '_blank')}
+                                    style={{ cursor: 'pointer' }}
+                                  />
+                                );
+                              })()}
+                              {result.is_generated && (
+                                <div className="ai-generated-badge">✨ AI Generated</div>
+                              )}
+                              <div className="image-info">
+                                <div className="image-description" title={result.description}>
+                                  {result.description}
+                                </div>
+                                <div className="image-meta">
+                                  <span>🏆 {result.license_count || 0} licenses</span>
+                                  {result.date_added && (
+                                    <span>📅 {new Date(result.date_added).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                                  )}
+                                  {result.score && (
+                                    <span>⭐ {result.score.toFixed(2)}</span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                    );
-                  })()}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ))}

@@ -191,11 +191,18 @@ OPENSEARCH_READONLY=true
 SESSION_TIMEOUT_MINUTES=30
 ENVIRONMENT=development
 
+# Agent LLM (optional — defaults shown)
+AGENT_MODEL=qwen-plus
+AGENT_MODEL_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+AGENT_FALLBACK_MODEL=gpt-4o-mini
+
 # Reflection reranker thresholds (all optional — defaults shown)
 RERANK_MIN_RESULTS_TARGET=10
 RERANK_RELEVANCE_THRESHOLD=5.0
 RERANK_BORDERLINE_THRESHOLD=3.5
 RERANK_DUPLICATE_SIMILARITY_THRESHOLD=0.5
+# Reflection reranker model (optional)
+RERANK_MODEL=Qwen3-VL-Reranker-8B
 ```
 
 ## Security

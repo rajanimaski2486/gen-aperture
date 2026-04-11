@@ -1,51 +1,74 @@
-
- I’m presenting a multimodal search system that uses two agent patterns.
-A reflection-based agent pattern in which the system retrieves results first, then the agent reviews and reranks them for better quality.
-In the planning agent pattern, the agent first analyzes the uploaded brief, understands context and requirements, builds a structured search plan, and then retrieves results aligned to that plan.
-
+I’m presenting a multimodal search system that uses two agent patterns:
+1) Planning agent pattern
+2) Reflection-based agent pattern
 
 
+Let's look at the first one which is the planning agent pattern in the Scenario of
+A Content Brief Workflow. Let me share a condtent brief document for reviww 
+
+This is a customer brief with full narrative details describing the desired assets:
+- specific image/video characteristics
+- lighting and mood
+- quality expectations
+- technical constraints
+- exclusions and usage preferences
+
+I’ll scroll through the brief while I explain that this is the source of truth for what the customer actually wants.
+which is currently read by creative analysts who are humans who process the criteria and then run searches, applies fileters to find right content. 
+In agentic disvovery system,  I’ll just upload this brief file and run a search request based on it.
+
+With a file uploaded, the app runs structured analysis first similar to what creative analyst would do.
+and from here on it's so much powerful than human workflow because it has access to the tools and it can decide the type o tool to chose, reflect and iterate. 
+
+For example, in this scenrio, 
+
+The Project Manager / planning layer extracts and structures:
+- intent and domain context
+- lexical and semantic query candidates
+- visual style, mood, quality, and technical constraints
+- filters, exclusions, and category hints
+
+and there is 
+1) intent analysis
+2) query generation
+3) filter generation
+4) search execution happening in steps. 
+
+This is the planning pattern end-to-end:
+understand the brief first, build the plan, then retrieve assets aligned to that plan.
 
 
-“Here’s the first query I’m typing to demo the reflection-based agent pattern:
+Let's move to secneio2 2: Multimodal Search + Tool Calling
 
-show me new york city buildings specifically empire state building during winter
+Now I’ll demo multimodal search directly from text.
+I’ll run this query:
+`assets of nyc buildings specifically empire state building during winter`
 
-This first step runs baseline retrieval.
-The Squad Router detects a text-only query with no file and routes it directly to the Search Specialist. The Search Specialist then performs intent analysis (entities + semantic query), applies lightweight payload refinements (such as category and license filters), and executes the search query via the Search Service MCP server, which then leverages the OpenSearch MCP server.
+ the system returns both videos and images that match the query.
 
-These are direct relevance results from the retrieval pipeline.
+Then I’ll run follow-up refinements:
+`show popular images only`
+`show generated images only`
 
-“Now I’ll run reflection with a second prompt: `respond with best matches`.”
-
-reflect and respond with best matches
-
-
-“Now the Reflection Reranker agent runs after retrieval in three passes: LLM scoring, LLM critique, then deterministic selection and de-duplication.
-
-“This shows the reflection-based agent pattern: search first, then agent review and refinement.”
-
-Scenario 2: 
- I’ll switch to the planning agent pattern by uploading a creative brief.
-
-“After upload, I’ll type: `find travel and leisure images for this brief`.”
+I’ll briefly explain agent tool calling here:
+- the agent calls image and video tools
+- it merges and filters results based on the latest user instruction
 
 
-find travel and leisure images for this brief
+Scenario 3: Reflection Pattern
+
+Now I’ll run:
+`assets of aerial view of atlanta city night sky`
+
+After baseline retrieval, I’ll ask:
+`respond with best matches for the same query`
+
+I’ll briefly explain reflection:
+the system gets initial results first, then performs a reflection/rerank pass to surface stronger final matches.
 
 
-“With a file uploaded, orchestration changes. The router sends this to the Project Manager agent first.
+Closing
 
-
-“The Project Manager agent analyzes the brief and generates structured analysis: brand domain, lexical query, semantic query, visual and quality requirements, themes, technical constraints, exclusion terms, and suggested categories.”
-
-
-“This is the planning agent pattern: the agent understands context first, creates a search plan, and then executes retrieval.”
-
-
-“Then the Search Specialist agent executes that plan: semantic query goes to MCP, lexical query patches payload, and category, filter, and exclusion constraints are injected before OpenSearch execution.”
-
-
-So this flow shows planning agent behavior end to end: analyze brief, understand context, plan search, then retrieve aligned results.”
-
-“In short, the reflection-based agent pattern improves results after retrieval, while the planning agent pattern improves search strategy before retrieval.”
+Scenario 2 showed planning before retrieval from a brief.
+Scenario 1 showed multimodal retrieval and iterative tool-based refinement.
+Scenario 3 showed reflection after retrieval to improve final relevance.

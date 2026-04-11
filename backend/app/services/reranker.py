@@ -114,8 +114,8 @@ class RerankerConfig:
     # Using all 50 in the critique prompt would be too noisy; keep top-25
     max_candidates_for_critique: int = 25
 
-    # GPT model used for both LLM passes
-    model: str = "gpt-4o-mini"
+    # Model used for both LLM passes
+    model: str = "Qwen3-VL-Reranker-8B"
 
     @classmethod
     def from_settings(cls, settings: Any) -> "RerankerConfig":
@@ -125,6 +125,7 @@ class RerankerConfig:
             relevance_threshold=settings.rerank_relevance_threshold,
             borderline_threshold=settings.rerank_borderline_threshold,
             duplicate_similarity_threshold=settings.rerank_duplicate_similarity_threshold,
+            model=settings.rerank_model,
         )
 
 
@@ -395,21 +396,23 @@ class ReflectionReranker:
             "     0 = completely off-topic\n"
             "  criteria_match:\n"
             "    10 = satisfies every explicit constraint (location, season, style, exclusions)\n"
+            "    10 = if NO explicit constraints exist, score same as query_relevance\n"
             "     5 = satisfies most constraints but misses one\n"
-            "     0 = violates a hard constraint (wrong location, excluded keyword present)\n"
+            "     0 = ONLY if a hard constraint is explicitly violated (wrong location, excluded keyword present)\n"
             "  specificity:\n"
             "    10 = photo is unmistakably about the specific subject requested\n"
             "     5 = could plausibly match several different queries\n"
-            "     0 = so generic it adds no value\n"
+            "     2 = so generic it adds no value\n"
             "  completeness:\n"
             "    10 = rich, detailed scene with strong visual substance\n"
             "     5 = adequate but sparse\n"
-            "     0 = empty, abstract, or visually uninformative\n\n"
+            "     2 = empty, abstract, or visually uninformative\n\n"
             "Combined score formula:\n"
             "  raw_score = query_relevance*0.50 + criteria_match*0.25 + specificity*0.20 + completeness*0.05\n\n"
-            "IMPORTANT: Be strict. A photo of 'generic city skyline' is NOT a match for "
-            "'empire state building'. A photo WITHOUT snow/winter context is NOT a match "
-            "for a winter query. Score harshly — a mediocre result should be 3-4, not 6-7.\n\n"
+            "IMPORTANT: These results were already ranked as relevant by a production search engine. "
+            "Give benefit of the doubt — only score below 4 when the photo is clearly "
+            "off-topic or violates an explicit constraint. A photo that generally matches the "
+            "subject should score 6+. Do NOT over-penalise based on incomplete descriptions.\n\n"
             "Return ONLY valid JSON — a top-level object with a single key 'scores' "
             "whose value is an array. Each array element must have exactly these keys:\n"
             "  hadron_id, query_relevance, criteria_match, specificity, completeness, raw_score, notes\n\n"
@@ -425,7 +428,7 @@ class ReflectionReranker:
             f"Each entry includes: hadron_id, description, keywords, category_ids, "
             f"license_count, retrieval_score.\n\n"
             f"{candidate_text}\n\n"
-            "Score every candidate strictly against the search query above. "
+            "Score every candidate against the search query. "
             "Return JSON as described."
         )
 
@@ -498,23 +501,23 @@ class ReflectionReranker:
         system_prompt = (
             "You are a senior stock photo search quality reviewer. "
             "You are given an initial scoring pass and the actual photo descriptions/keywords. "
-            "Your job is to catch scoring mistakes and ensure only truly relevant results survive.\n\n"
+            "Your job is to improve result ordering and remove only clearly irrelevant photos.\n\n"
             "For each candidate, read the description and keywords carefully, then ask:\n"
-            "  1. Does this photo ACTUALLY show what the user searched for, based on its "
-            "description and keywords — not just keyword overlap?\n"
-            "  2. If the query has a specific location, landmark, or seasonal condition "
-            "(e.g. 'empire state building', 'winter'), does the description/keywords confirm it?\n"
-            "  3. Would I confidently show this as one of the top results to a paying customer?\n"
-            "  4. Are any two results so visually similar that only one should appear?\n\n"
-            "Be strict: if a photo is a generic city scene when the user asked for a specific "
-            "landmark, or has no seasonal context when the query requires it — exclude it.\n\n"
+            "  1. Does this photo broadly match what the user searched for? "
+            "A partial match or thematically related photo is fine to keep.\n"
+            "  2. Only exclude when: the query requires a SPECIFIC location/landmark/season "
+            "and the photo clearly lacks it (e.g. query='empire state building', "
+            "photo has no NYC/skyscraper context).\n"
+            "  3. Are any two results nearly identical (same subject, similar composition)?\n\n"
+            "Default to KEEPING results. Only put a result in confident_excludes if it is "
+            "clearly off-topic. Borderline or imperfect matches belong in borderline_ids, "
+            "not confident_excludes.\n\n"
             "Return ONLY valid JSON with exactly these top-level keys:\n"
             "  duplicate_groups:   array of arrays; each inner array lists hadron_ids of "
             "near-duplicates. The first id in each inner array is the one to KEEP.\n"
-            "  confident_includes: hadron_ids you are sure should be in the final set.\n"
-            "  borderline_ids:     hadron_ids that are acceptable but not ideal.\n"
-            "  confident_excludes: hadron_ids that should NOT appear (wrong subject, "
-            "missing key detail, or too generic).\n"
+            "  confident_includes: hadron_ids you are confident are good matches.\n"
+            "  borderline_ids:     hadron_ids that partially match but are not ideal.\n"
+            "  confident_excludes: hadron_ids that are clearly off-topic or violate a hard constraint.\n"
             "  final_ranked_ids:   all remaining hadron_ids ordered best-first "
             "(omit ids in confident_excludes).\n"
             "  challenges:         object mapping hadron_id → one-sentence reason if you "
@@ -620,11 +623,13 @@ class ReflectionReranker:
         # ── 4. Surviving candidates pool ──────────────────────────────────────
         surviving_ids = [hid for hid in candidates_by_id if hid not in all_excludes]
 
-        # ── 5. Normalise scores across survivors ──────────────────────────────
-        raw_scores = [scores_by_id[hid].get("raw_score", 0.0) for hid in surviving_ids]
-        norm_scores = _normalize_scores(raw_scores)
-        norm_by_id: dict[str, float] = dict(zip(surviving_ids, norm_scores))
-        raw_by_id: dict[str, float] = dict(zip(surviving_ids, raw_scores))
+        # ── 5. Normalise scores across ALL candidates (not just survivors) ────
+        # This ensures excluded items display their actual relative score (not 0).
+        all_ids = list(candidates_by_id.keys())
+        all_raw_scores = [scores_by_id[hid].get("raw_score", 0.0) for hid in all_ids]
+        all_norm_scores = _normalize_scores(all_raw_scores)
+        norm_by_id: dict[str, float] = dict(zip(all_ids, all_norm_scores))
+        raw_by_id: dict[str, float] = dict(zip(all_ids, all_raw_scores))
 
         # ── 6. Apply relevance threshold ──────────────────────────────────────
         # Use the un-normalised raw_score (0-10 scale) to avoid threshold confusion
@@ -729,7 +734,7 @@ class ReflectionReranker:
                 continue
             c = candidates_by_id[hid]
             s = scores_by_id.get(hid, {})
-            norm = norm_by_id.get(hid, 0.0)  # 0 for items that were excluded pre-normalisation
+            norm = norm_by_id.get(hid, 0.0)
 
             if hid in confident_excludes:
                 reason_text = "Excluded by reflection critique: not relevant enough."
@@ -798,8 +803,8 @@ def _format_criteria(search_criteria: dict[str, Any] | None) -> str:
     if user_query:
         lines.append(f"Primary search subject: \"{user_query}\"")
         lines.append(
-            "A relevant photo MUST depict this subject. "
-            "Generic or loosely-related results should score low."
+            "Photos that depict or are thematically related to this subject are relevant. "
+            "Only exclude results that are clearly unrelated."
         )
 
     requirements = search_criteria.get("requirements")

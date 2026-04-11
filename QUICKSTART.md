@@ -141,6 +141,7 @@ curl http://localhost:8000/api/conversations/recent
 - Backend hot reload: `uvicorn ... --reload` picks up `.py` file changes automatically
 - Frontend hot reload: Vite updates the browser instantly on `.jsx`/`.css` changes
 - Reranker thresholds are all configurable in `backend/.env` (see README for variable names)
+- Reranker model is configurable via `RERANK_MODEL` (default: `Qwen3-VL-Reranker-8B`)
 - View OpenSearch payloads live in the Agent Workflow panel in the UI
 
 ## File Structure

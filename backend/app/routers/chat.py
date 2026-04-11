@@ -194,6 +194,7 @@ async def chat(
     openai_api_key: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     workflow_mode: Optional[str] = Form("agent_squad"),
+    model: Optional[str] = Form(None),
 ):
     """
     Main chat endpoint
@@ -202,6 +203,7 @@ async def chat(
     - **conversation_id**: UUID of existing conversation or None for new
     - **openai_api_key**: Required for new conversation or if session expired
     - **file**: Optional PDF/DOCX/TXT file (max 6MB)
+    - **model**: Optional model ID (qwen-plus, gpt-4o-mini, etc.)
     """
     start_time = time.time()
     
@@ -336,7 +338,7 @@ async def chat(
         else:
             # Run default AgentSquad workflow
             logger.info(f"Running agent squad for conversation {conversation_id[:8]}...")
-            agent_squad = AgentSquad(openai_api_key=api_key)
+            agent_squad = AgentSquad(openai_api_key=api_key, model=model)
             agent_result = agent_squad.run(
                 user_query=message,
                 file_content=file_content,
@@ -355,6 +357,8 @@ async def chat(
                 description=photo.get('description', ''),
                 image_url=photo.get('image_url', ''),
                 thumbnail_url=photo.get('thumbnail_url', ''),
+                video_url=photo.get('video_url', ''),
+                media_type=photo.get('media_type', 'image'),
                 date_added=photo.get('date_added'),
                 license_count=photo.get('license_count', 0),
                 categories=photo.get('categories', []),
@@ -370,12 +374,15 @@ async def chat(
                 agent=step.get('agent', ''),
                 action=step.get('action', ''),
                 reasoning=step.get('reasoning', ''),
+                model=step.get('model'),
                 prompt=step.get('prompt'),
                 input=step.get('input'),
                 output=step.get('output'),
                 decision=step.get('decision'),
                 opensearch_payload=step.get('opensearch_payload'),
-                opensearch_url=step.get('opensearch_url')
+                opensearch_url=step.get('opensearch_url'),
+                search_service_endpoint=step.get('search_service_endpoint'),
+                search_service_response=step.get('search_service_response'),
             ))
         
         response_text = agent_result.get('response', 'No response generated')

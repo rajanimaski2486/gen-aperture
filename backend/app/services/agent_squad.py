@@ -4,6 +4,7 @@ Implements Squad Router, Project Manager Strand, and Search Specialist Strand.
 """
 import logging
 import copy
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Any, List, TypedDict, Annotated, Literal
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
@@ -12,6 +13,7 @@ from langgraph.graph.message import add_messages
 from openai import AuthenticationError, OpenAIError
 from app.services.photo_search import photo_search_service
 from app.services.search_service_mcp import search_service_mcp
+from app.services.video_search_mcp import video_search_mcp
 from app.services.category_filter import category_filter as _category_filter
 from app.services.query_refinement import extract_refinement_filters, describe_filters
 from app.services.query_intent import detect_text_query_intent, QueryIntentResult
@@ -89,6 +91,48 @@ def _is_write_intent_query(query: str) -> bool:
     return bool(_WRITE_BLOCK_RE.search(query))
 
 
+# ---------------------------------------------------------------------------
+# Search pipeline detection (module-level, no LLM needed)
+#
+# Rules (evaluated in order):
+#   1. Explicit video words  ("video", "footage", "clip/s", "reel/s") → "video"
+#   2. Explicit image words  ("image/s", "photo/s", "picture/s")       → "image"
+#   3. Both video + image words present                                 → "mixed"
+#   4. Mixed trigger words   ("assets", "content")                     → "mixed"
+#   5. Default                                                          → "image"
+# ---------------------------------------------------------------------------
+
+_PIPELINE_VIDEO_RE = _re.compile(
+    r'\b(videos?|footage|clips?|reels?)\b', _re.IGNORECASE
+)
+_PIPELINE_IMAGE_RE = _re.compile(
+    r'\b(images?|photos?|pictures?|pics?)\b', _re.IGNORECASE
+)
+_PIPELINE_MIXED_RE = _re.compile(
+    r'\b(assets|content)\b', _re.IGNORECASE
+)
+
+
+def _detect_search_pipeline(query: str) -> str:
+    """
+    Return the media pipeline to use for a given query.
+
+    Returns one of: "image" | "video" | "mixed"
+    """
+    has_video = bool(_PIPELINE_VIDEO_RE.search(query))
+    has_image = bool(_PIPELINE_IMAGE_RE.search(query))
+
+    if has_video and not has_image:
+        return "video"
+    if has_image and not has_video:
+        return "image"
+    if has_video and has_image:
+        return "mixed"
+    if _PIPELINE_MIXED_RE.search(query):
+        return "mixed"
+    return "image"  # default
+
+
 class AgentState(TypedDict):
     """State shared across all agents."""
     messages: Annotated[List[Any], add_messages]
@@ -145,22 +189,40 @@ class AgentState(TypedDict):
 class AgentSquad:
     """Multi-agent system for stock photo search."""
     
-    def __init__(self, openai_api_key: str, model: str = "gpt-4o-mini"):
+    def __init__(self, openai_api_key: str, model: str = None):
         """
         Initialize the agent squad.
-        
+
+        The primary LLM model and optional base URL are read from application
+        settings (agent_model / agent_model_base_url).  If the primary model
+        fails at call time, LangChain automatically retries with the fallback
+        model (agent_fallback_model, default gpt-4o-mini).
+
         Args:
-            openai_api_key: User's OpenAI API key
-            model: OpenAI model to use (default: gpt-4o-mini)
+            openai_api_key: User-provided API key (forwarded to both LLMs).
+            model: Optional override for the primary model (e.g., 'gpt-4o-mini').
         """
-        # Set environment variable for OpenAI
         import os
         os.environ["OPENAI_API_KEY"] = openai_api_key
-        
-        self.llm = ChatOpenAI(
-            model=model,
-            temperature=0.7
+
+        # Use provided model override or fall back to settings
+        primary_model = model or settings.agent_model
+        fallback_model = settings.agent_fallback_model
+        base_url = settings.agent_model_base_url or None
+
+        primary_llm = ChatOpenAI(
+            model=primary_model,
+            temperature=0.7,
+            **(dict(base_url=base_url) if base_url else {}),
         )
+        fallback_llm = ChatOpenAI(
+            model=fallback_model,
+            temperature=0.7,
+        )
+
+        # LangChain will automatically use fallback_llm on any exception from primary_llm
+        self.llm = primary_llm.with_fallbacks([fallback_llm])
+        self.llm_model = primary_model   # displayed in workflow log
 
         # Reflection reranker — uses the same OPENAI_API_KEY set above
         self._reranker = ReflectionReranker(RerankerConfig.from_settings(settings))
@@ -335,9 +397,9 @@ If there is conversation history, consider the full context when classifying int
         try:
             intent_response = self.llm.invoke(intent_messages)
             raw_intent = intent_response.content.strip().lower()
-            search_mode = "popular" if "popular" in raw_intent else ("popular" if is_first_search else "relevance")
+            search_mode = "popular"
         except Exception as e:
-            default_mode = "popular" if is_first_search else "relevance"
+            default_mode = "popular"
             logger.warning(f"Router: Intent detection failed ({e}), defaulting to {default_mode}")
             search_mode = default_mode
         
@@ -351,6 +413,7 @@ If there is conversation history, consider the full context when classifying int
             steps.append({
                 "agent": "Squad Router",
                 "action": "Route to Project Manager",
+                "model": self.llm_model,
                 "reasoning": (
                     f"File uploaded ({state.get('file_type', 'unknown')} type) along with query: \"{state['user_query']}\". "
                     f"A file is present, so routing to the Project Manager Strand to analyze the brief. "
@@ -365,6 +428,7 @@ If there is conversation history, consider the full context when classifying int
             steps.append({
                 "agent": "Squad Router",
                 "action": "Route to Search Specialist",
+                "model": self.llm_model,
                 "reasoning": (
                     f"Text-only query: \"{state['user_query']}\". No file uploaded, so routing directly to Search Specialist. "
                     f"Search intent detected as '{search_mode}' — will use MCP tool 'search_{search_mode}' to get the production OpenSearch query from Search Service."
@@ -741,6 +805,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         steps.append({
             "agent": "Project Manager",
             "action": "Analyze Brief & Extract Requirements",
+            "model": self.llm_model,
             "prompt": system_prompt,
             "reasoning": (
                 f"Analyzed the uploaded {state.get('file_type', 'unknown')} file and user query. "
@@ -869,6 +934,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         steps.append({
             "agent": "Search Specialist",
             "action": "Query Intent Analysis (Text-Only)",
+            "model": self.llm_model,
             "reasoning": (
                 f"Performed full intent analysis on \"{raw_query}\". "
                 f"Extracted {len(entity_terms)} entity terms: {entity_terms} (limit 6). "
@@ -899,43 +965,109 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             },
         })
 
-        # --- Step 3: MCP call ---
-        search_mode = state.get("search_mode", "relevance")
+        # --- Step 3: Detect pipeline and call MCP tool(s) ---
+        search_mode = state.get("search_mode", "popular")
         mcp_tool_name = "search_popular" if search_mode == "popular" else "search_relevant"
-        mcp_result = search_service_mcp.call_tool(mcp_tool_name, expanded_semantic_query)
-        mcp_metadata = mcp_result.get("search_service_metadata", {})
+        pipeline = _detect_search_pipeline(raw_query)
+        logger.info(f"Search Specialist [TEXT-ONLY]: pipeline='{pipeline}' for query \"{raw_query}\"")
 
-        steps.append({
-            "agent": "Search Specialist",
-            "action": f"MCP Tool: {mcp_tool_name}",
-            "reasoning": (
-                f"Called Search Service MCP tool '{mcp_tool_name}' with semantic query \"{expanded_semantic_query}\". "
-                f"Search Service found {mcp_metadata.get('num_found', 'N/A')} matches using "
-                f"'{mcp_metadata.get('ranker', 'unknown')}' ranker."
-            ),
-            "input": {
-                "mcp_tool": mcp_tool_name,
-                "expanded_semantic_query": expanded_semantic_query,
-                "sort_order": search_mode,
-                "search_service_url": (
-                    f"http://search.shuttercorp.net/v2/shutterstock/image/search"
-                    f"?q={expanded_semantic_query}&sort_order={search_mode}"
-                    f"&debug_modes=request&source=enterprise"
+        opensearch_query = None
+        video_opensearch_query = None
+
+        if pipeline == "mixed":
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                image_future = pool.submit(search_service_mcp.call_tool, mcp_tool_name, expanded_semantic_query)
+                video_future = pool.submit(video_search_mcp.call_tool, mcp_tool_name, expanded_semantic_query)
+                mcp_result = image_future.result()
+                video_mcp_result = video_future.result()
+            mcp_metadata = mcp_result.get("search_service_metadata", {})
+            video_mcp_metadata = video_mcp_result.get("search_service_metadata", {})
+            steps.append({
+                "agent": "Search Specialist",
+                "action": f"Parallel MCP Tools: image/{mcp_tool_name} + video/{mcp_tool_name}",
+                "model": self.llm_model,
+                "reasoning": (
+                    f"Query contains 'assets' or 'content' keyword — triggered mixed pipeline. "
+                    f"Called Image and Video MCP tools in parallel with \"{expanded_semantic_query}\". "
+                    f"Image service: {mcp_metadata.get('num_found', 'N/A')} matches; "
+                    f"Video service: {video_mcp_metadata.get('num_found', 'N/A')} matches."
                 ),
-            },
-            "output": {
-                "ranker": mcp_metadata.get("ranker", "unknown"),
-                "ranker_settings": mcp_metadata.get("ranker_settings", "unknown"),
-                "num_found_by_search_service": mcp_metadata.get("num_found", 0),
-            },
-            "search_service_endpoint": mcp_result.get("search_service_endpoint"),
-            "search_service_response": mcp_result.get("search_service_response_payload"),
-        })
+                "input": {
+                    "pipeline": "mixed",
+                    "mcp_tool": mcp_tool_name,
+                    "query": expanded_semantic_query,
+                    "image_search_service_url": mcp_result.get("search_service_endpoint"),
+                    "video_search_service_url": video_mcp_result.get("search_service_endpoint"),
+                },
+                "output": {
+                    "image_num_found": mcp_metadata.get("num_found", 0),
+                    "video_num_found": video_mcp_metadata.get("num_found", 0),
+                },
+                "search_service_endpoint": mcp_result.get("search_service_endpoint"),
+                "search_service_response": mcp_result.get("search_service_response_payload"),
+            })
+            opensearch_query = mcp_result.get("opensearch_query")
+            video_opensearch_query = video_mcp_result.get("opensearch_query")
 
-        # --- Step 4: Modify payload & execute ---
-        opensearch_query = mcp_result.get("opensearch_query")
+        elif pipeline == "video":
+            video_mcp_result = video_search_mcp.call_tool(mcp_tool_name, expanded_semantic_query)
+            video_mcp_metadata = video_mcp_result.get("search_service_metadata", {})
+            steps.append({
+                "agent": "Search Specialist",
+                "action": f"MCP Tool (Video): {mcp_tool_name}",
+                "model": self.llm_model,
+                "reasoning": (
+                    f"Query explicitly requests video — triggered video-only pipeline. "
+                    f"Called Video Search Service MCP with \"{expanded_semantic_query}\". "
+                    f"Found {video_mcp_metadata.get('num_found', 'N/A')} matches."
+                ),
+                "input": {
+                    "pipeline": "video",
+                    "mcp_tool": mcp_tool_name,
+                    "query": expanded_semantic_query,
+                    "video_search_service_url": video_mcp_result.get("search_service_endpoint"),
+                },
+                "output": {"video_num_found": video_mcp_metadata.get("num_found", 0)},
+                "search_service_endpoint": video_mcp_result.get("search_service_endpoint"),
+                "search_service_response": video_mcp_result.get("search_service_response_payload"),
+            })
+            video_opensearch_query = video_mcp_result.get("opensearch_query")
+
+        else:  # "image" (default)
+            mcp_result = search_service_mcp.call_tool(mcp_tool_name, expanded_semantic_query)
+            mcp_metadata = mcp_result.get("search_service_metadata", {})
+            steps.append({
+                "agent": "Search Specialist",
+                "action": f"MCP Tool: {mcp_tool_name}",
+                "model": self.llm_model,
+                "reasoning": (
+                    f"Called Search Service MCP tool '{mcp_tool_name}' with semantic query \"{expanded_semantic_query}\". "
+                    f"Search Service found {mcp_metadata.get('num_found', 'N/A')} matches using "
+                    f"'{mcp_metadata.get('ranker', 'unknown')}' ranker."
+                ),
+                "input": {
+                    "pipeline": "image",
+                    "mcp_tool": mcp_tool_name,
+                    "expanded_semantic_query": expanded_semantic_query,
+                    "sort_order": search_mode,
+                    "search_service_url": (
+                        f"http://search.shuttercorp.net/v2/shutterstock/image/search"
+                        f"?q={expanded_semantic_query}&sort_order={search_mode}"
+                        f"&debug_modes=request&source=enterprise"
+                    ),
+                },
+                "output": {
+                    "ranker": mcp_metadata.get("ranker", "unknown"),
+                    "ranker_settings": mcp_metadata.get("ranker_settings", "unknown"),
+                    "num_found_by_search_service": mcp_metadata.get("num_found", 0),
+                },
+                "search_service_endpoint": mcp_result.get("search_service_endpoint"),
+                "search_service_response": mcp_result.get("search_service_response_payload"),
+            })
+            opensearch_query = mcp_result.get("opensearch_query")
+
+        # --- Step 4: Modify payload(s) ---
         if opensearch_query:
-            # Apply all modifications to a single payload
             modifications = self._modify_opensearch_payload(
                 opensearch_query=opensearch_query,
                 entity_terms=entity_terms,
@@ -947,13 +1079,12 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 boolean_query_string=intent_result.boolean_query,
                 is_not_generated=explicit_not_generated,
             )
-
-            # Record payload modification step
             steps.append({
                 "agent": "Search Specialist",
-                "action": "OpenSearch Payload Modification (Text-Only)",
+                "action": "OpenSearch Payload Modification (Text-Only, Images)",
+                "model": self.llm_model,
                 "reasoning": (
-                    f"Modified the MCP-returned OpenSearch payload before execution. "
+                    f"Modified the image MCP-returned OpenSearch payload before execution. "
                     f"Modifications applied: {'; '.join(modifications['descriptions'])}."
                 ),
                 "input": {
@@ -971,79 +1102,87 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "opensearch_payload": opensearch_query,
             })
 
-            # Execute — text-only path uses the hybrid_10_90 pipeline
-            search_result = photo_search_service.execute_raw_query(
-                opensearch_query=opensearch_query,
-                search_pipeline="hybrid_10_90",
+        if video_opensearch_query:
+            self._modify_opensearch_payload(
+                opensearch_query=video_opensearch_query,
+                entity_terms=entity_terms,
+                lexical_operator="and",
+                category_gids=[],
+                exclusion_terms=exclusion_terms,
+                refinement_filters=[],
+                show_generated=False,
+                boolean_query_string=intent_result.boolean_query,
+                is_not_generated=False,
             )
 
-            # Fallback: if zero results and categories were applied, retry once
-            # with only category filters removed.
-            if search_result.get("total", 0) == 0 and category_gids:
+        # --- Step 5: Execute ---
+        def _exec_image():
+            if not opensearch_query:
+                return photo_search_service.search_photos(query=lexical_query_string, size=50, min_score=1.0)
+            result = photo_search_service.execute_raw_query(opensearch_query=opensearch_query, search_pipeline="hybrid_10_90")
+            if result.get("total", 0) == 0 and category_gids:
                 fallback_query = copy.deepcopy(opensearch_query)
                 removed_count = self._remove_category_filters(fallback_query)
                 if removed_count > 0:
-                    fallback_result = photo_search_service.execute_raw_query(
-                        opensearch_query=fallback_query,
-                        search_pipeline="hybrid_10_90",
-                    )
-
-                    steps.append({
-                        "agent": "Search Specialist",
-                        "action": "Fallback Retry (Suppress Category Filters)",
-                        "reasoning": (
-                            f"Initial query returned 0 results with category filters {category_gids}. "
-                            f"Retried by removing only category filter clause(s) "
-                            f"(removed {removed_count}); all other constraints remained unchanged."
-                        ),
-                        "input": {
-                            "removed_filter": "terms.global_category_ids",
-                            "removed_count": removed_count,
-                        },
-                        "output": {
-                            "total_results": fallback_result.get("total", 0),
-                            "returned_results": len(fallback_result.get("results", [])),
-                            "took_ms": fallback_result.get("took_ms", 0),
-                            "fallback_used": fallback_result.get("total", 0) > 0,
-                        },
-                        "opensearch_payload": fallback_query,
-                    })
-
+                    fallback_result = photo_search_service.execute_raw_query(opensearch_query=fallback_query, search_pipeline="hybrid_10_90")
                     if fallback_result.get("total", 0) > 0:
-                        search_result = fallback_result
-                        logger.info(
-                            "Search Specialist [TEXT-ONLY]: Fallback succeeded after removing category filters"
-                        )
-                    else:
-                        logger.info(
-                            "Search Specialist [TEXT-ONLY]: Fallback returned 0 results; keeping original result"
-                        )
-        else:
-            logger.warning("Search Specialist: MCP query failed, falling back to direct search")
-            search_result = photo_search_service.search_photos(
-                query=lexical_query_string, size=50, min_score=1.0
+                        return fallback_result
+            return result
+
+        def _exec_video():
+            if not video_opensearch_query:
+                return {"results": [], "total": 0, "took_ms": 0}
+            return photo_search_service.execute_raw_query(
+                opensearch_query=video_opensearch_query,
+                search_pipeline="hybrid_10_90",
             )
 
-        state["search_results"] = search_result.get("results", [])
-        state["total_results"] = search_result.get("total", 0)
-        state["processing_time_ms"] = search_result.get("took_ms", 0)
+        if pipeline == "mixed":
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                image_exec_future = pool.submit(_exec_image)
+                video_exec_future = pool.submit(_exec_video)
+                image_search_result = image_exec_future.result()
+                video_search_result = video_exec_future.result()
+            combined_results = self._combine_image_video_results(
+                image_results=image_search_result.get("results", []),
+                video_results=video_search_result.get("results", []),
+            )
+        elif pipeline == "video":
+            video_search_result = _exec_video()
+            image_search_result = {"results": [], "total": 0, "took_ms": 0}
+            combined_results = video_search_result.get("results", [])[:10]
+        else:  # image
+            image_search_result = _exec_image()
+            video_search_result = {"results": [], "total": 0, "took_ms": 0}
+            combined_results = image_search_result.get("results", [])[:10]
+
+        state["search_results"] = combined_results
+        state["total_results"] = image_search_result.get("total", 0) + video_search_result.get("total", 0)
+        state["processing_time_ms"] = max(
+            image_search_result.get("took_ms", 0),
+            video_search_result.get("took_ms", 0),
+        )
+
+        image_count = sum(1 for r in combined_results if r.get("media_type") != "video")
+        video_count = sum(1 for r in combined_results if r.get("media_type") == "video")
 
         # Record execution step
         steps.append({
             "agent": "Search Specialist",
-            "action": "Execute OpenSearch Query (Text-Only)",
+            "action": f"Execute OpenSearch Quer{'ies' if pipeline == 'mixed' else 'y'} (Text-Only, {pipeline})",
+            "model": self.llm_model,
             "reasoning": (
-                f"Executed the modified OpenSearch query against web-index-v9. "
-                f"Found {state['total_results']} total matches in {state['processing_time_ms']}ms, "
-                f"returning top {len(state['search_results'])} results."
+                f"Executed {pipeline} pipeline against web-index-v9. "
+                f"Images: {image_search_result.get('total', 0)} total → {image_count} selected. "
+                f"Videos: {video_search_result.get('total', 0)} total → {video_count} selected."
             ),
-            "input": {"index": "web-index-v9", "query_source": "search_service_mcp_modified"},
+            "input": {"index": "web-index-v9", "pipeline": pipeline, "query_source": "search_service_mcp_modified"},
             "output": {
                 "total_results": state["total_results"],
                 "returned_results": len(state["search_results"]),
                 "took_ms": state["processing_time_ms"],
             },
-            "opensearch_payload": opensearch_query,
+            "opensearch_payload": opensearch_query or video_opensearch_query,
             "opensearch_url": (
                 f"{settings.opensearch_endpoint}/_search"
                 f"?search_pipeline=hybrid_10_90"
@@ -1079,6 +1218,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 steps.append({
                     "agent": "Reflection Reranker",
                     "action": "Rerank & Filter Results",
+                    "model": self._reranker.config.model,
                     "reasoning": (
                         f"Reflection reranking applied. "
                         f"{rerank_out.total_candidates} candidates evaluated → "
@@ -1155,6 +1295,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         steps.append({
             "agent": "Search Specialist",
             "action": "Query Preparation (Brief)",
+            "model": self.llm_model,
             "reasoning": (
                 f"Using PM-generated queries directly. "
                 f"Semantic query for MCP/neural search: \"{semantic_query}\". "
@@ -1179,41 +1320,108 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             },
         })
 
-        # --- Step 2: MCP call with the semantic query ---
-        search_mode = state.get("search_mode", "relevance")
+        # --- Step 2: Detect pipeline and call MCP tool(s) ---
+        search_mode = state.get("search_mode", "popular")
         mcp_tool_name = "search_popular" if search_mode == "popular" else "search_relevant"
-        mcp_result = search_service_mcp.call_tool(mcp_tool_name, semantic_query)
-        mcp_metadata = mcp_result.get("search_service_metadata", {})
+        pipeline = _detect_search_pipeline(state.get("user_query", ""))
+        logger.info(f"Search Specialist [BRIEF]: pipeline='{pipeline}' for query \"{state.get('user_query', '')}\"")
 
-        steps.append({
-            "agent": "Search Specialist",
-            "action": f"MCP Tool: {mcp_tool_name}",
-            "reasoning": (
-                f"Called Search Service MCP tool '{mcp_tool_name}' with semantic query \"{semantic_query}\". "
-                f"Search Service found {mcp_metadata.get('num_found', 'N/A')} matches using "
-                f"'{mcp_metadata.get('ranker', 'unknown')}' ranker."
-            ),
-            "input": {
-                "mcp_tool": mcp_tool_name,
-                "semantic_query": semantic_query,
-                "sort_order": search_mode,
-                "search_service_url": (
-                    f"http://search.shuttercorp.net/v2/shutterstock/image/search"
-                    f"?q={semantic_query}&sort_order={search_mode}"
-                    f"&debug_modes=request&source=enterprise"
+        opensearch_query = None
+        video_opensearch_query = None
+
+        if pipeline == "mixed":
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                image_future = pool.submit(search_service_mcp.call_tool, mcp_tool_name, semantic_query)
+                video_future = pool.submit(video_search_mcp.call_tool, mcp_tool_name, semantic_query)
+                mcp_result = image_future.result()
+                video_mcp_result = video_future.result()
+            mcp_metadata = mcp_result.get("search_service_metadata", {})
+            video_mcp_metadata = video_mcp_result.get("search_service_metadata", {})
+            steps.append({
+                "agent": "Search Specialist",
+                "action": f"Parallel MCP Tools: image/{mcp_tool_name} + video/{mcp_tool_name}",
+                "model": self.llm_model,
+                "reasoning": (
+                    f"Query contains 'assets' or 'content' keyword — triggered mixed pipeline. "
+                    f"Called Image and Video MCP tools in parallel with \"{semantic_query}\". "
+                    f"Image service: {mcp_metadata.get('num_found', 'N/A')} matches; "
+                    f"Video service: {video_mcp_metadata.get('num_found', 'N/A')} matches."
                 ),
-            },
-            "output": {
-                "ranker": mcp_metadata.get("ranker", "unknown"),
-                "ranker_settings": mcp_metadata.get("ranker_settings", "unknown"),
-                "num_found_by_search_service": mcp_metadata.get("num_found", 0),
-            },
-            "search_service_endpoint": mcp_result.get("search_service_endpoint"),
-            "search_service_response": mcp_result.get("search_service_response_payload"),
-        })
+                "input": {
+                    "pipeline": "mixed",
+                    "mcp_tool": mcp_tool_name,
+                    "semantic_query": semantic_query,
+                    "image_search_service_url": mcp_result.get("search_service_endpoint"),
+                    "video_search_service_url": video_mcp_result.get("search_service_endpoint"),
+                },
+                "output": {
+                    "image_num_found": mcp_metadata.get("num_found", 0),
+                    "video_num_found": video_mcp_metadata.get("num_found", 0),
+                },
+                "search_service_endpoint": mcp_result.get("search_service_endpoint"),
+                "search_service_response": mcp_result.get("search_service_response_payload"),
+            })
+            opensearch_query = mcp_result.get("opensearch_query")
+            video_opensearch_query = video_mcp_result.get("opensearch_query")
 
-        # --- Step 3: Modify payload & execute ---
-        opensearch_query = mcp_result.get("opensearch_query")
+        elif pipeline == "video":
+            video_mcp_result = video_search_mcp.call_tool(mcp_tool_name, semantic_query)
+            video_mcp_metadata = video_mcp_result.get("search_service_metadata", {})
+            steps.append({
+                "agent": "Search Specialist",
+                "action": f"MCP Tool (Video): {mcp_tool_name}",
+                "model": self.llm_model,
+                "reasoning": (
+                    f"Query explicitly requests video — triggered video-only pipeline. "
+                    f"Called Video Search Service MCP with \"{semantic_query}\". "
+                    f"Found {video_mcp_metadata.get('num_found', 'N/A')} matches."
+                ),
+                "input": {
+                    "pipeline": "video",
+                    "mcp_tool": mcp_tool_name,
+                    "semantic_query": semantic_query,
+                    "video_search_service_url": video_mcp_result.get("search_service_endpoint"),
+                },
+                "output": {"video_num_found": video_mcp_metadata.get("num_found", 0)},
+                "search_service_endpoint": video_mcp_result.get("search_service_endpoint"),
+                "search_service_response": video_mcp_result.get("search_service_response_payload"),
+            })
+            video_opensearch_query = video_mcp_result.get("opensearch_query")
+
+        else:  # "image" (default)
+            mcp_result = search_service_mcp.call_tool(mcp_tool_name, semantic_query)
+            mcp_metadata = mcp_result.get("search_service_metadata", {})
+            steps.append({
+                "agent": "Search Specialist",
+                "action": f"MCP Tool: {mcp_tool_name}",
+                "model": self.llm_model,
+                "reasoning": (
+                    f"Called Search Service MCP tool '{mcp_tool_name}' with semantic query \"{semantic_query}\". "
+                    f"Search Service found {mcp_metadata.get('num_found', 'N/A')} matches using "
+                    f"'{mcp_metadata.get('ranker', 'unknown')}' ranker."
+                ),
+                "input": {
+                    "pipeline": "image",
+                    "mcp_tool": mcp_tool_name,
+                    "semantic_query": semantic_query,
+                    "sort_order": search_mode,
+                    "search_service_url": (
+                        f"http://search.shuttercorp.net/v2/shutterstock/image/search"
+                        f"?q={semantic_query}&sort_order={search_mode}"
+                        f"&debug_modes=request&source=enterprise"
+                    ),
+                },
+                "output": {
+                    "ranker": mcp_metadata.get("ranker", "unknown"),
+                    "ranker_settings": mcp_metadata.get("ranker_settings", "unknown"),
+                    "num_found_by_search_service": mcp_metadata.get("num_found", 0),
+                },
+                "search_service_endpoint": mcp_result.get("search_service_endpoint"),
+                "search_service_response": mcp_result.get("search_service_response_payload"),
+            })
+            opensearch_query = mcp_result.get("opensearch_query")
+
+        # --- Step 3: Modify image payload & prepare video payload ---
         if opensearch_query:
             modifications = self._modify_opensearch_payload(
                 opensearch_query=opensearch_query,
@@ -1226,12 +1434,12 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 boolean_query_string=boolean_query_string,
                 is_not_generated=explicit_not_generated,
             )
-
             steps.append({
                 "agent": "Search Specialist",
-                "action": "OpenSearch Payload Modification (Brief)",
+                "action": "OpenSearch Payload Modification (Brief, Images)",
+                "model": self.llm_model,
                 "reasoning": (
-                    f"Modified the MCP-returned OpenSearch payload for brief workflow. "
+                    f"Modified the image MCP-returned OpenSearch payload for brief workflow. "
                     f"Modifications applied: {'; '.join(modifications['descriptions'])}."
                 ),
                 "input": {
@@ -1249,78 +1457,87 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "opensearch_payload": opensearch_query,
             })
 
-            search_result = photo_search_service.execute_raw_query(
-                opensearch_query=opensearch_query,
-                search_pipeline="hybrid_10_90",
+        if video_opensearch_query:
+            self._modify_opensearch_payload(
+                opensearch_query=video_opensearch_query,
+                entity_terms=entity_terms,
+                lexical_operator="or",
+                category_gids=[],
+                exclusion_terms=exclusion_terms,
+                refinement_filters=[],
+                show_generated=False,
+                boolean_query_string=boolean_query_string,
+                is_not_generated=False,
             )
 
-            # Fallback: if zero results and categories were applied, retry once
-            # with only category filters removed.
-            if search_result.get("total", 0) == 0 and category_gids:
+        # --- Step 4: Execute ---
+        def _exec_image():
+            if not opensearch_query:
+                return photo_search_service.search_photos(query=lexical_query_string, size=50, min_score=1.0)
+            result = photo_search_service.execute_raw_query(opensearch_query=opensearch_query, search_pipeline="hybrid_10_90")
+            if result.get("total", 0) == 0 and category_gids:
                 fallback_query = copy.deepcopy(opensearch_query)
                 removed_count = self._remove_category_filters(fallback_query)
                 if removed_count > 0:
-                    fallback_result = photo_search_service.execute_raw_query(
-                        opensearch_query=fallback_query,
-                        search_pipeline="hybrid_10_90",
-                    )
-
-                    steps.append({
-                        "agent": "Search Specialist",
-                        "action": "Fallback Retry (Suppress Category Filters)",
-                        "reasoning": (
-                            f"Initial query returned 0 results with category filters {category_gids}. "
-                            f"Retried by removing only category filter clause(s) "
-                            f"(removed {removed_count}); all other constraints remained unchanged."
-                        ),
-                        "input": {
-                            "removed_filter": "terms.global_category_ids",
-                            "removed_count": removed_count,
-                        },
-                        "output": {
-                            "total_results": fallback_result.get("total", 0),
-                            "returned_results": len(fallback_result.get("results", [])),
-                            "took_ms": fallback_result.get("took_ms", 0),
-                            "fallback_used": fallback_result.get("total", 0) > 0,
-                        },
-                        "opensearch_payload": fallback_query,
-                    })
-
+                    fallback_result = photo_search_service.execute_raw_query(opensearch_query=fallback_query, search_pipeline="hybrid_10_90")
                     if fallback_result.get("total", 0) > 0:
-                        search_result = fallback_result
-                        logger.info(
-                            "Search Specialist [BRIEF]: Fallback succeeded after removing category filters"
-                        )
-                    else:
-                        logger.info(
-                            "Search Specialist [BRIEF]: Fallback returned 0 results; keeping original result"
-                        )
-        else:
-            logger.warning("Search Specialist: MCP query failed, falling back to direct search")
-            search_result = photo_search_service.search_photos(
-                query=lexical_query_string, size=50, min_score=1.0
+                        return fallback_result
+            return result
+
+        def _exec_video():
+            if not video_opensearch_query:
+                return {"results": [], "total": 0, "took_ms": 0}
+            return photo_search_service.execute_raw_query(
+                opensearch_query=video_opensearch_query,
+                search_pipeline="hybrid_10_90",
             )
 
-        state["search_results"] = search_result.get("results", [])
-        state["total_results"] = search_result.get("total", 0)
-        state["processing_time_ms"] = search_result.get("took_ms", 0)
+        if pipeline == "mixed":
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                image_exec_future = pool.submit(_exec_image)
+                video_exec_future = pool.submit(_exec_video)
+                image_search_result = image_exec_future.result()
+                video_search_result = video_exec_future.result()
+            combined_results = self._combine_image_video_results(
+                image_results=image_search_result.get("results", []),
+                video_results=video_search_result.get("results", []),
+            )
+        elif pipeline == "video":
+            video_search_result = _exec_video()
+            image_search_result = {"results": [], "total": 0, "took_ms": 0}
+            combined_results = video_search_result.get("results", [])[:10]
+        else:  # image
+            image_search_result = _exec_image()
+            video_search_result = {"results": [], "total": 0, "took_ms": 0}
+            combined_results = image_search_result.get("results", [])[:10]
+
+        state["search_results"] = combined_results
+        state["total_results"] = image_search_result.get("total", 0) + video_search_result.get("total", 0)
+        state["processing_time_ms"] = max(
+            image_search_result.get("took_ms", 0),
+            video_search_result.get("took_ms", 0),
+        )
+
+        image_count = sum(1 for r in combined_results if r.get("media_type") != "video")
+        video_count = sum(1 for r in combined_results if r.get("media_type") == "video")
 
         # Record execution step
         steps.append({
             "agent": "Search Specialist",
-            "action": "Execute OpenSearch Query (Brief)",
+            "action": f"Execute OpenSearch Quer{'ies' if pipeline == 'mixed' else 'y'} (Brief, {pipeline})",
+            "model": self.llm_model,
             "reasoning": (
-                f"Executed the modified OpenSearch query against web-index-v9. "
-                f"Found {state['total_results']} total matches in {state['processing_time_ms']}ms, "
-                f"returning top {len(state['search_results'])} results."
+                f"Executed {pipeline} pipeline against web-index-v9. "
+                f"Images: {image_search_result.get('total', 0)} total → {image_count} selected. "
+                f"Videos: {video_search_result.get('total', 0)} total → {video_count} selected."
             ),
-            "input": {"index": "web-index-v9", "query_source": "search_service_mcp_modified"},
+            "input": {"index": "web-index-v9", "pipeline": pipeline, "query_source": "search_service_mcp_modified"},
             "output": {
                 "total_results": state["total_results"],
                 "returned_results": len(state["search_results"]),
                 "took_ms": state["processing_time_ms"],
             },
-            "opensearch_payload": opensearch_query,
+            "opensearch_payload": opensearch_query or video_opensearch_query,
             "opensearch_url": (
                 f"{settings.opensearch_endpoint}/{settings.opensearch_photo_index}/_search"
                 f"?search_pipeline=hybrid_10_90"
@@ -1355,6 +1572,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 steps.append({
                     "agent": "Reflection Reranker",
                     "action": "Rerank & Filter Results",
+                    "model": self._reranker.config.model,
                     "reasoning": (
                         f"Reflection reranking applied. "
                         f"{rerank_out.total_candidates} candidates evaluated → "
@@ -1376,6 +1594,54 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
 
         state["workflow_steps"] = steps
         return state
+
+    # ------------------------------------------------------------------
+    # Image + Video result combiner
+    # ------------------------------------------------------------------
+
+    def _combine_image_video_results(
+        self,
+        image_results: List[Dict[str, Any]],
+        video_results: List[Dict[str, Any]],
+        max_per_type: int = 5,
+    ) -> List[Dict[str, Any]]:
+        """
+        Combine image and video results into an interleaved list of up to 10 total.
+
+        Strategy (adaptive fill):
+        - Target: 5 images + 5 videos (max_per_type each).
+        - If one type returns fewer than max_per_type, expand the other type's
+          allocation to fill up to 10 total.
+        - Interleave: [img0, vid0, img1, vid1, …]; if sizes differ, remainder is appended.
+        """
+        max_total = max_per_type * 2  # 10
+
+        imgs = image_results[:max_per_type]
+        vids = video_results[:max_per_type]
+
+        # Adaptive fill
+        deficit = max_per_type - len(imgs)
+        if deficit > 0 and len(video_results) > max_per_type:
+            vids = video_results[:max_per_type + deficit]
+        deficit = max_per_type - len(vids)
+        if deficit > 0 and len(image_results) > max_per_type:
+            imgs = image_results[:max_per_type + deficit]
+
+        # Cap total
+        imgs = imgs[:max_total]
+        vids = vids[:max_total]
+
+        # Interleave
+        combined: List[Dict[str, Any]] = []
+        for pair in zip(imgs, vids):
+            combined.extend(pair)
+
+        # Append remaining items from the longer list
+        longer_start = len(min(imgs, vids, key=len))
+        longer = imgs if len(imgs) > len(vids) else vids
+        combined.extend(longer[longer_start:])
+
+        return combined[:max_total]
 
     # ------------------------------------------------------------------
     # Unified OpenSearch payload modifier
@@ -1780,7 +2046,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         # Add search results summary
         total = state.get("total_results", 0)
         results_count = len(state.get("search_results", []))
-        search_mode = state.get("search_mode", "relevance")
+        search_mode = state.get("search_mode", "popular")
         mode_label = "popularity" if search_mode == "popular" else "relevance"
         
         if total > 0:
@@ -1798,6 +2064,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         steps.append({
             "agent": "Synthesizer",
             "action": "Compose Final Response",
+            "model": self.llm_model,
             "reasoning": f"Combined {'brief analysis + ' if state.get('requirements') else ''}search results into a formatted response. Presenting {len(state.get('search_results', []))} photo results to the user."
         })
         state["workflow_steps"] = steps

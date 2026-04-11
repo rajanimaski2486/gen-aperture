@@ -12,12 +12,14 @@ class ChatRequest(BaseModel):
 
 
 class PhotoResult(BaseModel):
-    """Photo search result"""
+    """Photo or video search result"""
     hadron_id: Optional[str] = None
     ext_id: Optional[int] = None
     description: str = ""
     image_url: str = ""
     thumbnail_url: str = ""
+    video_url: str = ""          # MP4 preview URL (populated for media_type=video only)
+    media_type: str = "image"    # "image" or "video"
     date_added: Optional[str] = None
     license_count: int = 0
     categories: List[Any] = []
@@ -31,6 +33,7 @@ class AgentWorkflowStep(BaseModel):
     agent: str
     action: str
     reasoning: str = ""
+    model: Optional[str] = None  # Model used by this agent
     prompt: Optional[str] = None
     input: Optional[Dict[str, Any]] = None
     output: Optional[Dict[str, Any]] = None

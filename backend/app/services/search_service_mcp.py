@@ -245,38 +245,53 @@ class SearchServiceMCP:
 
     def _adapt_query_for_local_cluster(self, query_body: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Adapt a production Search Service query for the local mmr-test-v1-prod cluster.
-        
-        The local cluster only contains video content, so the `media_type: image`
-        filter from the production image-search query must be removed.  All other
-        filters (is_active, is_shutterstock, etc.) and the scoring/ranking logic
-        are preserved.
+        Adapt a production Search Service query for execution on the Nelson cluster.
+
+        The image search service injects a `media_type: image` filter in the
+        production query.  We replace any existing media_type term with an
+        explicit `{"term": {"media_type": "image"}}` to ensure only photo assets
+        are returned from Nelson (which indexes both images and videos).
         """
-        self._remove_media_type_filter(query_body)
+        self._set_media_type_filter(query_body, "image")
         return query_body
 
-    def _remove_media_type_filter(self, node: Any) -> None:
+    def _set_media_type_filter(self, node: Any, media_type_value: str) -> bool:
         """
-        Recursively walk the query tree and remove any
-        `{"term": {"media_type": ...}}` clause from `filter` arrays.
+        Walk the query tree and replace any existing media_type term in the
+        first `bool.filter` array with `{"term": {"media_type": media_type_value}}`.
+
+        Returns True once the injection has been applied so recursion stops after
+        the outermost bool clause is handled.
         """
         if isinstance(node, dict):
-            # If this dict has a "filter" list, prune media_type terms from it
-            if "filter" in node and isinstance(node["filter"], list):
-                node["filter"] = [
-                    clause for clause in node["filter"]
-                    if not self._is_media_type_term(clause)
-                ]
-                logger.info(
-                    f"MCP: Removed media_type filter — "
-                    f"{len(node['filter'])} filter clauses remaining"
-                )
-            # Recurse into all values
+            if "bool" in node and isinstance(node["bool"], dict):
+                bool_clause = node["bool"]
+                if "filter" not in bool_clause:
+                    bool_clause["filter"] = []
+                filters = bool_clause["filter"]
+                if isinstance(filters, list):
+                    # Remove any existing media_type terms
+                    cleaned = [
+                        clause for clause in filters
+                        if not self._is_media_type_term(clause)
+                    ]
+                    cleaned.append({"term": {"media_type": media_type_value}})
+                    bool_clause["filter"] = cleaned
+                    logger.info(
+                        f"MCP: Set media_type={media_type_value} filter — "
+                        f"{len(cleaned)} filter clauses total"
+                    )
+                    return True  # Applied — stop after outermost bool
+            # Recurse into children
             for value in node.values():
-                self._remove_media_type_filter(value)
+                if isinstance(value, (dict, list)):
+                    if self._set_media_type_filter(value, media_type_value):
+                        return True
         elif isinstance(node, list):
             for item in node:
-                self._remove_media_type_filter(item)
+                if self._set_media_type_filter(item, media_type_value):
+                    return True
+        return False
 
     @staticmethod
     def _is_media_type_term(clause: Any) -> bool:

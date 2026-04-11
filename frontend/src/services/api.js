@@ -7,7 +7,7 @@ export const api = axios.create({
 });
 
 export const chatAPI = {
-  sendMessage: async (message, conversationId, openaiApiKey, file, workflowMode = 'agent_squad') => {
+  sendMessage: async (message, conversationId, openaiApiKey, file, model, workflowMode = 'agent_squad') => {
     const formData = new FormData();
     formData.append('message', message);
     formData.append('workflow_mode', workflowMode);
@@ -22,6 +22,10 @@ export const chatAPI = {
     
     if (file) {
       formData.append('file', file);
+    }
+
+    if (model) {
+      formData.append('model', model);
     }
     
     const response = await api.post('/chat', formData, {
