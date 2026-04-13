@@ -8,6 +8,7 @@ from app.models.schemas import ChatResponse, PhotoResult, AgentWorkflowStep, Err
 from app.services.session_manager import session_manager
 from app.services.conversation_store import get_conversation_store
 from app.services.file_extractor import file_extractor
+from app.services.image_analyzer import analyze_images
 from app.services.agent_squad import AgentSquad
 
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ async def chat(
         # ── Step 1: Extract file content FIRST so it can be stored with the conversation ──
         file_content = None
         file_images = None
+        image_analysis = None
         file_type = None
         file_name = None
 
@@ -67,6 +69,11 @@ async def chat(
             file_type = extraction_result.get('file_type')
             file_name = file.filename
             logger.info(f"Extracted {len(file_content)} characters and {len(file_images)} images from {file.filename}")
+
+            # Analyze extracted images for color palettes and mood
+            if file_images:
+                image_analysis = analyze_images(file_images)
+                logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
 
         # ── Step 2: Create new conversation OR validate existing session ──
         is_new_conversation = False
@@ -142,6 +149,7 @@ async def chat(
             user_query=message,
             file_content=file_content,
             file_images=file_images,
+            image_analysis=image_analysis,
             file_type=file_type,
             conversation_history=conversation_history
         )

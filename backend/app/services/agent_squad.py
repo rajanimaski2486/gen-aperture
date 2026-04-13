@@ -94,6 +94,8 @@ class AgentState(TypedDict):
     messages: Annotated[List[Any], add_messages]
     user_query: str
     file_content: str | None
+    file_images: List[Dict[str, Any]] | None
+    image_analysis: Dict[str, Any] | None
     file_type: str | None
     conversation_history: List[Dict[str, str]]
     
@@ -392,6 +394,17 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         user_context = f"User query: {state['user_query']}\n\n"
         if state.get('file_content'):
             user_context += f"Brief content ({state.get('file_type', 'unknown')} file):\n{state['file_content']}"
+        
+        # Include image analysis if available
+        if state.get('image_analysis') and state['image_analysis'].get('summary'):
+            user_context += f"\n\nImage analysis from the uploaded document:\n{state['image_analysis']['summary']}"
+            palette = state['image_analysis'].get('global_palette', [])
+            if palette:
+                palette_str = ", ".join(f"{c['name']} ({c['hex']})" for c in palette)
+                user_context += f"\nDominant colors: {palette_str}"
+            mood_tags = state['image_analysis'].get('mood_tags', [])
+            if mood_tags:
+                user_context += f"\nInferred mood/tone: {', '.join(mood_tags)}"
         
         # Call LLM
         messages = [
@@ -1907,7 +1920,7 @@ Rules:
             logger.warning(f"Follow-up resolution failed ({e}), using original query")
             return user_query
 
-    def run(self, user_query: str, file_content: str | None = None, file_type: str | None = None, conversation_history: List[Dict[str, str]] | None = None) -> Dict[str, Any]:
+    def run(self, user_query: str, file_content: str | None = None, file_images: List[Dict[str, Any]] | None = None, image_analysis: Dict[str, Any] | None = None, file_type: str | None = None, conversation_history: List[Dict[str, str]] | None = None) -> Dict[str, Any]:
         """
         Run the agent squad.
         
@@ -1957,6 +1970,8 @@ Rules:
                 messages=[],
                 user_query=user_query,
                 file_content=file_content,
+                file_images=file_images,
+                image_analysis=image_analysis,
                 file_type=file_type,
                 conversation_history=conversation_history or [],
                 route=None,
