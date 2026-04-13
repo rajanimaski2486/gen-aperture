@@ -47,13 +47,14 @@ async def chat(
     try:
         # ── Step 1: Extract file content FIRST so it can be stored with the conversation ──
         file_content = None
+        file_images = None
         file_type = None
         file_name = None
 
         if file:
             logger.info(f"Processing uploaded file: {file.filename}")
             file_bytes = await file.read()
-            extraction_result = file_extractor.extract_text(file_bytes, file.filename)
+            extraction_result = file_extractor.extract_text_and_images(file_bytes, file.filename)
 
             if extraction_result.get('error'):
                 raise HTTPException(
@@ -62,9 +63,10 @@ async def chat(
                 )
 
             file_content = extraction_result.get('text')
+            file_images = extraction_result.get('images')
             file_type = extraction_result.get('file_type')
             file_name = file.filename
-            logger.info(f"Extracted {len(file_content)} characters from {file.filename}")
+            logger.info(f"Extracted {len(file_content)} characters and {len(file_images)} images from {file.filename}")
 
         # ── Step 2: Create new conversation OR validate existing session ──
         is_new_conversation = False
@@ -116,12 +118,12 @@ async def chat(
                     })
                 logger.info(f"Loaded {len(existing_conv['messages'])} prior exchanges for context")
 
-            # If no new file was uploaded, re-use the file content from the stored conversation
-            # so Project Manager context persists across all turns in that conversation.
+            # If no new file was uploaded, re-use the file content/images from the stored conversation
             if not file_content and existing_conv.get('file_content'):
                 file_content = existing_conv['file_content']
                 file_name = existing_conv.get('file_name')
                 file_type = 'stored'
+                # Optionally: handle file_images if you store them in conversation_store
                 logger.info(f"Re-using stored file context from conversation ({file_name})")
             elif file_content and file is not None and not is_new_conversation:
                 # A new file was uploaded mid-conversation — persist the updated content
@@ -139,6 +141,7 @@ async def chat(
         agent_result = agent_squad.run(
             user_query=message,
             file_content=file_content,
+            file_images=file_images,
             file_type=file_type,
             conversation_history=conversation_history
         )

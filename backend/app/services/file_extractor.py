@@ -29,7 +29,111 @@ class FileExtractor:
         # Initialize mimetypes
         mimetypes.init()
     
-    def extract_text(self, file_content: bytes, filename: str) -> dict:
+    def extract_text_and_images(self, file_content: bytes, filename: str) -> dict:
+        """
+        Extract text and images from file content.
+        Args:
+            file_content: Raw file bytes
+            filename: Original filename
+        Returns:
+            dict with keys:
+                - text: Extracted text content
+                - images: List of extracted images (for PDFs)
+                - file_type: Detected file type
+                - error: Error message if extraction failed
+        """
+        try:
+            if len(file_content) > self.MAX_FILE_SIZE:
+                return {
+                    'text': None,
+                    'images': [],
+                    'file_type': None,
+                    'error': f'File size exceeds {self.MAX_FILE_SIZE / 1024 / 1024}MB limit'
+                }
+            file_ext = Path(filename).suffix.lower()
+            logger.info(f"Detected extension: {file_ext} for file: {filename}")
+            file_type = self.SUPPORTED_EXTENSIONS.get(file_ext)
+            if not file_type:
+                return {
+                    'text': None,
+                    'images': [],
+                    'file_type': file_ext,
+                    'error': f'Unsupported file type: {file_ext}. Supported types: PDF, DOCX, TXT'
+                }
+            if file_type == 'pdf':
+                text = self._extract_pdf(file_content)
+                images = self._extract_pdf_images(file_content)
+            elif file_type == 'docx':
+                text = self._extract_docx(file_content)
+                images = []
+            elif file_type == 'txt':
+                text = self._extract_txt(file_content)
+                images = []
+            else:
+                raise ValueError(f"Unhandled file type: {file_type}")
+            if not text or not text.strip():
+                return {
+                    'text': None,
+                    'images': images,
+                    'file_type': file_type,
+                    'error': 'No text content found in file'
+                }
+            logger.info(f"Successfully extracted {len(text)} characters and {len(images)} images from {filename}")
+            return {
+                'text': text.strip(),
+                'images': images,
+                'file_type': file_type,
+                'error': None
+            }
+        except Exception as e:
+            logger.error(f"Error extracting text/images from {filename}: {str(e)}", exc_info=True)
+            return {
+                'text': None,
+                'images': [],
+                'file_type': None,
+                'error': f'Failed to extract text/images: {str(e)}'
+            }
+
+    def _extract_pdf_images(self, file_content: bytes):
+        """Extract images from PDF file. Returns a list of dicts with image bytes and metadata."""
+        images = []
+        try:
+            reader = PdfReader(BytesIO(file_content))
+            for page_num, page in enumerate(reader.pages):
+                if '/XObject' in page.resources:
+                    xObject = page.resources['/XObject']
+                    for obj_name in xObject:
+                        obj = xObject[obj_name]
+                        if obj.get('/Subtype') == '/Image':
+                            try:
+                                data = obj.get_data()
+                                width = obj.get('/Width', None)
+                                height = obj.get('/Height', None)
+                                color_space = obj.get('/ColorSpace', None)
+                                filter_ = obj.get('/Filter', None)
+                                # Guess format
+                                if filter_ == '/DCTDecode':
+                                    fmt = 'jpeg'
+                                elif filter_ == '/JPXDecode':
+                                    fmt = 'jp2'
+                                elif filter_ == '/FlateDecode':
+                                    fmt = 'png'  # Not always true, but common
+                                else:
+                                    fmt = 'bin'
+                                images.append({
+                                    'data': data,
+                                    'format': fmt,
+                                    'width': width,
+                                    'height': height,
+                                    'color_space': str(color_space) if color_space else None,
+                                    'page': page_num + 1
+                                })
+                            except Exception as e:
+                                logger.warning(f"Failed to extract image from page {page_num}: {e}")
+            return images
+        except Exception as e:
+            logger.warning(f"PDF image extraction failed: {e}")
+            return []
         """
         Extract text from file content.
         
