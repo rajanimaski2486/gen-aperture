@@ -400,6 +400,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         ]
         
         response = self.llm.invoke(messages)
+        print("Project Manager LLM response:", response);  # Debug log for PM response
         analysis = response.content
 
         # Try to parse the JSON block from the response
@@ -424,6 +425,9 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         # Extract dual queries — lexical (3-6 terms) and semantic (5-7 terms)
         lexical_q = structured_data.get("lexical_query", "").strip()
         semantic_q = structured_data.get("semantic_query", "").strip()
+
+        print(f"Extracted lexical query: '{lexical_q}'")  # Debug log for lexical query
+        print(f"Extracted semantic query: '{semantic_q}'")  # Debug log for semantic query
 
         # Fallback: if structured parse failed, try legacy extraction
         if not lexical_q and not semantic_q:
