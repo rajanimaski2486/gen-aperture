@@ -60,6 +60,8 @@ _COLOR_MOOD_MAP = {
     "maroon": ["rich", "serious", "refined"],
 }
 
+_SKIP_MOODS = {"neutral", "understated", "sleek", "industrial"}
+
 
 def _closest_color_name(r: int, g: int, b: int) -> str:
     """Find the closest named color for an RGB value."""
@@ -113,6 +115,8 @@ def _infer_mood_from_colors(colors: List[Dict[str, str]]) -> List[str]:
         name = color["name"]
         moods = _COLOR_MOOD_MAP.get(name, [])
         for m in moods:
+            if m in _SKIP_MOODS:
+                continue
             if m not in mood_tags:
                 mood_tags.append(m)
     return mood_tags[:6]  # cap at 6 mood tags
