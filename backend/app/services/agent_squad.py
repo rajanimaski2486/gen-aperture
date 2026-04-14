@@ -457,27 +457,47 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
 
         # ── Enrich semantic query with mood/color from image analysis ────────
         # Neural/vector search understands vibes like "warm", "calm", "energetic"
-        # so we append up to 3 mood tags to give the embedding richer context.
+        # and color terms like "yellow", "green" — so we append up to 3 mood tags
+        # and up to 2 dominant color names to give the embedding richer context.
         # Lexical query stays subject-only (keywords must match indexed terms).
         image_analysis = state.get('image_analysis') or {}
+        # Colors that are typically page background/chrome, not meaningful subject colors
+        _SKIP_COLORS = {"white", "black", "grey", "silver", "beige"}
         print(f"\n{'='*60}")
         print(f"[DEBUG MOOD] image_analysis present: {bool(image_analysis)}")
         print(f"[DEBUG MOOD] image_analysis keys: {list(image_analysis.keys()) if image_analysis else 'EMPTY'}")
         print(f"[DEBUG MOOD] mood_tags: {image_analysis.get('mood_tags', [])}")
+        print(f"[DEBUG MOOD] global_palette: {[c['name'] for c in image_analysis.get('global_palette', [])]}")
         print(f"[DEBUG MOOD] semantic_q BEFORE enrichment: '{semantic_q}'")
+
+        existing_terms = set(semantic_q.lower().split())
+        enrichment_additions = []
+
+        # 1. Add up to 2 dominant color names (skip achromatic/background colors)
+        palette = image_analysis.get('global_palette', [])
+        color_additions = [
+            c['name'] for c in palette
+            if c['name'].lower() not in _SKIP_COLORS and c['name'].lower() not in existing_terms
+        ][:2]
+        enrichment_additions.extend(color_additions)
+        existing_terms.update(c.lower() for c in color_additions)
+
+        # 2. Add up to 3 mood tags (skip moods from achromatic colors)
+        _SKIP_MOODS = {"neutral", "understated", "sleek", "industrial"}
         mood_tags = image_analysis.get('mood_tags', [])
-        if mood_tags:
-            # Pick up to 3 unique mood terms not already in the semantic query
-            existing_terms = set(semantic_q.lower().split())
-            mood_additions = [t for t in mood_tags if t.lower() not in existing_terms][:3]
-            print(f"[DEBUG MOOD] existing_terms: {existing_terms}")
-            print(f"[DEBUG MOOD] mood_additions: {mood_additions}")
-            if mood_additions:
-                semantic_q = f"{semantic_q} {' '.join(mood_additions)}"
-                logger.info(f"Project Manager: Enriched semantic query with mood tags: {mood_additions}")
-                print(f"[DEBUG MOOD] semantic_q AFTER enrichment: '{semantic_q}'")
+        mood_additions = [
+            t for t in mood_tags
+            if t.lower() not in _SKIP_MOODS and t.lower() not in existing_terms
+        ][:3]
+        enrichment_additions.extend(mood_additions)
+
+        if enrichment_additions:
+            semantic_q = f"{semantic_q} {' '.join(enrichment_additions)}"
+            logger.info(f"Project Manager: Enriched semantic query with image analysis: {enrichment_additions}")
+            print(f"[DEBUG MOOD] enrichment_additions: {enrichment_additions}")
+            print(f"[DEBUG MOOD] semantic_q AFTER enrichment: '{semantic_q}'")
         else:
-            print(f"[DEBUG MOOD] NO mood_tags found — enrichment SKIPPED")
+            print(f"[DEBUG MOOD] NO enrichment additions — SKIPPED")
         print(f"{'='*60}\n")
 
 
