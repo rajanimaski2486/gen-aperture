@@ -60,7 +60,16 @@ _COLOR_MOOD_MAP = {
     "maroon": ["rich", "serious", "refined"],
 }
 
-_SKIP_MOODS = {"neutral", "understated", "sleek", "industrial"}
+_SKIP_MOODS = {
+    "clean",
+    "industrial",
+    "minimalist",
+    "modern",
+    "neutral",
+    "pure",
+    "sleek",
+    "understated",
+}
 
 
 def _closest_color_name(r: int, g: int, b: int) -> str:
