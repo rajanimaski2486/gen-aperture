@@ -942,6 +942,11 @@ body {
   margin-bottom: 0;
 }
 
+.markdown-body .warning-line {
+  color: #c28a00;
+  font-weight: 700;
+}
+
 .markdown-body strong {
   font-weight: 600;
   color: #111;

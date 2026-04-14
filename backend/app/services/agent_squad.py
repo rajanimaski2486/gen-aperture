@@ -1718,7 +1718,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
 
         if state.get("brief_warnings"):
             response_parts.append(
-                "Warning Readiness: I ran the search, but the uploaded brief is missing some useful signals;"
+                "Warning Readiness: I ran the search, but the uploaded brief is missing the following signals;"
             )
             response_parts.append("Warning Gaps: " + "; ".join(state["brief_warnings"]) + ";")
             response_parts.append("")
