@@ -70,6 +70,8 @@ async def chat(
             file_name = file.filename
             logger.info(f"Extracted {len(file_content)} characters and {len(file_images)} images from {file.filename}")
             print(f"[DEBUG] Extracted {len(file_content)} chars and {len(file_images)} images from {file.filename}")  # Debug
+            print(f"[DEBUG] file_images count: {len(file_images)}")  # Debug
+            print(f"[DEBUG] file_images pages: {[img.get('page') for img in file_images]}")  # Debug
 
             # Analyze extracted images for color palettes and mood
             if file_images:

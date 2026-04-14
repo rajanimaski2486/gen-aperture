@@ -219,6 +219,9 @@ class AgentSquad:
         file_content = (state.get("file_content") or "").strip()
         file_images = state.get("file_images") or []
         image_analysis = state.get("image_analysis") or {}
+        print(f"[DEBUG PM] file_type: {state.get('file_type')}")
+        print(f"[DEBUG PM] file_images count: {len(file_images)}")
+        print(f"[DEBUG PM] image_analysis present: {bool(image_analysis)}")
         brand_domain = str(structured_data.get("brand_domain") or "").strip()
         visual_requirements = [str(v).strip() for v in (structured_data.get("visual_requirements") or []) if str(v).strip()]
         technical_constraints = [str(v).strip() for v in (structured_data.get("technical_constraints") or []) if str(v).strip()]
@@ -272,7 +275,9 @@ class AgentSquad:
         if not named_entity_count:
             warnings.append("No named entities were extracted from the brief, so results may be broader.")
         if state.get("file_type") == "pdf" and not file_images:
-            warnings.append("No images were available from the PDF, so some visual-style cues may be missing.")
+            warnings.append("No images were found in the uploaded PDF, so search relied on extracted text only.")
+        elif state.get("file_type") == "pdf" and len(file_images) <= 2:
+            warnings.append("2 or fewer images were found in the uploaded PDF, so visual guidance may be limited.")
         if len(lexical_terms) < 2 or len(semantic_terms) < 4:
             warnings.append("Only a limited number of concrete keywords were extracted, which may reduce search precision.")
         if not matched_categories:
@@ -1713,9 +1718,9 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
 
         if state.get("brief_warnings"):
             response_parts.append(
-                "Brief readiness note: I ran the search, but the uploaded brief is missing some useful signals."
+                "Warning Readiness: I ran the search, but the uploaded brief is missing some useful signals;"
             )
-            response_parts.append("Potential gaps: " + "; ".join(state["brief_warnings"]))
+            response_parts.append("Warning Gaps: " + "; ".join(state["brief_warnings"]) + ";")
             response_parts.append("")
         
         # Add search results summary
