@@ -676,37 +676,45 @@ def _audit_top_candidates_by_lane(
 
 def _format_repair_feedback(repair_requests: list[RepairRequest]) -> str:
     """
-    Convert a list of RepairRequests into a structured UPDATE LANE directive block
-    for the planner.  Each directive replaces the failing lane in-place: same
-    lane_name, refined embedding_query (LLM-rewritten natural caption), updated
-    visual_proxies and ranking_hints.  No new lanes are added — Stage 1 will
-    re-run the search under the original name with the improved query.
+    Convert a list of RepairRequests into a REPAIR LANE directive block for the
+    planner.  Critically, we do NOT supply a pre-baked replacement query —
+    instead we tell the planner WHAT failed and WHY, so it must derive a fresh
+    embedding_query from the lane_goal itself rather than copying our suggestion.
     """
     lines = [
         "CURATOR REPAIR FEEDBACK",
         "=" * 60,
-        "The Stage 3 visual audit found coverage gaps. Apply the directives",
-        "below to the existing search plan. Do NOT rederive the full plan —",
-        "preserve all lanes not mentioned here exactly as they are.",
+        "Stage 3 visual audit found lanes whose retrieved candidates did NOT match",
+        "the lane goal. For each REPAIR LANE directive below:",
+        "  - The 'Failed query' is the embedding_query that was used and DID NOT WORK.",
+        "  - Do NOT copy, rephrase, or lightly edit the failed query. It already failed.",
+        "  - Write a BRAND NEW embedding_query from scratch using the lane_goal and",
+        "    missing_attributes. Approach the subject from a different visual angle,",
+        "    different scene moment, or different concrete detail set.",
+        "  - Update visual_proxies and ranking_hints to match your new query.",
+        "  - Preserve all other lane fields (lane_name, lane_goal, lane_filters, etc.) exactly.",
+        "  - Preserve every lane NOT listed here exactly as-is.",
         "",
     ]
     for req in repair_requests:
         new_lane = req["new_lane"]
-        orig_query = new_lane.get("original_embedding_query", "")
-        refined_query = new_lane["embedding_query"]
-        lines += [
-            f"UPDATE LANE \"{req['target_lane_name']}\"",
-            f"  Problem: {req['repair_reason']}",
-            f"  Replace embedding_query with (rewritten as a natural image caption):",
-            f"    {refined_query}",
+        orig_query = new_lane.get("original_embedding_query", "") or new_lane.get("embedding_query", "")
+        missing = new_lane.get("visual_proxies", [])  # proxies carry the missing attrs
+        # Pull missing_attributes from the audit result stored in new_lane's extra hints
+        missing_attrs = [
+            a for a in (new_lane.get("ranking_hints", []))
+            if not a.startswith("prefer ")
         ]
-        if orig_query and orig_query != refined_query:
-            lines.append(f"  (was: {orig_query})")
-        if new_lane.get("visual_proxies"):
-            lines.append(f"  Replace visual_proxies with: {new_lane['visual_proxies']}")
-        if new_lane.get("ranking_hints"):
-            lines.append(f"  Replace ranking_hints with: {new_lane['ranking_hints']}")
-        lines.append("")
+        lines += [
+            f"REPAIR LANE \"{req['target_lane_name']}\"",
+            f"  Lane goal   : {new_lane.get('lane_goal', '')}",
+            f"  Failed query: {orig_query}",
+            f"  Missing attributes absent from retrieved candidates: {missing_attrs or missing}",
+            f"  Problem     : {req['repair_reason']}",
+            f"  Action      : Write a new embedding_query from scratch using the lane_goal above.",
+            f"                Do NOT copy or rephrase the failed query.",
+            "",
+        ]
 
     lines.append("=" * 60)
     lines.append("END CURATOR REPAIR FEEDBACK")

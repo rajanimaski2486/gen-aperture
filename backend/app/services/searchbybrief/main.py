@@ -85,7 +85,7 @@ def planner_node(state: AgentState):
     # from scratch rather than applying the patch directives. Suppress it so the LLM
     # is forced to work from the CURRENT SEARCH PLAN + feedback only.
     if feedback and feedback != "done":
-        brief_text = "[Original brief suppressed — apply the UPDATE LANE directives from CURATOR REPAIR FEEDBACK to the CURRENT SEARCH PLAN in the attachment. Do not re-derive the plan from scratch.]"
+        brief_text = "[Original brief suppressed — apply the REPAIR LANE directives from CURATOR REPAIR FEEDBACK to the CURRENT SEARCH PLAN in the attachment. Write brand new embedding_queries from the lane_goal for each flagged lane. Do not re-derive the plan from scratch.]"
     else:
         brief_text = state["user_request"]
 

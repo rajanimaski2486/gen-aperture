@@ -172,7 +172,7 @@ Return valid JSON only — no markdown fences, no commentary outside the JSON ob
 ## Handling CURATOR REPAIR FEEDBACK
 
 When the attachment text contains a block starting with "CURATOR REPAIR FEEDBACK", Stage 3
-found coverage gaps and needs targeted changes — NOT a full re-plan.
+found lanes whose retrieved candidates did NOT visually match the lane goal.
 
 The attachment will also contain a "CURRENT SEARCH PLAN" block with the full existing
 IntentResult JSON. Use that as your base — copy all fields verbatim and apply only the
@@ -180,10 +180,15 @@ changes specified in the CURATOR REPAIR FEEDBACK directives.
 
 Rules:
 1. Preserve every lane NOT mentioned in the feedback exactly as it appears in the current plan.
-2. For each UPDATE LANE directive: find that lane by name and replace embedding_query,
-   visual_proxies, and ranking_hints with the values provided. Do not change lane_name or
-   lane_goal. Do not add any new lanes.
-3. Do not add, remove, or modify any other field.
+2. For each REPAIR LANE directive:
+   a. The "Failed query" is the embedding_query that already ran and produced bad results.
+      Do NOT copy it, rephrase it, or use it as a starting point. It failed.
+   b. Write a BRAND NEW embedding_query from scratch, starting only from the lane_goal
+      and the listed missing_attributes. Use a different visual scene, moment, framing,
+      or concrete detail set so the vector search hits a different part of the embedding space.
+   c. Replace visual_proxies and ranking_hints to match your new query.
+   d. Preserve lane_name, lane_goal, lane_filters, and literal_terms_preserved exactly.
+3. Do not add or remove lanes.
 4. Re-emit the full IntentResult JSON with only those targeted field replacements applied.\
 """
 
@@ -205,10 +210,11 @@ Optional attachment/reference text:
 
 Instructions:
 1. Check whether the attachment text contains a "CURATOR REPAIR FEEDBACK" block.
-   - YES: take the "CURRENT SEARCH PLAN" JSON as the base. For each UPDATE LANE directive,
-     find that lane by name and replace its embedding_query, visual_proxies, and
-     ranking_hints with the provided values. Preserve all other lanes and all other fields
-     exactly. Do NOT add new lanes. Skip steps 2-7.
+   - YES: take the "CURRENT SEARCH PLAN" JSON as the base. For each REPAIR LANE directive,
+     find that lane by name and write a BRAND NEW embedding_query from the lane_goal and
+     missing_attributes — do NOT copy or rephrase the "Failed query". Update visual_proxies
+     and ranking_hints to match. Preserve all other lanes and all other fields exactly.
+     Skip steps 2-7.
    - NO: proceed with full plan derivation (steps 2-7 below).
 2. Diagnose the brief (brief_form, retrieval_intent, search_complexity, is_multi_lane).
 3. Extract hard constraints and operational constraints. Always populate subjects_required with the named subjects, themes, and scene types from the brief.
