@@ -1,0 +1,324 @@
+{
+  "_meta": {
+    "stage": 0,
+    "description": "Example Stage 0 output — intent extraction from a real customer brief",
+    "model": "gpt-4.1 via Bifrost",
+    "test_passed": true,
+    "lanes_returned": 20
+  },
+  "input_brief": "We are looking for various happy Travel Clips & Stills reflecting the following views:\n\nBand Tours (from the POV of the Band)\nConcert/Festival goers\nRoad Trips\nFamily Vacations\n\nSome airport shots w suitcases\nin cars, campers, minivans\non tour buses\ntrains\n\nShowing cheerful comfy stays indoors in hotels/motels\nin the rooms (watching tv, working, relaxing, chatting etc)\nworking in lobbies/public areas, also in rooms\nBreakfast/Lunch/Dinner at the hotel/motel\npoolside and pool activities\nGym\n\nsome exciting outdoor travel activity clips as well:\nbeach (sunning, sailing, paragliding. water skiing)\nforests/country side\ncities (walks scooter rides, bike rides)\n\nWe are looking for bright and sunny shots. Mainly UGC/social influencer POVs first person POVs but also the person they are traveling with.\n",
+  "output": {
+    "brief_diagnostics": {
+      "brief_form": "keyword_list",
+      "retrieval_intent": "catalog_population",
+      "search_complexity": "very_high",
+      "is_multi_lane": true,
+      "reasoning_summary": "The brief enumerates a wide range of distinct travel-related subjects and activities with overlapping scene types and specific visual signals including UGC, first-person perspectives, and bright, cheerful moods. Each activity and setting is visually unique, requiring clear decomposition into multiple search lanes to ensure full thematic and stylistic coverage."
+    },
+    "hard_constraints": {
+      "subjects_required": [
+        "band tours",
+        "concert goers",
+        "festival goers",
+        "road trips",
+        "family vacations",
+        "airport with suitcases",
+        "travel in cars",
+        "travel in campers",
+        "travel in minivans",
+        "travel on tour buses",
+        "travel on trains",
+        "hotel stays",
+        "motel stays",
+        "in hotel/motel rooms",
+        "working in hotel/motel lobbies",
+        "working in hotel/motel rooms",
+        "meals at hotel/motel",
+        "hotel/motel poolside",
+        "hotel/motel pool activities",
+        "hotel/motel gym",
+        "beach sunning",
+        "beach sailing",
+        "beach paragliding",
+        "beach water skiing",
+        "forests/country side travel",
+        "city walks",
+        "city scooter rides",
+        "city bike rides"
+      ],
+      "demographics_required": [],
+      "composition_required": [
+        "first person POV",
+        "UGC style",
+        "person traveling with"
+      ],
+      "style_required": [
+        "ugc",
+        "first_person_pov",
+        "bright and sunny"
+      ],
+      "location_required": [],
+      "media_type_required": [
+        "photography",
+        "video"
+      ],
+      "licensing_required": [],
+      "exclusions": []
+    },
+    "operational_constraints": {
+      "output_structure": [],
+      "volume_targets": [],
+      "coverage_requirements": [],
+      "reference_dependency": [],
+      "attachment_dependency": []
+    },
+    "shared_filters": [
+      "style:ugc",
+      "style:first_person_pov",
+      "lighting:bright_and_sunny",
+      "media_type:photo_video"
+    ],
+    "search_lanes": [
+      {
+        "lane_name": "Band Tour POV",
+        "lane_goal": "Retrieve behind-the-scenes images or clips from the perspective of the band during tours.",
+        "embedding_query": "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light.",
+        "literal_terms_preserved": ["band tour", "tour bus", "backstage", "band"],
+        "visual_proxies": ["tour bus interior", "musicians resting", "first-person angle"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer images with casual, candid energy",
+          "prefer authentic behind-the-scenes feel"
+        ]
+      },
+      {
+        "lane_name": "Concert/Festival Goers",
+        "lane_goal": "Retrieve shots of happy attendees at concerts or music festivals.",
+        "embedding_query": "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting.",
+        "literal_terms_preserved": ["concert", "festival goers", "music festival"],
+        "visual_proxies": ["crowd of fans", "smiling faces", "festival wristbands"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer crowds in natural light",
+          "prefer visible energy and movement"
+        ]
+      },
+      {
+        "lane_name": "Road Trips",
+        "lane_goal": "Find POV shots of people on the road in cars, campers, or minivans.",
+        "embedding_query": "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day.",
+        "literal_terms_preserved": ["road trips", "cars", "campers", "minivans"],
+        "visual_proxies": ["group in vehicle", "sunlit road", "interior car views"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer sun-filled, happy expressions",
+          "prefer authentic, in-motion perspective"
+        ]
+      },
+      {
+        "lane_name": "Family Vacations",
+        "lane_goal": "Collect cheerful shots of families spending time together during travel.",
+        "embedding_query": "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather.",
+        "literal_terms_preserved": ["family vacation", "luggage", "scenic travel"],
+        "visual_proxies": ["group family pose", "travel bags", "bright outdoors"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer outdoor, lively scenes",
+          "prefer natural, unposed families"
+        ]
+      },
+      {
+        "lane_name": "Airport with Suitcases",
+        "lane_goal": "Source images or clips of people with suitcases at airports.",
+        "embedding_query": "POV shot of a person walking with a suitcase through a sunlit airport terminal, showing anticipation and excitement.",
+        "literal_terms_preserved": ["airport", "suitcase"],
+        "visual_proxies": ["rolling luggage", "airport terminal", "glass windows"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer motion blur or dynamic feel",
+          "prefer natural, candid energy"
+        ]
+      },
+      {
+        "lane_name": "Tour Bus Travel",
+        "lane_goal": "Collect imagery of people traveling on a tour bus from the inside.",
+        "embedding_query": "UGC first-person photo inside a tour bus with people chatting and relaxing on a bright day.",
+        "literal_terms_preserved": ["tour bus", "bus interior"],
+        "visual_proxies": ["bus seats", "group conversation", "window sunlight"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer playful group interaction",
+          "prefer visible outside light"
+        ]
+      },
+      {
+        "lane_name": "Train Travel",
+        "lane_goal": "Find POV or candid shots of people traveling by train.",
+        "embedding_query": "UGC-style first-person image of someone looking out a train window at passing scenery on a sunny day.",
+        "literal_terms_preserved": ["train", "window seat"],
+        "visual_proxies": ["train window", "passing landscape", "daylight"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer visible outdoor scenery",
+          "prefer peaceful or anticipatory mood"
+        ]
+      },
+      {
+        "lane_name": "Hotel/Motel Indoors Room",
+        "lane_goal": "Retrieve images of cheerful, comfortable people relaxing or working inside hotel or motel rooms.",
+        "embedding_query": "POV UGC shot of a person lounging, watching TV, or working on a laptop in a cozy, sunlit hotel room.",
+        "literal_terms_preserved": ["hotel room", "motel room", "relaxing", "working"],
+        "visual_proxies": ["bed or sofa", "open laptop", "sun-filled window"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer inviting, bright interiors",
+          "prefer candid, relaxed body language"
+        ]
+      },
+      {
+        "lane_name": "Hotel/Motel Lobbies and Public Areas",
+        "lane_goal": "Find images of people working or socializing in hotel or motel lobbies and public spaces.",
+        "embedding_query": "First-person or candid UGC photo of someone working or meeting in a stylish hotel lobby with bright daylight.",
+        "literal_terms_preserved": ["hotel lobby", "public area"],
+        "visual_proxies": ["comfortable seating", "people chatting", "large windows"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer lots of daylight",
+          "prefer inviting, bustling atmospheres"
+        ]
+      },
+      {
+        "lane_name": "Hotel/Motel Dining",
+        "lane_goal": "Source breakfast, lunch, or dinner scenes in hotel or motel dining spaces.",
+        "embedding_query": "UGC photo of smiling people enjoying a meal together at a hotel dining area in natural sunlight.",
+        "literal_terms_preserved": ["hotel breakfast", "hotel dining", "meal"],
+        "visual_proxies": ["plates of food", "table setting", "bright morning or afternoon light"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer visible food and happy faces",
+          "prefer lively, social settings"
+        ]
+      },
+      {
+        "lane_name": "Poolside and Pool Activities",
+        "lane_goal": "Retrieve UGC/influencer style shots of people relaxing or having fun at hotel or motel pools.",
+        "embedding_query": "First-person UGC photo of people swimming, lounging, or playing by a bright, sunny outdoor pool at a hotel.",
+        "literal_terms_preserved": ["hotel pool", "motel pool", "poolside", "swimming"],
+        "visual_proxies": ["swimwear", "pool float", "sparkling water"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer vibrant blue water",
+          "prefer energetic and joyful scenes"
+        ]
+      },
+      {
+        "lane_name": "Hotel/Motel Gym",
+        "lane_goal": "Source images of people working out in hotel or motel gyms.",
+        "embedding_query": "UGC style photo of a traveler exercising in a sunlit hotel gym, focusing on motivation and wellness.",
+        "literal_terms_preserved": ["hotel gym", "working out", "fitness"],
+        "visual_proxies": ["gym equipment", "exercise mat", "large gym windows"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer visible effort and energy",
+          "prefer clean, bright fitness facilities"
+        ]
+      },
+      {
+        "lane_name": "Beach Sunning",
+        "lane_goal": "Find imagery of people sunning themselves on the beach.",
+        "embedding_query": "UGC style first-person photo of a person or friends sunbathing on a sunny beach with towels and blue sky.",
+        "literal_terms_preserved": ["beach", "sunning", "sunbathing"],
+        "visual_proxies": ["towels", "sunglasses", "sand"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer wide open blue sky",
+          "prefer laid back mood"
+        ]
+      },
+      {
+        "lane_name": "Beach Sailing",
+        "lane_goal": "Source UGC style imagery of people sailing near the beach.",
+        "embedding_query": "First-person UGC video of people sailing in turquoise waters near a sunny beach, laughter and joy in the scene.",
+        "literal_terms_preserved": ["sailing", "beach", "sailboat"],
+        "visual_proxies": ["boat", "waves", "blue ocean"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer sparkling water",
+          "prefer excitement and motion"
+        ]
+      },
+      {
+        "lane_name": "Beach Paragliding",
+        "lane_goal": "Find dynamic UGC/influencer first-person views of paragliding at the beach.",
+        "embedding_query": "POV action shot from a person paragliding over a sunny beach with sand and sea below.",
+        "literal_terms_preserved": ["paragliding", "beach"],
+        "visual_proxies": ["parachute", "bird's eye view", "waves below"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer aerial perspective",
+          "prefer vivid colors"
+        ]
+      },
+      {
+        "lane_name": "Beach Water Skiing",
+        "lane_goal": "Curate first-person or nearby UGC shots of people water skiing along beaches.",
+        "embedding_query": "UGC first-person video of someone water skiing near a sandy, sunlit beach with splashing water.",
+        "literal_terms_preserved": ["water skiing", "beach"],
+        "visual_proxies": ["skier", "spray", "coastal view"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer dynamic, action-filled images",
+          "prefer views of both skier and beach"
+        ]
+      },
+      {
+        "lane_name": "Forests/Countryside Travel",
+        "lane_goal": "Gather first-person or candid shots of travel in forests or countryside landscapes.",
+        "embedding_query": "UGC photo of someone walking or biking on a sunlit path through green countryside or forest.",
+        "literal_terms_preserved": ["forest", "countryside", "travel"],
+        "visual_proxies": ["greenery", "dirt path", "walking feet"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer lush, vibrant landscapes",
+          "prefer sense of exploration"
+        ]
+      },
+      {
+        "lane_name": "City Walks",
+        "lane_goal": "Collect first-person or candid photos of urban exploration by foot.",
+        "embedding_query": "UGC first-person photo of a person strolling on a city sidewalk in bright sunlight, surrounded by tall buildings.",
+        "literal_terms_preserved": ["city walk", "sidewalk", "urban"],
+        "visual_proxies": ["pavement", "city skyline", "people walking"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer visible city landmarks",
+          "prefer energetic, lively atmosphere"
+        ]
+      },
+      {
+        "lane_name": "City Scooter Rides",
+        "lane_goal": "Retrieve first-person UGC style images or clips from riding a scooter in the city.",
+        "embedding_query": "First-person UGC video from a city street showing a person riding a scooter past urban architecture on a sunny day.",
+        "literal_terms_preserved": ["scooter ride", "city"],
+        "visual_proxies": ["scooter handlebars", "traffic", "modern buildings"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer action, in-motion shots",
+          "prefer bright, clear city scenes"
+        ]
+      },
+      {
+        "lane_name": "City Bike Rides",
+        "lane_goal": "Find UGC style first-person images or clips from bike riding through a city.",
+        "embedding_query": "First-person UGC video of cycling through city streets with sunlit buildings and people passing by.",
+        "literal_terms_preserved": ["bike ride", "city"],
+        "visual_proxies": ["bike handlebars", "urban scenery", "people cycling"],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer visible cyclist perspective",
+          "prefer vibrant, bustling street scenes"
+        ]
+      }
+    ]
+  }
+}
