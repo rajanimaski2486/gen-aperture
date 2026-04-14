@@ -2,6 +2,8 @@ from langgraph.graph import StateGraph, END
 from typing import List, Optional, TypedDict
 
 from .planner import run_intent_node
+from .reranker import run_reranker_node
+from .retriever import run_retriever_node
 from .schemas import IntentResult
 
 
@@ -59,16 +61,16 @@ def planner_node(state: AgentState):
 
 # STAGE-1: Generate Candidates (recall >> precision)
 def retriever_node(state: AgentState):
-    # 1. Use Qwen3-VL-Embedding to encode search_params
+    # 1. Ideally use Qwen3-VL-Embedding to encode search_params but we only have CLIP for now...
     # 2. Query Milvus/Qdrant for several thousand candidates
-    return {"candidate_pool": results_from_db}
+    return run_retriever_node(state)
 
 
 # STAGE-2: Reranking
 def reranker_node(state: AgentState):
     # Score candidate_pool against user_request
     # Filter for top 200-500 images
-    return {"refined_pool": ranked_results}
+    return run_reranker_node(state)
 
 
 # STAGE-3: Final curation
