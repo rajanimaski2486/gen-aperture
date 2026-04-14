@@ -61,14 +61,9 @@ _COLOR_MOOD_MAP = {
 }
 
 _SKIP_MOODS = {
-    "clean",
     "industrial",
-    "minimalist",
-    "modern",
     "neutral",
     "pure",
-    "sleek",
-    "understated",
 }
 
 

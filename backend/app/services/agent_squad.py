@@ -434,6 +434,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                         break
             if json_match:
                 structured_data = _json.loads(json_match)
+            print("[DEBUG PM] structured_data:", _json.dumps(structured_data, indent=2))
         except Exception as e:
             logger.warning(f"Project Manager: Could not parse JSON block: {e}")
 
@@ -455,6 +456,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         semantic_terms = semantic_q.split()[:7]
         semantic_q = " ".join(semantic_terms)
 
+        # ── Image-analysis mood enrichment block START ───────────────────────
         image_analysis = state.get('image_analysis') or {}
         print(f"\n{'='*60}")
         print(f"[DEBUG MOOD] image_analysis present: {bool(image_analysis)}")
@@ -476,6 +478,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         else:
             print(f"[DEBUG MOOD] NO mood additions — SKIPPED")
         print(f"{'='*60}\n")
+        # ── Image-analysis mood enrichment block END ─────────────────────────
 
         print(f"Extracted lexical query: '{lexical_q}'")  # Debug log for lexical query
         print(f"Extracted semantic query: '{semantic_q}'")  # Debug log for semantic query
