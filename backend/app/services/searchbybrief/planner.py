@@ -167,7 +167,24 @@ Good: "A flat vector icon of a medical syringe and vaccine vial on a white backg
 - lane_filters: constraints for one lane only (e.g. "location:underwater" for a fish lane but not a beach bird lane).
 - ranking_hints: soft preferences for Stage 2 reranker, not hard filters. Examples: "prefer isolated on white over complex backgrounds", "prefer horizontal orientation", "deprioritise images with text overlays", "prefer images where the subject fills the frame", "prefer bright and sunny lighting".
 
-Return valid JSON only — no markdown fences, no commentary outside the JSON object.\
+Return valid JSON only — no markdown fences, no commentary outside the JSON object.
+
+## Handling CURATOR REPAIR FEEDBACK
+
+When the attachment text contains a block starting with "CURATOR REPAIR FEEDBACK", Stage 3
+found coverage gaps and needs targeted changes — NOT a full re-plan.
+
+The attachment will also contain a "CURRENT SEARCH PLAN" block with the full existing
+IntentResult JSON. Use that as your base — copy all fields verbatim and apply only the
+changes specified in the CURATOR REPAIR FEEDBACK directives.
+
+Rules:
+1. Preserve every lane NOT mentioned in the feedback exactly as it appears in the current plan.
+2. For each UPDATE LANE directive: find that lane by name and replace embedding_query,
+   visual_proxies, and ranking_hints with the values provided. Do not change lane_name or
+   lane_goal. Do not add any new lanes.
+3. Do not add, remove, or modify any other field.
+4. Re-emit the full IntentResult JSON with only those targeted field replacements applied.\
 """
 
 _USER_TEMPLATE = """\
@@ -187,18 +204,24 @@ Optional attachment/reference text:
 {attachment_text}
 
 Instructions:
-1. Diagnose the brief (brief_form, retrieval_intent, search_complexity, is_multi_lane).
-2. Extract hard constraints and operational constraints. Always populate subjects_required with the named subjects, themes, and scene types from the brief.
-3. Infer implied style/media type ONLY if the brief strongly implies one — add to style_required and shared_filters. If the brief specifies a shooting style or POV (UGC, first-person, influencer), capture it in shared_filters (e.g. "style:ugc", "style:first_person_pov") and reflect it in embedding_queries.
-4. Decompose into search lanes:
+1. Check whether the attachment text contains a "CURATOR REPAIR FEEDBACK" block.
+   - YES: take the "CURRENT SEARCH PLAN" JSON as the base. For each UPDATE LANE directive,
+     find that lane by name and replace its embedding_query, visual_proxies, and
+     ranking_hints with the provided values. Preserve all other lanes and all other fields
+     exactly. Do NOT add new lanes. Skip steps 2-7.
+   - NO: proceed with full plan derivation (steps 2-7 below).
+2. Diagnose the brief (brief_form, retrieval_intent, search_complexity, is_multi_lane).
+3. Extract hard constraints and operational constraints. Always populate subjects_required with the named subjects, themes, and scene types from the brief.
+4. Infer implied style/media type ONLY if the brief strongly implies one — add to style_required and shared_filters. If the brief specifies a shooting style or POV (UGC, first-person, influencer), capture it in shared_filters (e.g. "style:ugc", "style:first_person_pov") and reflect it in embedding_queries.
+5. Decompose into search lanes:
    - One lane per distinct visual subject, scene type, or activity — never bundle visually different activities in one lane.
    - For composite concepts, split into one lane per component.
    - For enumerated lists, group into thematic lanes; preserve specific names in literal_terms_preserved.
    - For POV-specified sub-groups, write the embedding_query from the correct visual perspective (e.g. "band tour POV" → backstage/green-room/tour bus, not a stage shot).
-5. For each lane, write an embedding_query as an image caption: short, visual, single subject, no business language. Include the implied shooting style/POV if specified.
-6. Populate visual_proxies with 2–3 concrete visual descriptors that genuinely apply to this lane.
-7. Add ranking_hints where there are soft visual preferences (lighting, orientation, framing, mood, etc.).
-8. Add shared_filters for metadata constraints that apply across all lanes.
+6. For each lane, write an embedding_query as an image caption: short, visual, single subject, no business language. Include the implied shooting style/POV if specified.
+7. Populate visual_proxies with 2–3 concrete visual descriptors that genuinely apply to this lane.
+8. Add ranking_hints where there are soft visual preferences (lighting, orientation, framing, mood, etc.).
+9. Add shared_filters for metadata constraints that apply across all lanes.
 
 Return JSON with exactly these top-level keys:
 brief_diagnostics, hard_constraints, operational_constraints, shared_filters, search_lanes\
