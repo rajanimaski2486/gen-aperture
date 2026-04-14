@@ -116,6 +116,10 @@ class AgentState(TypedDict):
     media_type: str | None                     # "image" | "video" | "both" | None (informational)
     boolean_query: str | None                  # Lucene boolean string with AND/OR (≤6 terms)
     named_entities: Dict[str, List[str]] | None  # locations, brands_trademarks, celebrities, seasons
+    brief_quality: Literal["strong", "partial", "weak", "insufficient"] | None
+    brief_gaps: List[str] | None
+    brief_warnings: List[str] | None
+    can_search: bool | None
 
     # Search intent (determined by LLM)
     search_mode: Literal["relevance", "popular"] | None
@@ -198,6 +202,92 @@ class AgentSquad:
         workflow.add_edge("synthesize", END)
         
         return workflow.compile()
+
+    def _assess_brief_readiness(
+        self,
+        state: AgentState,
+        structured_data: Dict[str, Any],
+        lexical_q: str,
+        semantic_q: str,
+        matched_categories: List[str],
+    ) -> tuple[Literal["strong", "partial", "weak", "insufficient"], List[str], List[str], bool]:
+        """Assess whether the extracted brief produced enough useful search signal."""
+        gaps: List[str] = []
+        warnings: List[str] = []
+        score = 0
+
+        file_content = (state.get("file_content") or "").strip()
+        file_images = state.get("file_images") or []
+        image_analysis = state.get("image_analysis") or {}
+        brand_domain = str(structured_data.get("brand_domain") or "").strip()
+        visual_requirements = [str(v).strip() for v in (structured_data.get("visual_requirements") or []) if str(v).strip()]
+        technical_constraints = [str(v).strip() for v in (structured_data.get("technical_constraints") or []) if str(v).strip()]
+        named_entities = structured_data.get("named_entities") or {}
+        named_entity_count = sum(
+            len(named_entities.get(key) or [])
+            for key in ("locations", "brands_trademarks", "celebrities", "seasons")
+        )
+
+        lexical_terms = [term for term in lexical_q.split() if term.strip()]
+        semantic_terms = [term for term in semantic_q.split() if term.strip()]
+
+        if file_content and len(file_content) >= 40:
+            score += 2
+        else:
+            gaps.append("No usable text was extracted from the uploaded file.")
+
+        if state.get("file_type") == "pdf" and not file_images:
+            gaps.append("No images were found in the uploaded PDF.")
+        elif file_images:
+            score += 1
+
+        if image_analysis.get("mood_tags") or image_analysis.get("global_palette"):
+            score += 1
+
+        if len(lexical_terms) >= 2:
+            score += 2
+        else:
+            gaps.append("We could not extract enough concrete keywords from the brief.")
+
+        if len(semantic_terms) >= 4:
+            score += 2
+        else:
+            gaps.append("The semantic search query is too thin to strongly guide retrieval.")
+
+        if brand_domain:
+            score += 1
+        else:
+            gaps.append("No clear subject, product, or brand domain was identified.")
+
+        if matched_categories:
+            score += 1
+        else:
+            gaps.append("No strong category signals were found.")
+
+        if named_entity_count:
+            score += 1
+        if visual_requirements or technical_constraints:
+            score += 1
+
+        if not named_entity_count:
+            warnings.append("No named entities were extracted from the brief, so results may be broader.")
+        if state.get("file_type") == "pdf" and not file_images:
+            warnings.append("No images were available from the PDF, so some visual-style cues may be missing.")
+        if len(lexical_terms) < 2 or len(semantic_terms) < 4:
+            warnings.append("Only a limited number of concrete keywords were extracted, which may reduce search precision.")
+        if not matched_categories:
+            warnings.append("No strong category signals were found, so results may be less targeted.")
+
+        if score >= 7:
+            quality: Literal["strong", "partial", "weak", "insufficient"] = "strong"
+        elif score >= 5:
+            quality = "partial"
+        elif score >= 3:
+            quality = "weak"
+        else:
+            quality = "insufficient"
+
+        return quality, gaps, warnings, True
     
     def _router_node(self, state: AgentState) -> AgentState:
         """
@@ -561,6 +651,22 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             len(cat_gids), cat_names,
         )
 
+        brief_quality, brief_gaps, brief_warnings, can_search = self._assess_brief_readiness(
+            state=state,
+            structured_data=structured_data,
+            lexical_q=lexical_q,
+            semantic_q=semantic_q,
+            matched_categories=cat_names,
+        )
+        state["brief_quality"] = brief_quality
+        state["brief_gaps"] = brief_gaps
+        state["brief_warnings"] = brief_warnings
+        state["can_search"] = can_search
+        print(f"[DEBUG PM] brief_quality: {brief_quality}")
+        print(f"[DEBUG PM] brief_gaps: {brief_gaps}")
+        print(f"[DEBUG PM] brief_warnings: {brief_warnings}")
+        print(f"[DEBUG PM] can_search: {can_search}")
+
         # ── Refinement filter extraction ─────────────────────────────────────
         state["refinement_filters"] = extract_refinement_filters(
             state["requirements"],
@@ -587,7 +693,8 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 f"Found {len(brief_exclusions)} exclusion term(s): {brief_exclusions}. "
                 f"Extracted {len(state['refinement_filters'])} refinement filter(s). "
                 f"Named entities: {state.get('named_entities', {})}. "
-                f"Media type: {state.get('media_type')}. Is generated: {pm_is_generated}."
+                f"Media type: {state.get('media_type')}. Is generated: {pm_is_generated}. "
+                f"Brief readiness: {brief_quality}; can_search={can_search}."
             ),
             "output": {
                 "brand_domain": structured_data.get("brand_domain", ""),
@@ -605,6 +712,10 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "quality_requirements": structured_data.get("quality_requirements", []),
                 "themes_moods": structured_data.get("themes_moods", []),
                 "technical_constraints": structured_data.get("technical_constraints", []),
+                "brief_quality": brief_quality,
+                "brief_gaps": brief_gaps,
+                "brief_warnings": brief_warnings,
+                "can_search": can_search,
                 "analysis_summary": analysis[:500] + "..." if len(analysis) > 500 else analysis
             }
         })
@@ -1599,6 +1710,13 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             response_parts.append("**Brief Analysis:**")
             response_parts.append(state["requirements"]["analysis"])
             response_parts.append("")
+
+        if state.get("brief_warnings"):
+            response_parts.append(
+                "Brief readiness note: I ran the search, but the uploaded brief is missing some useful signals."
+            )
+            response_parts.append("Potential gaps: " + "; ".join(state["brief_warnings"]))
+            response_parts.append("")
         
         # Add search results summary
         total = state.get("total_results", 0)
@@ -2014,6 +2132,10 @@ Rules:
                 media_type=None,
                 boolean_query=None,
                 named_entities=None,
+                brief_quality=None,
+                brief_gaps=None,
+                brief_warnings=None,
+                can_search=None,
                 search_results=None,
                 total_results=0,
                 # Reranker state — defaults to None/False until triggered
