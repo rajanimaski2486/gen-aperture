@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     # Jaccard similarity above which two results are treated as near-duplicates
     rerank_duplicate_similarity_threshold: float = 0.5
     
+    # Bifrost AI gateway (internal OpenAI-compatible proxy)
+    bifrost_api_key: str
+    bifrost_base_url: str = "https://bifrost.shuttercorp.net/openai"
+    bifrost_model: str = "gpt-4.1"
+
     # File upload
     max_file_size_bytes: int = 1 * 1024 * 1024  # 1MB
     allowed_file_types: list[str] = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"]
