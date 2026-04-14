@@ -9,6 +9,7 @@ import mimetypes
 from pypdf import PdfReader
 from docx import Document
 from io import BytesIO
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,118 @@ class FileExtractor:
         # Initialize mimetypes
         mimetypes.init()
     
-    def extract_text(self, file_content: bytes, filename: str) -> dict:
+    def extract_text_and_images(self, file_content: bytes, filename: str) -> dict:
+        """
+        Extract text and images from file content.
+        Args:
+            file_content: Raw file bytes
+            filename: Original filename
+        Returns:
+            dict with keys:
+                - text: Extracted text content
+                - images: List of extracted images (for PDFs)
+                - file_type: Detected file type
+                - error: Error message if extraction failed
+        """
+        try:
+            if len(file_content) > self.MAX_FILE_SIZE:
+                return {
+                    'text': None,
+                    'images': [],
+                    'file_type': None,
+                    'error': f'File size exceeds {self.MAX_FILE_SIZE / 1024 / 1024}MB limit'
+                }
+            file_ext = Path(filename).suffix.lower()
+            logger.info(f"Detected extension: {file_ext} for file: {filename}")
+            file_type = self.SUPPORTED_EXTENSIONS.get(file_ext)
+            if not file_type:
+                return {
+                    'text': None,
+                    'images': [],
+                    'file_type': file_ext,
+                    'error': f'Unsupported file type: {file_ext}. Supported types: PDF, DOCX, TXT'
+                }
+            if file_type == 'pdf':
+                text = self._extract_pdf(file_content)
+                images = self._extract_pdf_images(file_content)
+            elif file_type == 'docx':
+                text = self._extract_docx(file_content)
+                images = []
+            elif file_type == 'txt':
+                text = self._extract_txt(file_content)
+                images = []
+            else:
+                raise ValueError(f"Unhandled file type: {file_type}")
+            if not text or not text.strip():
+                return {
+                    'text': None,
+                    'images': images,
+                    'file_type': file_type,
+                    'error': 'No text content found in file'
+                }
+            logger.info(f"Successfully extracted {len(text)} characters and {len(images)} images from {filename}")
+            return {
+                'text': text.strip(),
+                'images': images,
+                'file_type': file_type,
+                'error': None
+            }
+        except Exception as e:
+            logger.error(f"Error extracting text/images from {filename}: {str(e)}", exc_info=True)
+            return {
+                'text': None,
+                'images': [],
+                'file_type': None,
+                'error': f'Failed to extract text/images: {str(e)}'
+            }
+
+    def _extract_pdf_images(self, file_content: bytes):
+        """Extract images from PDF file using pypdf's page.images API.
+        
+        Uses the modern page.images property which automatically recurses
+        into Form XObjects — handles design-tool PDFs where images are nested.
+        Returns a list of dicts with image bytes and metadata.
+        """
+        images = []
+        try:
+            reader = PdfReader(BytesIO(file_content))
+            for page_num, page in enumerate(reader.pages):
+                try:
+                    for img in page.images:
+                        try:
+                            data = img.data
+                            # Determine format from the image name extension
+                            name = img.name or ""
+                            if name.lower().endswith(".jp2"):
+                                fmt = "jp2"
+                            elif name.lower().endswith((".jpg", ".jpeg")):
+                                fmt = "jpeg"
+                            elif name.lower().endswith(".png"):
+                                fmt = "png"
+                            else:
+                                fmt = "jpeg"  # default — most PDF images are JPEG
+                            # Get dimensions via PIL (page.images doesn't expose w/h directly)
+                            try:
+                                pil_img = Image.open(BytesIO(data))
+                                width, height = pil_img.size
+                            except Exception:
+                                width, height = None, None
+                            images.append({
+                                'data': data,
+                                'format': fmt,
+                                'width': width,
+                                'height': height,
+                                'page': page_num + 1
+                            })
+                        except Exception as e:
+                            logger.warning(f"Failed to extract image '{img.name}' from page {page_num + 1}: {e}")
+                except Exception as e:
+                    logger.warning(f"Failed to iterate images on page {page_num + 1}: {e}")
+            logger.info(f"PDF image extraction: found {len(images)} image(s) across {len(reader.pages)} pages")
+            return images
+        except Exception as e:
+            logger.warning(f"PDF image extraction failed: {e}")
+            return []
         """
         Extract text from file content.
         

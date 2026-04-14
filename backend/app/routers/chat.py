@@ -8,6 +8,7 @@ from app.models.schemas import ChatResponse, PhotoResult, AgentWorkflowStep, Err
 from app.services.session_manager import session_manager
 from app.services.conversation_store import get_conversation_store
 from app.services.file_extractor import file_extractor
+from app.services.image_analyzer import analyze_images
 from app.services.agent_squad import AgentSquad
 
 logger = logging.getLogger(__name__)
@@ -47,13 +48,15 @@ async def chat(
     try:
         # ── Step 1: Extract file content FIRST so it can be stored with the conversation ──
         file_content = None
+        file_images = None
+        image_analysis = None
         file_type = None
         file_name = None
 
         if file:
             logger.info(f"Processing uploaded file: {file.filename}")
             file_bytes = await file.read()
-            extraction_result = file_extractor.extract_text(file_bytes, file.filename)
+            extraction_result = file_extractor.extract_text_and_images(file_bytes, file.filename)
 
             if extraction_result.get('error'):
                 raise HTTPException(
@@ -62,9 +65,19 @@ async def chat(
                 )
 
             file_content = extraction_result.get('text')
+            file_images = extraction_result.get('images')
             file_type = extraction_result.get('file_type')
             file_name = file.filename
-            logger.info(f"Extracted {len(file_content)} characters from {file.filename}")
+            logger.info(f"Extracted {len(file_content)} characters and {len(file_images)} images from {file.filename}")
+            print(f"[DEBUG] Extracted {len(file_content)} chars and {len(file_images)} images from {file.filename}")  # Debug
+
+            # Analyze extracted images for color palettes and mood
+            if file_images:
+                image_analysis = analyze_images(file_images)
+                logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
+                print(f"[DEBUG] Image analysis mood_tags: {image_analysis.get('mood_tags', [])}")  # Debug
+            else:
+                print(f"[DEBUG] No images found in PDF — file_images is empty")  # Debug
 
         # ── Step 2: Create new conversation OR validate existing session ──
         is_new_conversation = False
@@ -116,12 +129,12 @@ async def chat(
                     })
                 logger.info(f"Loaded {len(existing_conv['messages'])} prior exchanges for context")
 
-            # If no new file was uploaded, re-use the file content from the stored conversation
-            # so Project Manager context persists across all turns in that conversation.
+            # If no new file was uploaded, re-use the file content/images from the stored conversation
             if not file_content and existing_conv.get('file_content'):
                 file_content = existing_conv['file_content']
                 file_name = existing_conv.get('file_name')
                 file_type = 'stored'
+                # Optionally: handle file_images if you store them in conversation_store
                 logger.info(f"Re-using stored file context from conversation ({file_name})")
             elif file_content and file is not None and not is_new_conversation:
                 # A new file was uploaded mid-conversation — persist the updated content
@@ -139,6 +152,8 @@ async def chat(
         agent_result = agent_squad.run(
             user_query=message,
             file_content=file_content,
+            file_images=file_images,
+            image_analysis=image_analysis,
             file_type=file_type,
             conversation_history=conversation_history
         )
