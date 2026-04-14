@@ -210,6 +210,7 @@ class AgentSquad:
         - "popular"   -> user wants trending/popular/best-selling images
         """
         logger.info("Router: Analyzing input...")
+        print(f"[DEBUG ROUTER] image_analysis in state: {bool(state.get('image_analysis'))}, type: {type(state.get('image_analysis'))}")
         
         steps = state.get("workflow_steps", [])
         
@@ -291,6 +292,7 @@ If there is conversation history, consider the full context when classifying int
         Does NOT search - only requirements extraction.
         """
         logger.info("Project Manager: Analyzing brief...")
+        print(f"[DEBUG PM] image_analysis in state at PM entry: {bool(state.get('image_analysis'))}, keys: {list((state.get('image_analysis') or {}).keys())}")
 
         # Build a compact category reference for the LLM
         category_list = "\n".join(
@@ -439,9 +441,6 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         lexical_q = structured_data.get("lexical_query", "").strip()
         semantic_q = structured_data.get("semantic_query", "").strip()
 
-        print(f"Extracted lexical query: '{lexical_q}'")  # Debug log for lexical query
-        print(f"Extracted semantic query: '{semantic_q}'")  # Debug log for semantic query
-
         # Fallback: if structured parse failed, try legacy extraction
         if not lexical_q and not semantic_q:
             fallback_queries = structured_data.get("search_queries") or self._extract_search_queries(analysis)
@@ -455,6 +454,35 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         # Ensure semantic is capped at 7 terms
         semantic_terms = semantic_q.split()[:7]
         semantic_q = " ".join(semantic_terms)
+
+        # ── Enrich semantic query with mood/color from image analysis ────────
+        # Neural/vector search understands vibes like "warm", "calm", "energetic"
+        # so we append up to 3 mood tags to give the embedding richer context.
+        # Lexical query stays subject-only (keywords must match indexed terms).
+        image_analysis = state.get('image_analysis') or {}
+        print(f"\n{'='*60}")
+        print(f"[DEBUG MOOD] image_analysis present: {bool(image_analysis)}")
+        print(f"[DEBUG MOOD] image_analysis keys: {list(image_analysis.keys()) if image_analysis else 'EMPTY'}")
+        print(f"[DEBUG MOOD] mood_tags: {image_analysis.get('mood_tags', [])}")
+        print(f"[DEBUG MOOD] semantic_q BEFORE enrichment: '{semantic_q}'")
+        mood_tags = image_analysis.get('mood_tags', [])
+        if mood_tags:
+            # Pick up to 3 unique mood terms not already in the semantic query
+            existing_terms = set(semantic_q.lower().split())
+            mood_additions = [t for t in mood_tags if t.lower() not in existing_terms][:3]
+            print(f"[DEBUG MOOD] existing_terms: {existing_terms}")
+            print(f"[DEBUG MOOD] mood_additions: {mood_additions}")
+            if mood_additions:
+                semantic_q = f"{semantic_q} {' '.join(mood_additions)}"
+                logger.info(f"Project Manager: Enriched semantic query with mood tags: {mood_additions}")
+                print(f"[DEBUG MOOD] semantic_q AFTER enrichment: '{semantic_q}'")
+        else:
+            print(f"[DEBUG MOOD] NO mood_tags found — enrichment SKIPPED")
+        print(f"{'='*60}\n")
+
+
+        print(f"Extracted lexical query: '{lexical_q}'")  # Debug log for lexical query
+        print(f"Extracted semantic query: '{semantic_q}'")  # Debug log for semantic query
 
         state["lexical_query"] = lexical_q
         state["semantic_query"] = semantic_q
@@ -1999,6 +2027,7 @@ Rules:
             )
             
             # Run graph
+            print(f"[DEBUG RUN] image_analysis before graph.invoke: {bool(initial_state.get('image_analysis'))}, mood_tags: {(initial_state.get('image_analysis') or {}).get('mood_tags', [])}")
             logger.info(f"Starting agent execution for query: {user_query[:100]}...")
             final_state = self.graph.invoke(initial_state)
             

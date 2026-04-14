@@ -9,6 +9,7 @@ import mimetypes
 from pypdf import PdfReader
 from docx import Document
 from io import BytesIO
+from PIL import Image
 
 logger = logging.getLogger(__name__)
 
@@ -95,41 +96,48 @@ class FileExtractor:
             }
 
     def _extract_pdf_images(self, file_content: bytes):
-        """Extract images from PDF file. Returns a list of dicts with image bytes and metadata."""
+        """Extract images from PDF file using pypdf's page.images API.
+        
+        Uses the modern page.images property which automatically recurses
+        into Form XObjects — handles design-tool PDFs where images are nested.
+        Returns a list of dicts with image bytes and metadata.
+        """
         images = []
         try:
             reader = PdfReader(BytesIO(file_content))
             for page_num, page in enumerate(reader.pages):
-                if '/XObject' in page.resources:
-                    xObject = page.resources['/XObject']
-                    for obj_name in xObject:
-                        obj = xObject[obj_name]
-                        if obj.get('/Subtype') == '/Image':
+                try:
+                    for img in page.images:
+                        try:
+                            data = img.data
+                            # Determine format from the image name extension
+                            name = img.name or ""
+                            if name.lower().endswith(".jp2"):
+                                fmt = "jp2"
+                            elif name.lower().endswith((".jpg", ".jpeg")):
+                                fmt = "jpeg"
+                            elif name.lower().endswith(".png"):
+                                fmt = "png"
+                            else:
+                                fmt = "jpeg"  # default — most PDF images are JPEG
+                            # Get dimensions via PIL (page.images doesn't expose w/h directly)
                             try:
-                                data = obj.get_data()
-                                width = obj.get('/Width', None)
-                                height = obj.get('/Height', None)
-                                color_space = obj.get('/ColorSpace', None)
-                                filter_ = obj.get('/Filter', None)
-                                # Guess format
-                                if filter_ == '/DCTDecode':
-                                    fmt = 'jpeg'
-                                elif filter_ == '/JPXDecode':
-                                    fmt = 'jp2'
-                                elif filter_ == '/FlateDecode':
-                                    fmt = 'png'  # Not always true, but common
-                                else:
-                                    fmt = 'bin'
-                                images.append({
-                                    'data': data,
-                                    'format': fmt,
-                                    'width': width,
-                                    'height': height,
-                                    'color_space': str(color_space) if color_space else None,
-                                    'page': page_num + 1
-                                })
-                            except Exception as e:
-                                logger.warning(f"Failed to extract image from page {page_num}: {e}")
+                                pil_img = Image.open(BytesIO(data))
+                                width, height = pil_img.size
+                            except Exception:
+                                width, height = None, None
+                            images.append({
+                                'data': data,
+                                'format': fmt,
+                                'width': width,
+                                'height': height,
+                                'page': page_num + 1
+                            })
+                        except Exception as e:
+                            logger.warning(f"Failed to extract image '{img.name}' from page {page_num + 1}: {e}")
+                except Exception as e:
+                    logger.warning(f"Failed to iterate images on page {page_num + 1}: {e}")
+            logger.info(f"PDF image extraction: found {len(images)} image(s) across {len(reader.pages)} pages")
             return images
         except Exception as e:
             logger.warning(f"PDF image extraction failed: {e}")

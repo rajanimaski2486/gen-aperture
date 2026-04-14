@@ -69,11 +69,15 @@ async def chat(
             file_type = extraction_result.get('file_type')
             file_name = file.filename
             logger.info(f"Extracted {len(file_content)} characters and {len(file_images)} images from {file.filename}")
+            print(f"[DEBUG] Extracted {len(file_content)} chars and {len(file_images)} images from {file.filename}")  # Debug
 
             # Analyze extracted images for color palettes and mood
             if file_images:
                 image_analysis = analyze_images(file_images)
                 logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
+                print(f"[DEBUG] Image analysis mood_tags: {image_analysis.get('mood_tags', [])}")  # Debug
+            else:
+                print(f"[DEBUG] No images found in PDF — file_images is empty")  # Debug
 
         # ── Step 2: Create new conversation OR validate existing session ──
         is_new_conversation = False
