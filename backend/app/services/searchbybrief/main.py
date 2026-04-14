@@ -3,6 +3,8 @@ from typing import List, Optional, TypedDict
 
 from .curator import curator_node
 from .planner import run_intent_node
+from .reranker import run_reranker_node
+from .retriever import run_retriever_node
 from .schemas import IntentResult
 
 
@@ -100,55 +102,16 @@ def planner_node(state: AgentState):
 
 # STAGE-1: Generate Candidates (recall >> precision)
 def retriever_node(state: AgentState):
-    # -------------------------------------------------------------------------
-    # STAGE 1 HANDOVER CONTRACT 
-    # -------------------------------------------------------------------------
-    # Inputs consumed from state:
-    #   state["search_params"]  — IntentResult from Stage 0 planner
-    #     • search_params.search_lanes     — list of SearchLane; run one vector
-    #                                        search per lane using embedding_query
-    #     • search_params.shared_filters   — apply to every lane query
-    #     • search_params.hard_constraints — use exclusions + licensing_required
-    #                                        as post-retrieval filters
-    #
-    # Algorithm:
-    #   1. For each lane in search_params.search_lanes:
-    #        a. Embed lane.embedding_query using Qwen3-VL-Embedding-8B
-    #        b. Query the vector store (top-k ≥ 500 per lane)
-    #        c. Apply shared_filters + lane.lane_filters
-    #   2. Merge per-lane results; deduplicate by asset_id
-    #
-    # Output — each item in candidate_pool MUST carry:
-    #   asset_id           (int | str)  — unique image identifier
-    #   origin_lane_name   (str)        — exactly matches the lane_name used for retrieval
-    #   thumbnail_url      (str)        — publicly accessible image URL;
-    #                                    Stage 3 SKIPS visual scoring if this is absent
-    #   media_type         (str)        — optional, e.g. "photo"
-    #   title              (str)        — optional, human-readable title
-    # -------------------------------------------------------------------------
-    return {"candidate_pool": results_from_db}
+    # 1. Ideally use Qwen3-VL-Embedding to encode search_params but we only have CLIP for now...
+    # 2. Query Milvus/Qdrant for several thousand candidates
+    return run_retriever_node(state)
 
 
 # STAGE-2: Reranking
 def reranker_node(state: AgentState):
-    # -------------------------------------------------------------------------
-    # STAGE 2 HANDOVER CONTRACT 
-    # -------------------------------------------------------------------------
-    # Inputs consumed from state:
-    #   state["candidate_pool"] — output of retriever_node
-    #   state["search_params"]  — IntentResult (ranking_hints per lane available)
-    #
-    # Algorithm:
-    #   Score every candidate in candidate_pool against user_request using
-    #   Qwen3-VL-Reranker-8B cross-encoder. Discard candidates scoring < 0.7.
-    #   Target 250–500 survivors written to refined_pool.
-    #
-    # Output — each item in refined_pool MUST preserve all candidate_pool fields
-    # AND add:
-    #   stage2_score  (float 0.0–1.0) — cross-encoder relevance score;
-    #                                   primary input to Stage 3 weighted scoring
-    # -------------------------------------------------------------------------
-    return {"refined_pool": ranked_results}
+    # Score candidate_pool against user_request
+    # Filter for top 200-500 images
+    return run_reranker_node(state)
 
 
 #--- BUILD THE GRAPH -----------------------------------------------------------
