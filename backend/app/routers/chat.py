@@ -11,7 +11,19 @@ from app.services.conversation_store import get_conversation_store
 from app.services.file_extractor import file_extractor
 from app.services.image_analyzer import analyze_images
 from app.services.agent_squad import AgentSquad
-from app.services.searchbybrief.main import app as searchbybrief_workflow
+
+# SearchByBrief requires heavy ML deps (torch, clip, mlx_vlm).
+# Use a lazy import so the backend starts even when those aren't installed.
+try:
+    from app.services.searchbybrief.main import app as searchbybrief_workflow
+    _SEARCHBYBRIEF_AVAILABLE = True
+except ImportError as _e:
+    searchbybrief_workflow = None
+    _SEARCHBYBRIEF_AVAILABLE = False
+    import logging as _logging
+    _logging.getLogger(__name__).warning(
+        f"SearchByBrief workflow unavailable (missing deps): {_e}"
+    )
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -323,6 +335,11 @@ async def chat(
         
         selected_mode = (workflow_mode or "agent_squad").strip().lower()
         if selected_mode in {"searchbybrief", "search_by_brief", "brief"}:
+            if not _SEARCHBYBRIEF_AVAILABLE:
+                raise HTTPException(
+                    status_code=503,
+                    detail="SearchByBrief workflow is unavailable: required ML dependencies (torch, clip, mlx_vlm) are not installed."
+                )
             logger.info(f"Running SearchByBrief workflow for conversation {conversation_id[:8]}...")
             agent_result = _run_searchbybrief_workflow(
                 user_message=message,

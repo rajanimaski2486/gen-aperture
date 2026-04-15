@@ -15,7 +15,7 @@ const DEMO_API_KEY = 'REDACTED_OPENAI_KEY';
 const DEMO_STEPS = [
   {
     label: '📋 Upload Brief',
-    message: 'Analyze this Lemon Zest summer marketing campaign brief and find matching stock photos',
+    message: 'Analyze this Raspberries marketing campaign brief and find matching stock photos',
     attachBrief: true,
   },
   {
@@ -575,7 +575,7 @@ function App() {
         const resp = await fetch('/demo-brief.pdf');
         if (!resp.ok) throw new Error(`Could not load demo brief (${resp.status})`);
         const blob = await resp.blob();
-        file = new File([blob], 'LEMON ZEST Marketing Campaign.pdf', { type: 'application/pdf' });
+        file = new File([blob], 'RASPBERRIES Marketing Campaign.pdf', { type: 'application/pdf' });
       }
       await handleSendMessage(step.message, file);
     } catch (err) {
