@@ -163,6 +163,11 @@ def _run_searchbybrief_workflow(
     )
     pdf_search_detail = final_state.get("pdf_search_detail") if file_bytes else None
     brief_warnings = final_state.get("brief_warnings") or []
+    # Defensive cleanup: SearchByBrief no longer uses category-signal warnings.
+    brief_warnings = [
+        w for w in brief_warnings
+        if "category signals" not in str(w).lower()
+    ]
     if brief_warnings:
         response = (
             f"{response}\n\n"

@@ -313,14 +313,20 @@ def _score_all_candidates(
             getattr(settings, "searchbybrief_curator_sleep_between_calls", 0.0) or 0.0
         )
 
+    def _is_invalid_thumbnail_error(exc_text: str) -> bool:
+        lowered = (exc_text or "").lower()
+        return ("invalid_image_url" in lowered) or ("error while downloading" in lowered)
+
     def _score_one_candidate(idx: int, candidate: dict[str, Any], total_candidates: int) -> dict[str, Any]:
         enriched = dict(candidate)
         thumbnail_url = _get_thumbnail_url(candidate)
         lane_name = candidate.get("origin_lane_name")
+        enriched["invalid_thumbnail_url"] = False
 
         if not thumbnail_url:
             enriched["visual_audit_result"] = None
             enriched["visual_audit_error"] = "Missing thumbnail_url — visual scoring skipped"
+            enriched["invalid_thumbnail_url"] = True
             return enriched
 
         candidate_metadata = {
@@ -385,6 +391,7 @@ def _score_all_candidates(
             enriched["thumbnail_url"] = thumbnail_url
             enriched["visual_audit_result"] = None
             enriched["visual_audit_error"] = str(exc)
+            enriched["invalid_thumbnail_url"] = _is_invalid_thumbnail_error(str(exc))
 
         if sleep_between_calls > 0:
             time.sleep(sleep_between_calls)
@@ -420,6 +427,7 @@ def _score_all_candidates(
                     **candidate,
                     "visual_audit_result": None,
                     "visual_audit_error": f"Parallel scoring worker failed: {exc}",
+                    "invalid_thumbnail_url": _is_invalid_thumbnail_error(str(exc)),
                 }
 
     return [indexed_results[i] for i in range(1, total_candidates + 1)]
@@ -505,6 +513,7 @@ def _flatten_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]
         row.update(_flatten_visual_result(candidate.get("visual_audit_result")))
         row["best_lane_name"] = candidate.get("best_lane_name")
         row["best_lane_score"] = candidate.get("best_lane_score")
+        row["invalid_thumbnail_url"] = bool(candidate.get("invalid_thumbnail_url"))
         if "visual_lane_results" in candidate:
             row["visual_lane_results_json"] = json.dumps(
                 candidate["visual_lane_results"], ensure_ascii=False
@@ -582,6 +591,11 @@ def _build_shortlist(
 
     df["stage3_score"] = pd.to_numeric(df["stage3_score"], errors="coerce")
     df = df.sort_values("stage3_score", ascending=False)
+
+    # Remove known-bad thumbnail rows so they never surface in final UI.
+    if "invalid_thumbnail_url" in df.columns:
+        invalid_mask = df["invalid_thumbnail_url"].fillna(False).astype(bool)
+        df = df[~invalid_mask]
 
     # Drop clearly off-subject assets before shortlist assembly.
     if "visual_subject_match" in df.columns:
