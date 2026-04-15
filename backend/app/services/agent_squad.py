@@ -500,6 +500,12 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             image_text = state['image_analysis'].get('text_in_image', [])
             if image_text:
                 user_context += f"\nDetected text/brand cues in images: {', '.join(image_text)}"
+            scene_phrases = state['image_analysis'].get('scene_phrases', [])
+            if scene_phrases:
+                user_context += f"\nDetected scene phrases: {', '.join(scene_phrases)}"
+            visual_style_terms = state['image_analysis'].get('visual_style_terms', [])
+            if visual_style_terms:
+                user_context += f"\nDetected visual style terms: {', '.join(visual_style_terms)}"
             object_color_phrases = state['image_analysis'].get('object_color_phrases', [])
             if object_color_phrases:
                 user_context += f"\nObject-color cues: {', '.join(object_color_phrases)}"
@@ -558,11 +564,15 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         print(f"[DEBUG MOOD] image_analysis present: {bool(image_analysis)}")
         print(f"[DEBUG MOOD] image_analysis keys: {list(image_analysis.keys()) if image_analysis else 'EMPTY'}")
         print(f"[DEBUG MOOD] image search_terms: {image_analysis.get('search_terms', [])}")
+        print(f"[DEBUG MOOD] scene_phrases: {image_analysis.get('scene_phrases', [])}")
+        print(f"[DEBUG MOOD] visual_style_terms: {image_analysis.get('visual_style_terms', [])}")
         print(f"[DEBUG MOOD] object_color_phrases: {image_analysis.get('object_color_phrases', [])}")
         print(f"[DEBUG MOOD] global_palette: {[c['name'] for c in image_analysis.get('global_palette', [])]}")
         print(f"[DEBUG MOOD] semantic_q BEFORE enrichment: '{semantic_q}'")
         semantic_q_lower = semantic_q.lower()
         image_search_terms = image_analysis.get('search_terms', [])
+        scene_phrases = image_analysis.get('scene_phrases', [])
+        visual_style_terms = image_analysis.get('visual_style_terms', [])
         object_color_phrases = image_analysis.get('object_color_phrases', [])
         palette = image_analysis.get('global_palette', [])
         skip_palette_colors = {"white", "black", "grey", "silver", "beige"}
@@ -582,12 +592,26 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             and color["name"].lower() not in semantic_q_lower
         ][:2]
         print(f"[DEBUG COLOR] palette_additions after filtering: {palette_additions}")
-        combined_additions = [
-            term for term in (image_search_terms + object_color_phrases + palette_additions)
-            if str(term).strip() and str(term).lower() not in semantic_q_lower
-        ]
+        def _pick_unique_terms(terms: List[str], limit: int) -> List[str]:
+            picked: List[str] = []
+            seen = set()
+            for term in terms:
+                term_text = str(term).strip()
+                term_lower = term_text.lower()
+                if not term_text or term_lower in semantic_q_lower or term_lower in seen:
+                    continue
+                seen.add(term_lower)
+                picked.append(term_text)
+                if len(picked) >= limit:
+                    break
+            return picked
+
+        subject_additions = _pick_unique_terms(image_search_terms, 2)
+        scene_style_additions = _pick_unique_terms(scene_phrases + visual_style_terms, 1)
+        color_additions = _pick_unique_terms(object_color_phrases + palette_additions, 1)
+        combined_additions = subject_additions + scene_style_additions + color_additions
         print(f"[DEBUG COLOR] combined_additions before cap: {combined_additions}")
-        image_additions = combined_additions[:3]
+        image_additions = combined_additions[:4]
         print(f"[DEBUG COLOR] final image_additions after cap: {image_additions}")
         if image_additions:
             semantic_q = f"{semantic_q} {' '.join(image_additions)}"

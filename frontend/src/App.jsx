@@ -646,6 +646,7 @@ function App() {
                               ? children
                               : "";
                           const isWarningLine =
+                            text.startsWith("Warning:") ||
                             text.startsWith("Warning Readiness:") ||
                             text.startsWith("Warning Gaps:");
 

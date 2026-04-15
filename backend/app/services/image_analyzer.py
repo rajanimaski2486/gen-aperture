@@ -170,6 +170,8 @@ def _fallback_image_analysis(images: List[Dict[str, Any]]) -> Dict[str, Any]:
         "scenes": [],
         "concepts": [],
         "text_in_image": [],
+        "scene_phrases": [],
+        "visual_style_terms": [],
         "object_color_phrases": [],
         "search_terms": [],
         "analysis_source": "palette_fallback",
@@ -192,6 +194,8 @@ def analyze_images(
             - scenes
             - concepts
             - text_in_image
+            - scene_phrases
+            - visual_style_terms
             - object_color_phrases
             - search_terms
             - global_palette
@@ -207,6 +211,8 @@ def analyze_images(
             "scenes": [],
             "concepts": [],
             "text_in_image": [],
+            "scene_phrases": [],
+            "visual_style_terms": [],
             "object_color_phrases": [],
             "search_terms": [],
             "analysis_source": "none",
@@ -247,6 +253,8 @@ Return JSON only with these keys:
 - scenes: list of concrete scenes/settings
 - concepts: list of high-level but retrieval-helpful concepts
 - text_in_image: list of important readable text/brand/product phrases visible in the images
+- scene_phrases: list of short scene/setting phrases, e.g. "sunlit beach", "outdoor picnic table", "summer lifestyle by the water"
+- visual_style_terms: list of 2-4 short visual descriptors that help find similar stock photos, e.g. "bright vibrant", "sunny tropical", "colorful lifestyle"
 - object_color_phrases: list of short phrases that attach color to an object or scene, e.g. "yellow bottle", "blue ocean background"
 - search_terms: list of 4-8 high-confidence subject-aware search phrases helpful for stock-photo retrieval
 
@@ -255,6 +263,7 @@ Rules:
 - Prefer products, objects, scenes, activities, and branded context.
 - Do NOT return generic design-board terms like "brand board", "mood board", "template", "layout", "social media calendar", "SWOT analysis".
 - Do NOT return abstract style-only words like "sleek", "modern", "understated", "professional" unless attached to a concrete subject phrase.
+- Prefer visual terms that would generalise across many PDFs rather than describing presentation layout.
 - Color phrases must be attached to an object or scene, not standalone colors.
 - Keep phrases short and literal.
 """
@@ -293,6 +302,8 @@ Rules:
     scenes = _safe_list(parsed.get("scenes"), limit=6)
     concepts = _safe_list(parsed.get("concepts"), limit=6)
     text_in_image = _safe_list(parsed.get("text_in_image"), limit=8)
+    scene_phrases = _safe_list(parsed.get("scene_phrases"), limit=6)
+    visual_style_terms = _safe_list(parsed.get("visual_style_terms"), limit=4)
     object_color_phrases = _safe_list(parsed.get("object_color_phrases"), limit=6)
     search_terms = _safe_list(parsed.get("search_terms"), limit=8)
     summary = str(parsed.get("summary") or "").strip() or fallback["summary"]
@@ -314,6 +325,8 @@ Rules:
         "scenes": scenes,
         "concepts": concepts,
         "text_in_image": text_in_image,
+        "scene_phrases": scene_phrases,
+        "visual_style_terms": visual_style_terms,
         "object_color_phrases": object_color_phrases,
         "search_terms": search_terms,
         "analysis_source": "multimodal",
