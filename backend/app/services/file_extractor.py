@@ -24,7 +24,7 @@ class FileExtractor:
         '.txt': 'txt',
     }
     
-    MAX_FILE_SIZE = 1024 * 1024  # 1MB
+    MAX_FILE_SIZE = 6 * 1024 * 1024  # 6MB
     
     def __init__(self):
         # Initialize mimetypes
