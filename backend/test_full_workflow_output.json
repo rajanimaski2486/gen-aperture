@@ -1,0 +1,1794 @@
+{
+  "iterations": 2,
+  "feedback": "CURATOR REPAIR FEEDBACK\n============================================================\nThe Stage 3 visual audit found coverage gaps. Apply the directives\nbelow to the existing search plan. Do NOT rederive the full plan \u2014\npreserve all lanes not mentioned here exactly as they are.\n\nUPDATE LANE \"Airport Travel\"\n  Problem: Candidate does not align with the target lane of Airport Travel imagery.\n  Replace embedding_query with (rewritten as a natural image caption):\n    Handheld style image of people with suitcases or carry-on bags walking through or waiting in an airport terminal, in bright daylight.\n  Replace visual_proxies with: ['suitcase rolling through airport', 'walking under departure boards', 'airport seating areas', 'travelers with suitcases', 'airport terminal setting', 'bright daylight lighting', 'images showing movement', 'relaxed mood']\n  Replace ranking_hints with: ['prefer images with movement', 'prefer relaxed, not rushed, mood', 'travelers with suitcases', 'airport terminal setting', 'bright daylight lighting', 'images showing movement', 'relaxed mood']\n\nUPDATE LANE \"Band Tours POV\"\n  Problem: Candidate does not align with the desired imagery focused on the perspective of a touring band.\n  Replace embedding_query with (rewritten as a natural image caption):\n    First-person view of musicians traveling with band equipment, relaxing backstage, or on a tour bus.\n  Replace visual_proxies with: ['backstage band preparations', 'musicians riding on tour bus', 'bands with gear from first-person perspective', 'first-person perspective of musicians', 'backstage activities', 'musicians on a tour bus']\n  Replace ranking_hints with: ['prefer images showing a casual, candid feel', \"prefer shots clearly from the band's perspective\", 'first-person perspective of musicians', 'backstage activities', 'musicians on a tour bus']\n\nUPDATE LANE \"Beach Activities\"\n  Problem: Candidate does not match the beach activities theme.\n  Replace embedding_query with (rewritten as a natural image caption):\n    First-person or social POV shots of people sunning, sailing, paragliding, or water skiing at the beach in clear, sunny weather.\n  Replace visual_proxies with: ['sailing near shore', 'lying on sandy beach', 'person paragliding over ocean', 'beach activities', 'water sports', 'sunny beach setting']\n  Replace ranking_hints with: ['prefer strong light and blue skies', 'prefer action shots', 'beach activities', 'water sports', 'sunny beach setting']\n\nUPDATE LANE \"Concert and Festival Goers\"\n  Problem: The current candidate does not depict attendees enjoying a concert or festival in a UGC style.\n  Replace embedding_query with (rewritten as a natural image caption):\n    Handheld photo or video of happy people enjoying a concert or music festival, seen from attendee perspective.\n  Replace visual_proxies with: ['crowd cheering near stage', 'group selfies at festival', 'wristbands and concert accessories', 'images of happy people at concerts or festivals', 'crowd interactions', 'group selfies', 'concert wristbands or accessories']\n  Replace ranking_hints with: ['prefer crowd images with visible happiness', 'prefer dynamic, energetic scenes', 'images of happy people at concerts or festivals', 'crowd interactions', 'group selfies', 'concert wristbands or accessories']\n\nUPDATE LANE \"Family Vacations\"\n  Problem: Candidate does not match the target lane's focus on families and joyful moments of family travel.\n  Replace embedding_query with (rewritten as a natural image caption):\n    Casual photos or videos of families celebrating vacation moments, either in transit or at their destination, with a sense of togetherness and fun.\n  Replace visual_proxies with: ['family at airport check-in', 'group selfie at tourist spot', 'parents and children with suitcases']\n  Replace ranking_hints with: [\"prefer images showing all family members' faces\", 'prefer joyful expressions', 'family at airport check-in', 'group selfie at tourist spot', 'parents and children with suitcases']\n\n============================================================\nEND CURATOR REPAIR FEEDBACK",
+  "search_lanes": [
+    {
+      "lane_name": "Band Tours POV",
+      "lane_goal": "Retrieve social POV imagery from the perspective of a touring band",
+      "embedding_query": "First-person view of musicians traveling with band equipment, relaxing backstage, or on a tour bus.",
+      "literal_terms_preserved": [
+        "band tour",
+        "POV",
+        "tour bus"
+      ],
+      "visual_proxies": [
+        "backstage band preparations",
+        "musicians riding on tour bus",
+        "bands with gear from first-person perspective",
+        "first-person perspective of musicians",
+        "backstage activities",
+        "musicians on a tour bus"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer images showing a casual, candid feel",
+        "prefer shots clearly from the band's perspective",
+        "first-person perspective of musicians",
+        "backstage activities",
+        "musicians on a tour bus"
+      ]
+    },
+    {
+      "lane_name": "Concert and Festival Goers",
+      "lane_goal": "Find UGC-style imagery of people attending concerts and festivals",
+      "embedding_query": "Handheld photo or video of happy people enjoying a concert or music festival, seen from attendee perspective.",
+      "literal_terms_preserved": [
+        "concert",
+        "festival",
+        "goers"
+      ],
+      "visual_proxies": [
+        "crowd cheering near stage",
+        "group selfies at festival",
+        "wristbands and concert accessories",
+        "images of happy people at concerts or festivals",
+        "crowd interactions",
+        "group selfies",
+        "concert wristbands or accessories"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer crowd images with visible happiness",
+        "prefer dynamic, energetic scenes",
+        "images of happy people at concerts or festivals",
+        "crowd interactions",
+        "group selfies",
+        "concert wristbands or accessories"
+      ]
+    },
+    {
+      "lane_name": "Road Trips",
+      "lane_goal": "Curate cheerful, candid travel moments from road trips",
+      "embedding_query": "First-person or companion-captured scenes of friends or family traveling in cars, vans, or campers on the road during a sunny day.",
+      "literal_terms_preserved": [
+        "road trip",
+        "car",
+        "camper",
+        "minivan"
+      ],
+      "visual_proxies": [
+        "view out car window on highway",
+        "people inside a minivan with luggage",
+        "packing up car for road trip"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer visible bright natural light",
+        "prefer candid, relaxed interactions"
+      ]
+    },
+    {
+      "lane_name": "Family Vacations",
+      "lane_goal": "Show happy moments of families traveling together",
+      "embedding_query": "Casual photos or videos of families celebrating vacation moments, either in transit or at their destination, with a sense of togetherness and fun.",
+      "literal_terms_preserved": [
+        "family vacation"
+      ],
+      "visual_proxies": [
+        "family at airport check-in",
+        "group selfie at tourist spot",
+        "parents and children with suitcases"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer images showing all family members' faces",
+        "prefer joyful expressions",
+        "family at airport check-in",
+        "group selfie at tourist spot",
+        "parents and children with suitcases"
+      ]
+    },
+    {
+      "lane_name": "Airport Travel",
+      "lane_goal": "Find images of travelers with suitcases in airports",
+      "embedding_query": "Handheld style image of people with suitcases or carry-on bags walking through or waiting in an airport terminal, in bright daylight.",
+      "literal_terms_preserved": [
+        "airport",
+        "suitcases"
+      ],
+      "visual_proxies": [
+        "suitcase rolling through airport",
+        "walking under departure boards",
+        "airport seating areas",
+        "travelers with suitcases",
+        "airport terminal setting",
+        "bright daylight lighting",
+        "images showing movement",
+        "relaxed mood"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer images with movement",
+        "prefer relaxed, not rushed, mood",
+        "travelers with suitcases",
+        "airport terminal setting",
+        "bright daylight lighting",
+        "images showing movement",
+        "relaxed mood"
+      ]
+    },
+    {
+      "lane_name": "On Tour Bus",
+      "lane_goal": "Show fun and relaxed moments on a tour bus",
+      "embedding_query": "First-person or candid group images of people resting or laughing together on a tour bus, bright daylight coming through windows.",
+      "literal_terms_preserved": [
+        "tour bus"
+      ],
+      "visual_proxies": [
+        "bands chatting on bus seats",
+        "people looking out bus windows",
+        "instruments or bags in bus aisles"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer group scenes",
+        "prefer visible bus interior"
+      ]
+    },
+    {
+      "lane_name": "Travel by Train",
+      "lane_goal": "Curate scenes of happy travelers on trains",
+      "embedding_query": "First-person or UGC images of individuals or groups enjoying a train journey, looking out windows or interacting with each other.",
+      "literal_terms_preserved": [
+        "train"
+      ],
+      "visual_proxies": [
+        "view out train window",
+        "people in train seats with luggage",
+        "friends chatting on train"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer window views",
+        "prefer friendly interactions"
+      ]
+    },
+    {
+      "lane_name": "Cheerful Stays Indoors (Hotel/Motel)",
+      "lane_goal": "Highlight comfortable, happy indoor hotel/motel scenes",
+      "embedding_query": "UGC-style bright photo of a person or group relaxing in a hotel or motel room, lounging, watching TV, or chatting together.",
+      "literal_terms_preserved": [
+        "hotel",
+        "motel",
+        "room",
+        "relaxing"
+      ],
+      "visual_proxies": [
+        "hotel room with people relaxing",
+        "friends chatting on the bed",
+        "watching TV in hotel"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer cozy, welcoming spaces",
+        "prefer people who appear comfortable"
+      ]
+    },
+    {
+      "lane_name": "Working in Hotels (Lobby/Public Area/Room)",
+      "lane_goal": "Show candid moments of people working in hotels",
+      "embedding_query": "Casual photo or video of travelers sitting with laptops or tablets, working in a hotel lobby, common area, or in their room.",
+      "literal_terms_preserved": [
+        "working",
+        "hotel lobby",
+        "public area",
+        "hotel room"
+      ],
+      "visual_proxies": [
+        "people using laptops in lobby",
+        "working at table in hotel room",
+        "video call in hotel public area"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer images with visible digital devices",
+        "prefer relaxed, collaborative feel"
+      ]
+    },
+    {
+      "lane_name": "Dining at Hotel/Motel",
+      "lane_goal": "Find moments of guests eating at hotels and motels",
+      "embedding_query": "Bright handheld photos or videos of people enjoying breakfast, lunch, or dinner at a hotel or motel, indoors or on patio.",
+      "literal_terms_preserved": [
+        "breakfast",
+        "lunch",
+        "dinner",
+        "hotel",
+        "motel"
+      ],
+      "visual_proxies": [
+        "group eating together",
+        "buffet breakfast at hotel",
+        "coffee cups on hotel table"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer group interactions",
+        "prefer food and table in frame"
+      ]
+    },
+    {
+      "lane_name": "Hotel/Motel Poolside & Pool Activities",
+      "lane_goal": "Show cheerful poolside activities at hotels",
+      "embedding_query": "First-person or candid image of people sunbathing, swimming, or laughing together by a hotel or motel pool under bright sunlight.",
+      "literal_terms_preserved": [
+        "poolside",
+        "pool",
+        "hotel",
+        "motel"
+      ],
+      "visual_proxies": [
+        "swimming in outdoor hotel pool",
+        "lounging on pool chairs",
+        "splashing water at pool"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer strong sun and vivid blue water",
+        "prefer active, smiling subjects"
+      ]
+    },
+    {
+      "lane_name": "Hotel/Motel Gym",
+      "lane_goal": "Show hotel or motel gym moments",
+      "embedding_query": "Casual, sunny image of a traveler working out in a hotel gym, using equipment or stretching.",
+      "literal_terms_preserved": [
+        "hotel",
+        "motel",
+        "gym"
+      ],
+      "visual_proxies": [
+        "person lifting weights in small hotel gym",
+        "cardio on treadmill in hotel",
+        "yoga mat in hotel gym"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer lots of natural light",
+        "prefer focus on activity not equipment"
+      ]
+    },
+    {
+      "lane_name": "Beach Activities",
+      "lane_goal": "Find images of exciting travel activities on the beach",
+      "embedding_query": "First-person or social POV shots of people sunning, sailing, paragliding, or water skiing at the beach in clear, sunny weather.",
+      "literal_terms_preserved": [
+        "beach",
+        "sunning",
+        "sailing",
+        "paragliding",
+        "water skiing"
+      ],
+      "visual_proxies": [
+        "sailing near shore",
+        "lying on sandy beach",
+        "person paragliding over ocean",
+        "beach activities",
+        "water sports",
+        "sunny beach setting"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer strong light and blue skies",
+        "prefer action shots",
+        "beach activities",
+        "water sports",
+        "sunny beach setting"
+      ]
+    },
+    {
+      "lane_name": "Forest and Countryside Travel",
+      "lane_goal": "Show cheerful travel moments in forests or countryside",
+      "embedding_query": "Bright, casual images of people hiking, relaxing, or enjoying scenic views in forests, woods, or rural countryside.",
+      "literal_terms_preserved": [
+        "forest",
+        "countryside"
+      ],
+      "visual_proxies": [
+        "hiking on wooded trail",
+        "picnic in green meadow",
+        "walking among trees"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer lush greenery",
+        "prefer happy facial expressions"
+      ]
+    },
+    {
+      "lane_name": "Urban City Travel Activities",
+      "lane_goal": "Highlight fun travel activities in cities",
+      "embedding_query": "Handheld or POV images of people walking, riding bikes or scooters in a city, surrounded by buildings and sunny streets.",
+      "literal_terms_preserved": [
+        "city",
+        "walks",
+        "scooter rides",
+        "bike rides"
+      ],
+      "visual_proxies": [
+        "biking through urban streets",
+        "walking in busy plaza",
+        "electric scooter on city sidewalk"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer clear urban context",
+        "prefer energetic movement"
+      ]
+    }
+  ],
+  "stage3_shortlist": [
+    {
+      "asset_id": 2503767067,
+      "origin_lane_name": "Beach Activities",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2503767067.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2503767067",
+      "stage2_score": 0.9,
+      "visual_audit_result": {
+        "subject_match": 0.7,
+        "lane_match": 0.5,
+        "style_match": 0.8,
+        "composition_match": 0.7,
+        "overall_fit": 0.65,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "fun",
+          "friends",
+          "road trip",
+          "laughter"
+        ],
+        "short_rationale": "The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style."
+      },
+      "visual_lane_results": {
+        "Beach Activities": {
+          "subject_match": 0.7,
+          "lane_match": 0.5,
+          "style_match": 0.8,
+          "composition_match": 0.7,
+          "overall_fit": 0.65,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "fun",
+            "friends",
+            "road trip",
+            "laughter"
+          ],
+          "short_rationale": "The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style."
+        }
+      },
+      "best_lane_name": "Beach Activities",
+      "best_lane_score": 0.65,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 16.325,
+      "visual_subject_match": 0.7,
+      "visual_lane_match": 0.5,
+      "visual_style_match": 0.8,
+      "visual_composition_match": 0.7,
+      "visual_overall_fit": 0.65,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "fun | friends | road trip | laughter",
+      "visual_short_rationale": "The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style.",
+      "visual_lane_results_json": "{\"Beach Activities\": {\"subject_match\": 0.7, \"lane_match\": 0.5, \"style_match\": 0.8, \"composition_match\": 0.7, \"overall_fit\": 0.65, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"fun\", \"friends\", \"road trip\", \"laughter\"], \"short_rationale\": \"The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style.\"}}",
+      "stage3_score": 0.79625
+    },
+    {
+      "asset_id": 2337360303,
+      "origin_lane_name": "Family Vacations",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2337360303.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2337360303",
+      "stage2_score": 0.93,
+      "visual_audit_result": {
+        "subject_match": 0.0,
+        "lane_match": 0.0,
+        "style_match": 0.5,
+        "composition_match": 0.5,
+        "overall_fit": 0.2,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "concert",
+          "crowd",
+          "festival",
+          "music event",
+          "cheering"
+        ],
+        "short_rationale": "The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences."
+      },
+      "visual_lane_results": {
+        "Family Vacations": {
+          "subject_match": 0.0,
+          "lane_match": 0.0,
+          "style_match": 0.5,
+          "composition_match": 0.5,
+          "overall_fit": 0.2,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "concert",
+            "crowd",
+            "festival",
+            "music event",
+            "cheering"
+          ],
+          "short_rationale": "The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences."
+        }
+      },
+      "best_lane_name": "Family Vacations",
+      "best_lane_score": 0.2,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.922,
+      "visual_subject_match": 0.0,
+      "visual_lane_match": 0.0,
+      "visual_style_match": 0.5,
+      "visual_composition_match": 0.5,
+      "visual_overall_fit": 0.2,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "concert | crowd | festival | music event | cheering",
+      "visual_short_rationale": "The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences.",
+      "visual_lane_results_json": "{\"Family Vacations\": {\"subject_match\": 0.0, \"lane_match\": 0.0, \"style_match\": 0.5, \"composition_match\": 0.5, \"overall_fit\": 0.2, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"concert\", \"crowd\", \"festival\", \"music event\", \"cheering\"], \"short_rationale\": \"The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences.\"}}",
+      "stage3_score": 0.5962500000000001
+    },
+    {
+      "asset_id": 2692876601,
+      "origin_lane_name": "Band Tours POV",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2692876601.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2692876601",
+      "stage2_score": 0.91,
+      "visual_audit_result": {
+        "subject_match": 0.0,
+        "lane_match": 0.0,
+        "style_match": 0.0,
+        "composition_match": 0.0,
+        "overall_fit": 0.0,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "rock",
+          "club",
+          "graphic design"
+        ],
+        "short_rationale": "The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences."
+      },
+      "visual_lane_results": {
+        "Band Tours POV": {
+          "subject_match": 0.0,
+          "lane_match": 0.0,
+          "style_match": 0.0,
+          "composition_match": 0.0,
+          "overall_fit": 0.0,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "rock",
+            "club",
+            "graphic design"
+          ],
+          "short_rationale": "The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences."
+        }
+      },
+      "best_lane_name": "Band Tours POV",
+      "best_lane_score": 0.0,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.333,
+      "visual_subject_match": 0.0,
+      "visual_lane_match": 0.0,
+      "visual_style_match": 0.0,
+      "visual_composition_match": 0.0,
+      "visual_overall_fit": 0.0,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "rock | club | graphic design",
+      "visual_short_rationale": "The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences.",
+      "visual_lane_results_json": "{\"Band Tours POV\": {\"subject_match\": 0.0, \"lane_match\": 0.0, \"style_match\": 0.0, \"composition_match\": 0.0, \"overall_fit\": 0.0, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"rock\", \"club\", \"graphic design\"], \"short_rationale\": \"The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences.\"}}",
+      "stage3_score": 0.455
+    },
+    {
+      "asset_id": 1344272849,
+      "origin_lane_name": "Airport Travel",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1344272849.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 1344272849",
+      "stage2_score": 0.86,
+      "visual_audit_result": {
+        "subject_match": 0.0,
+        "lane_match": 0.0,
+        "style_match": 0.0,
+        "composition_match": 0.0,
+        "overall_fit": 0.0,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "band",
+          "concert",
+          "performance"
+        ],
+        "short_rationale": "The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context."
+      },
+      "visual_lane_results": {
+        "Airport Travel": {
+          "subject_match": 0.0,
+          "lane_match": 0.0,
+          "style_match": 0.0,
+          "composition_match": 0.0,
+          "overall_fit": 0.0,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "band",
+            "concert",
+            "performance"
+          ],
+          "short_rationale": "The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context."
+        }
+      },
+      "best_lane_name": "Airport Travel",
+      "best_lane_score": 0.0,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.554,
+      "visual_subject_match": 0.0,
+      "visual_lane_match": 0.0,
+      "visual_style_match": 0.0,
+      "visual_composition_match": 0.0,
+      "visual_overall_fit": 0.0,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "band | concert | performance",
+      "visual_short_rationale": "The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context.",
+      "visual_lane_results_json": "{\"Airport Travel\": {\"subject_match\": 0.0, \"lane_match\": 0.0, \"style_match\": 0.0, \"composition_match\": 0.0, \"overall_fit\": 0.0, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"band\", \"concert\", \"performance\"], \"short_rationale\": \"The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context.\"}}",
+      "stage3_score": 0.43
+    },
+    {
+      "asset_id": 2646906151,
+      "origin_lane_name": "Concert and Festival Goers",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2646906151.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2646906151",
+      "stage2_score": 0.88,
+      "visual_audit_result": {
+        "subject_match": 0.3,
+        "lane_match": 0.4,
+        "style_match": 0.0,
+        "composition_match": 0.5,
+        "overall_fit": 0.3,
+        "likely_exclusion_violation": true,
+        "exclusion_violation_reason": "Image does not depict a concert or festival scene from the attendee perspective.",
+        "likely_tags": [
+          "band",
+          "promotional",
+          "music"
+        ],
+        "short_rationale": "The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements."
+      },
+      "visual_lane_results": {
+        "Concert and Festival Goers": {
+          "subject_match": 0.3,
+          "lane_match": 0.4,
+          "style_match": 0.0,
+          "composition_match": 0.5,
+          "overall_fit": 0.3,
+          "likely_exclusion_violation": true,
+          "exclusion_violation_reason": "Image does not depict a concert or festival scene from the attendee perspective.",
+          "likely_tags": [
+            "band",
+            "promotional",
+            "music"
+          ],
+          "short_rationale": "The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements."
+        }
+      },
+      "best_lane_name": "Concert and Festival Goers",
+      "best_lane_score": 0.3,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.852,
+      "visual_subject_match": 0.3,
+      "visual_lane_match": 0.4,
+      "visual_style_match": 0.0,
+      "visual_composition_match": 0.5,
+      "visual_overall_fit": 0.3,
+      "visual_likely_exclusion_violation": true,
+      "visual_exclusion_violation_reason": "Image does not depict a concert or festival scene from the attendee perspective.",
+      "visual_likely_tags": "band | promotional | music",
+      "visual_short_rationale": "The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements.",
+      "visual_lane_results_json": "{\"Concert and Festival Goers\": {\"subject_match\": 0.3, \"lane_match\": 0.4, \"style_match\": 0.0, \"composition_match\": 0.5, \"overall_fit\": 0.3, \"likely_exclusion_violation\": true, \"exclusion_violation_reason\": \"Image does not depict a concert or festival scene from the attendee perspective.\", \"likely_tags\": [\"band\", \"promotional\", \"music\"], \"short_rationale\": \"The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements.\"}}",
+      "stage3_score": 0.37875
+    }
+  ],
+  "final_collection": [
+    {
+      "asset_id": 2503767067,
+      "origin_lane_name": "Beach Activities",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2503767067.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2503767067",
+      "stage2_score": 0.9,
+      "visual_audit_result": {
+        "subject_match": 0.7,
+        "lane_match": 0.5,
+        "style_match": 0.8,
+        "composition_match": 0.7,
+        "overall_fit": 0.65,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "fun",
+          "friends",
+          "road trip",
+          "laughter"
+        ],
+        "short_rationale": "The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style."
+      },
+      "visual_lane_results": {
+        "Beach Activities": {
+          "subject_match": 0.7,
+          "lane_match": 0.5,
+          "style_match": 0.8,
+          "composition_match": 0.7,
+          "overall_fit": 0.65,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "fun",
+            "friends",
+            "road trip",
+            "laughter"
+          ],
+          "short_rationale": "The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style."
+        }
+      },
+      "best_lane_name": "Beach Activities",
+      "best_lane_score": 0.65,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 16.325,
+      "visual_subject_match": 0.7,
+      "visual_lane_match": 0.5,
+      "visual_style_match": 0.8,
+      "visual_composition_match": 0.7,
+      "visual_overall_fit": 0.65,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "fun | friends | road trip | laughter",
+      "visual_short_rationale": "The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style.",
+      "visual_lane_results_json": "{\"Beach Activities\": {\"subject_match\": 0.7, \"lane_match\": 0.5, \"style_match\": 0.8, \"composition_match\": 0.7, \"overall_fit\": 0.65, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"fun\", \"friends\", \"road trip\", \"laughter\"], \"short_rationale\": \"The image features three individuals having fun in a car, aligning with road trip themes. However, it doesn't directly depict beach activities, which affects the lane match. The bright expressions and relaxed atmosphere fit well with the required UGC style.\"}}",
+      "stage3_score": 0.79625
+    },
+    {
+      "asset_id": 2337360303,
+      "origin_lane_name": "Family Vacations",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2337360303.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2337360303",
+      "stage2_score": 0.93,
+      "visual_audit_result": {
+        "subject_match": 0.0,
+        "lane_match": 0.0,
+        "style_match": 0.5,
+        "composition_match": 0.5,
+        "overall_fit": 0.2,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "concert",
+          "crowd",
+          "festival",
+          "music event",
+          "cheering"
+        ],
+        "short_rationale": "The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences."
+      },
+      "visual_lane_results": {
+        "Family Vacations": {
+          "subject_match": 0.0,
+          "lane_match": 0.0,
+          "style_match": 0.5,
+          "composition_match": 0.5,
+          "overall_fit": 0.2,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "concert",
+            "crowd",
+            "festival",
+            "music event",
+            "cheering"
+          ],
+          "short_rationale": "The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences."
+        }
+      },
+      "best_lane_name": "Family Vacations",
+      "best_lane_score": 0.2,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.922,
+      "visual_subject_match": 0.0,
+      "visual_lane_match": 0.0,
+      "visual_style_match": 0.5,
+      "visual_composition_match": 0.5,
+      "visual_overall_fit": 0.2,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "concert | crowd | festival | music event | cheering",
+      "visual_short_rationale": "The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences.",
+      "visual_lane_results_json": "{\"Family Vacations\": {\"subject_match\": 0.0, \"lane_match\": 0.0, \"style_match\": 0.5, \"composition_match\": 0.5, \"overall_fit\": 0.2, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"concert\", \"crowd\", \"festival\", \"music event\", \"cheering\"], \"short_rationale\": \"The image depicts a concert scene with a crowd enjoying a performance. However, it does not represent family vacations or any of the required subjects, and the perspective is not first-person. While it has a bright atmosphere, it doesn't align well with the target lane's focus on family experiences.\"}}",
+      "stage3_score": 0.5962500000000001
+    },
+    {
+      "asset_id": 2692876601,
+      "origin_lane_name": "Band Tours POV",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2692876601.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2692876601",
+      "stage2_score": 0.91,
+      "visual_audit_result": {
+        "subject_match": 0.0,
+        "lane_match": 0.0,
+        "style_match": 0.0,
+        "composition_match": 0.0,
+        "overall_fit": 0.0,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "rock",
+          "club",
+          "graphic design"
+        ],
+        "short_rationale": "The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences."
+      },
+      "visual_lane_results": {
+        "Band Tours POV": {
+          "subject_match": 0.0,
+          "lane_match": 0.0,
+          "style_match": 0.0,
+          "composition_match": 0.0,
+          "overall_fit": 0.0,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "rock",
+            "club",
+            "graphic design"
+          ],
+          "short_rationale": "The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences."
+        }
+      },
+      "best_lane_name": "Band Tours POV",
+      "best_lane_score": 0.0,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.333,
+      "visual_subject_match": 0.0,
+      "visual_lane_match": 0.0,
+      "visual_style_match": 0.0,
+      "visual_composition_match": 0.0,
+      "visual_overall_fit": 0.0,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "rock | club | graphic design",
+      "visual_short_rationale": "The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences.",
+      "visual_lane_results_json": "{\"Band Tours POV\": {\"subject_match\": 0.0, \"lane_match\": 0.0, \"style_match\": 0.0, \"composition_match\": 0.0, \"overall_fit\": 0.0, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"rock\", \"club\", \"graphic design\"], \"short_rationale\": \"The image depicts a graphic design for a rock club, lacking any of the required subjects, styles, or actions related to band tours or travel experiences.\"}}",
+      "stage3_score": 0.455
+    },
+    {
+      "asset_id": 1344272849,
+      "origin_lane_name": "Airport Travel",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1344272849.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 1344272849",
+      "stage2_score": 0.86,
+      "visual_audit_result": {
+        "subject_match": 0.0,
+        "lane_match": 0.0,
+        "style_match": 0.0,
+        "composition_match": 0.0,
+        "overall_fit": 0.0,
+        "likely_exclusion_violation": false,
+        "exclusion_violation_reason": null,
+        "likely_tags": [
+          "band",
+          "concert",
+          "performance"
+        ],
+        "short_rationale": "The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context."
+      },
+      "visual_lane_results": {
+        "Airport Travel": {
+          "subject_match": 0.0,
+          "lane_match": 0.0,
+          "style_match": 0.0,
+          "composition_match": 0.0,
+          "overall_fit": 0.0,
+          "likely_exclusion_violation": false,
+          "exclusion_violation_reason": null,
+          "likely_tags": [
+            "band",
+            "concert",
+            "performance"
+          ],
+          "short_rationale": "The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context."
+        }
+      },
+      "best_lane_name": "Airport Travel",
+      "best_lane_score": 0.0,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.554,
+      "visual_subject_match": 0.0,
+      "visual_lane_match": 0.0,
+      "visual_style_match": 0.0,
+      "visual_composition_match": 0.0,
+      "visual_overall_fit": 0.0,
+      "visual_likely_exclusion_violation": false,
+      "visual_exclusion_violation_reason": null,
+      "visual_likely_tags": "band | concert | performance",
+      "visual_short_rationale": "The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context.",
+      "visual_lane_results_json": "{\"Airport Travel\": {\"subject_match\": 0.0, \"lane_match\": 0.0, \"style_match\": 0.0, \"composition_match\": 0.0, \"overall_fit\": 0.0, \"likely_exclusion_violation\": false, \"exclusion_violation_reason\": null, \"likely_tags\": [\"band\", \"concert\", \"performance\"], \"short_rationale\": \"The candidate image features a band performing, which does not align with the airport travel theme. It lacks the required subjects and style that relate to traveling with suitcases in an airport context.\"}}",
+      "stage3_score": 0.43
+    },
+    {
+      "asset_id": 2646906151,
+      "origin_lane_name": "Concert and Festival Goers",
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2646906151.jpg",
+      "media_type": "photo",
+      "title": "Mock asset 2646906151",
+      "stage2_score": 0.88,
+      "visual_audit_result": {
+        "subject_match": 0.3,
+        "lane_match": 0.4,
+        "style_match": 0.0,
+        "composition_match": 0.5,
+        "overall_fit": 0.3,
+        "likely_exclusion_violation": true,
+        "exclusion_violation_reason": "Image does not depict a concert or festival scene from the attendee perspective.",
+        "likely_tags": [
+          "band",
+          "promotional",
+          "music"
+        ],
+        "short_rationale": "The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements."
+      },
+      "visual_lane_results": {
+        "Concert and Festival Goers": {
+          "subject_match": 0.3,
+          "lane_match": 0.4,
+          "style_match": 0.0,
+          "composition_match": 0.5,
+          "overall_fit": 0.3,
+          "likely_exclusion_violation": true,
+          "exclusion_violation_reason": "Image does not depict a concert or festival scene from the attendee perspective.",
+          "likely_tags": [
+            "band",
+            "promotional",
+            "music"
+          ],
+          "short_rationale": "The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements."
+        }
+      },
+      "best_lane_name": "Concert and Festival Goers",
+      "best_lane_score": 0.3,
+      "visual_audit_error": null,
+      "visual_scoring_latency_s": 3.852,
+      "visual_subject_match": 0.3,
+      "visual_lane_match": 0.4,
+      "visual_style_match": 0.0,
+      "visual_composition_match": 0.5,
+      "visual_overall_fit": 0.3,
+      "visual_likely_exclusion_violation": true,
+      "visual_exclusion_violation_reason": "Image does not depict a concert or festival scene from the attendee perspective.",
+      "visual_likely_tags": "band | promotional | music",
+      "visual_short_rationale": "The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements.",
+      "visual_lane_results_json": "{\"Concert and Festival Goers\": {\"subject_match\": 0.3, \"lane_match\": 0.4, \"style_match\": 0.0, \"composition_match\": 0.5, \"overall_fit\": 0.3, \"likely_exclusion_violation\": true, \"exclusion_violation_reason\": \"Image does not depict a concert or festival scene from the attendee perspective.\", \"likely_tags\": [\"band\", \"promotional\", \"music\"], \"short_rationale\": \"The image features a promotional display of a band rather than a candid scene of people attending a concert or festival. It lacks the necessary joyful and dynamic feel typical of festival-goers, and the style does not align with UGC or first-person perspective requirements.\"}}",
+      "stage3_score": 0.37875
+    }
+  ],
+  "stage3_lane_audits": [
+    {
+      "lane_name": "Airport Travel",
+      "candidate_ids": [
+        1344272849
+      ],
+      "audit_result": {
+        "lane_coverage_quality": "low",
+        "duplicate_or_redundancy_risk": "low",
+        "missing_attributes": [
+          "travelers with suitcases",
+          "airport terminal setting",
+          "bright daylight lighting",
+          "images showing movement",
+          "relaxed mood"
+        ],
+        "best_candidate_ids": [],
+        "drop_candidate_ids": [
+          1344272849
+        ],
+        "repair_needed": true,
+        "repair_reason": "Candidate does not align with the target lane of Airport Travel imagery.",
+        "short_rationale": "The provided candidate image does not depict any travelers with suitcases in an airport setting, which is essential for the target lane."
+      }
+    },
+    {
+      "lane_name": "Band Tours POV",
+      "candidate_ids": [
+        2692876601
+      ],
+      "audit_result": {
+        "lane_coverage_quality": "low",
+        "duplicate_or_redundancy_risk": "low",
+        "missing_attributes": [
+          "first-person perspective of musicians",
+          "backstage activities",
+          "musicians on a tour bus"
+        ],
+        "best_candidate_ids": [],
+        "drop_candidate_ids": [
+          2692876601
+        ],
+        "repair_needed": true,
+        "repair_reason": "Candidate does not align with the desired imagery focused on the perspective of a touring band.",
+        "short_rationale": "The candidate does not provide any relevant visuals related to the band's POV, lacking essential elements like musicians or tour activities."
+      }
+    },
+    {
+      "lane_name": "Beach Activities",
+      "candidate_ids": [
+        2503767067
+      ],
+      "audit_result": {
+        "lane_coverage_quality": "low",
+        "duplicate_or_redundancy_risk": "low",
+        "missing_attributes": [
+          "beach activities",
+          "water sports",
+          "sunny beach setting"
+        ],
+        "best_candidate_ids": [],
+        "drop_candidate_ids": [
+          2503767067
+        ],
+        "repair_needed": true,
+        "repair_reason": "Candidate does not match the beach activities theme.",
+        "short_rationale": "The candidate image features a car interior with friends, which does not represent the beach activities required for this lane."
+      }
+    },
+    {
+      "lane_name": "Concert and Festival Goers",
+      "candidate_ids": [
+        2646906151
+      ],
+      "audit_result": {
+        "lane_coverage_quality": "low",
+        "duplicate_or_redundancy_risk": "low",
+        "missing_attributes": [
+          "images of happy people at concerts or festivals",
+          "crowd interactions",
+          "group selfies",
+          "concert wristbands or accessories"
+        ],
+        "best_candidate_ids": [],
+        "drop_candidate_ids": [
+          2646906151
+        ],
+        "repair_needed": true,
+        "repair_reason": "The current candidate does not depict attendees enjoying a concert or festival in a UGC style.",
+        "short_rationale": "The image is of a promotional poster rather than candid images of concert-goers, which does not align with the target lane's requirements."
+      }
+    },
+    {
+      "lane_name": "Family Vacations",
+      "candidate_ids": [
+        2337360303
+      ],
+      "audit_result": {
+        "lane_coverage_quality": "low",
+        "duplicate_or_redundancy_risk": "low",
+        "missing_attributes": [
+          "family at airport check-in",
+          "group selfie at tourist spot",
+          "parents and children with suitcases"
+        ],
+        "best_candidate_ids": [],
+        "drop_candidate_ids": [
+          2337360303
+        ],
+        "repair_needed": true,
+        "repair_reason": "Candidate does not match the target lane's focus on families and joyful moments of family travel.",
+        "short_rationale": "The single candidate image focuses on a concert scene and lacks any references to family vacations or related themes."
+      }
+    }
+  ],
+  "stage3_repair_requests": [
+    {
+      "repair_reason": "Candidate does not align with the target lane of Airport Travel imagery.",
+      "target_lane_name": "Airport Travel",
+      "new_lane": {
+        "lane_name": "Airport Travel",
+        "lane_goal": "Find images of travelers with suitcases in airports",
+        "original_embedding_query": "Handheld style image of people with suitcases or carry-on bags walking through or waiting in an airport terminal, in bright daylight.",
+        "embedding_query": "Handheld style image of people with suitcases or carry-on bags walking through or waiting in an airport terminal, in bright daylight.",
+        "literal_terms_preserved": [
+          "airport",
+          "suitcases"
+        ],
+        "visual_proxies": [
+          "suitcase rolling through airport",
+          "walking under departure boards",
+          "airport seating areas",
+          "travelers with suitcases",
+          "airport terminal setting",
+          "bright daylight lighting",
+          "images showing movement",
+          "relaxed mood"
+        ],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer images with movement",
+          "prefer relaxed, not rushed, mood",
+          "travelers with suitcases",
+          "airport terminal setting",
+          "bright daylight lighting",
+          "images showing movement",
+          "relaxed mood"
+        ]
+      }
+    },
+    {
+      "repair_reason": "Candidate does not align with the desired imagery focused on the perspective of a touring band.",
+      "target_lane_name": "Band Tours POV",
+      "new_lane": {
+        "lane_name": "Band Tours POV",
+        "lane_goal": "Retrieve social POV imagery from the perspective of a touring band",
+        "original_embedding_query": "First-person view of musicians traveling with band equipment, relaxing backstage, or on a tour bus.",
+        "embedding_query": "First-person view of musicians traveling with band equipment, relaxing backstage, or on a tour bus.",
+        "literal_terms_preserved": [
+          "band tour",
+          "POV",
+          "tour bus"
+        ],
+        "visual_proxies": [
+          "backstage band preparations",
+          "musicians riding on tour bus",
+          "bands with gear from first-person perspective",
+          "first-person perspective of musicians",
+          "backstage activities",
+          "musicians on a tour bus"
+        ],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer images showing a casual, candid feel",
+          "prefer shots clearly from the band's perspective",
+          "first-person perspective of musicians",
+          "backstage activities",
+          "musicians on a tour bus"
+        ]
+      }
+    },
+    {
+      "repair_reason": "Candidate does not match the beach activities theme.",
+      "target_lane_name": "Beach Activities",
+      "new_lane": {
+        "lane_name": "Beach Activities",
+        "lane_goal": "Find images of exciting travel activities on the beach",
+        "original_embedding_query": "First-person or social POV shots of people sunning, sailing, paragliding, or water skiing at the beach in clear, sunny weather.",
+        "embedding_query": "First-person or social POV shots of people sunning, sailing, paragliding, or water skiing at the beach in clear, sunny weather.",
+        "literal_terms_preserved": [
+          "beach",
+          "sunning",
+          "sailing",
+          "paragliding",
+          "water skiing"
+        ],
+        "visual_proxies": [
+          "sailing near shore",
+          "lying on sandy beach",
+          "person paragliding over ocean",
+          "beach activities",
+          "water sports",
+          "sunny beach setting"
+        ],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer strong light and blue skies",
+          "prefer action shots",
+          "beach activities",
+          "water sports",
+          "sunny beach setting"
+        ]
+      }
+    },
+    {
+      "repair_reason": "The current candidate does not depict attendees enjoying a concert or festival in a UGC style.",
+      "target_lane_name": "Concert and Festival Goers",
+      "new_lane": {
+        "lane_name": "Concert and Festival Goers",
+        "lane_goal": "Find UGC-style imagery of people attending concerts and festivals",
+        "original_embedding_query": "Handheld photo or video of happy people enjoying a concert or music festival, seen from attendee perspective.",
+        "embedding_query": "Handheld photo or video of happy people enjoying a concert or music festival, seen from attendee perspective.",
+        "literal_terms_preserved": [
+          "concert",
+          "festival",
+          "goers"
+        ],
+        "visual_proxies": [
+          "crowd cheering near stage",
+          "group selfies at festival",
+          "wristbands and concert accessories",
+          "images of happy people at concerts or festivals",
+          "crowd interactions",
+          "group selfies",
+          "concert wristbands or accessories"
+        ],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer crowd images with visible happiness",
+          "prefer dynamic, energetic scenes",
+          "images of happy people at concerts or festivals",
+          "crowd interactions",
+          "group selfies",
+          "concert wristbands or accessories"
+        ]
+      }
+    },
+    {
+      "repair_reason": "Candidate does not match the target lane's focus on families and joyful moments of family travel.",
+      "target_lane_name": "Family Vacations",
+      "new_lane": {
+        "lane_name": "Family Vacations",
+        "lane_goal": "Show happy moments of families traveling together",
+        "original_embedding_query": "Casual photos or videos of families celebrating vacation moments, either in transit or at their destination, with a sense of togetherness and fun.",
+        "embedding_query": "Casual photos or videos of families celebrating vacation moments, either in transit or at their destination, with a sense of togetherness and fun.",
+        "literal_terms_preserved": [
+          "family vacation"
+        ],
+        "visual_proxies": [
+          "family at airport check-in",
+          "group selfie at tourist spot",
+          "parents and children with suitcases"
+        ],
+        "lane_filters": [],
+        "ranking_hints": [
+          "prefer images showing all family members' faces",
+          "prefer joyful expressions",
+          "family at airport check-in",
+          "group selfie at tourist spot",
+          "parents and children with suitcases"
+        ]
+      }
+    }
+  ],
+  "search_params_snapshots": [
+    {
+      "iteration": 0,
+      "lanes": [
+        {
+          "lane_name": "Band Tours POV",
+          "lane_goal": "Retrieve social POV imagery from the perspective of a touring band",
+          "embedding_query": "First-person view of musicians traveling with band equipment, relaxing backstage, or on a tour bus.",
+          "literal_terms_preserved": [
+            "band tour",
+            "POV",
+            "tour bus"
+          ],
+          "visual_proxies": [
+            "backstage band preparations",
+            "musicians riding on tour bus",
+            "bands with gear from first-person perspective"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images showing a casual, candid feel",
+            "prefer shots clearly from the band's perspective"
+          ]
+        },
+        {
+          "lane_name": "Concert and Festival Goers",
+          "lane_goal": "Find UGC-style imagery of people attending concerts and festivals",
+          "embedding_query": "Handheld photo or video of happy people enjoying a concert or music festival, seen from attendee perspective.",
+          "literal_terms_preserved": [
+            "concert",
+            "festival",
+            "goers"
+          ],
+          "visual_proxies": [
+            "crowd cheering near stage",
+            "group selfies at festival",
+            "wristbands and concert accessories"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer crowd images with visible happiness",
+            "prefer dynamic, energetic scenes"
+          ]
+        },
+        {
+          "lane_name": "Road Trips",
+          "lane_goal": "Curate cheerful, candid travel moments from road trips",
+          "embedding_query": "First-person or companion-captured scenes of friends or family traveling in cars, vans, or campers on the road during a sunny day.",
+          "literal_terms_preserved": [
+            "road trip",
+            "car",
+            "camper",
+            "minivan"
+          ],
+          "visual_proxies": [
+            "view out car window on highway",
+            "people inside a minivan with luggage",
+            "packing up car for road trip"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer visible bright natural light",
+            "prefer candid, relaxed interactions"
+          ]
+        },
+        {
+          "lane_name": "Family Vacations",
+          "lane_goal": "Show happy moments of families traveling together",
+          "embedding_query": "Casual photos or videos of families celebrating vacation moments, either in transit or at their destination, with a sense of togetherness and fun.",
+          "literal_terms_preserved": [
+            "family vacation"
+          ],
+          "visual_proxies": [
+            "family at airport check-in",
+            "group selfie at tourist spot",
+            "parents and children with suitcases"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images showing all family members' faces",
+            "prefer joyful expressions"
+          ]
+        },
+        {
+          "lane_name": "Airport Travel",
+          "lane_goal": "Find images of travelers with suitcases in airports",
+          "embedding_query": "Handheld style image of people with suitcases or carry-on bags walking through or waiting in an airport terminal, in bright daylight.",
+          "literal_terms_preserved": [
+            "airport",
+            "suitcases"
+          ],
+          "visual_proxies": [
+            "suitcase rolling through airport",
+            "walking under departure boards",
+            "airport seating areas"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images with movement",
+            "prefer relaxed, not rushed, mood"
+          ]
+        },
+        {
+          "lane_name": "On Tour Bus",
+          "lane_goal": "Show fun and relaxed moments on a tour bus",
+          "embedding_query": "First-person or candid group images of people resting or laughing together on a tour bus, bright daylight coming through windows.",
+          "literal_terms_preserved": [
+            "tour bus"
+          ],
+          "visual_proxies": [
+            "bands chatting on bus seats",
+            "people looking out bus windows",
+            "instruments or bags in bus aisles"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer group scenes",
+            "prefer visible bus interior"
+          ]
+        },
+        {
+          "lane_name": "Travel by Train",
+          "lane_goal": "Curate scenes of happy travelers on trains",
+          "embedding_query": "First-person or UGC images of individuals or groups enjoying a train journey, looking out windows or interacting with each other.",
+          "literal_terms_preserved": [
+            "train"
+          ],
+          "visual_proxies": [
+            "view out train window",
+            "people in train seats with luggage",
+            "friends chatting on train"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer window views",
+            "prefer friendly interactions"
+          ]
+        },
+        {
+          "lane_name": "Cheerful Stays Indoors (Hotel/Motel)",
+          "lane_goal": "Highlight comfortable, happy indoor hotel/motel scenes",
+          "embedding_query": "UGC-style bright photo of a person or group relaxing in a hotel or motel room, lounging, watching TV, or chatting together.",
+          "literal_terms_preserved": [
+            "hotel",
+            "motel",
+            "room",
+            "relaxing"
+          ],
+          "visual_proxies": [
+            "hotel room with people relaxing",
+            "friends chatting on the bed",
+            "watching TV in hotel"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer cozy, welcoming spaces",
+            "prefer people who appear comfortable"
+          ]
+        },
+        {
+          "lane_name": "Working in Hotels (Lobby/Public Area/Room)",
+          "lane_goal": "Show candid moments of people working in hotels",
+          "embedding_query": "Casual photo or video of travelers sitting with laptops or tablets, working in a hotel lobby, common area, or in their room.",
+          "literal_terms_preserved": [
+            "working",
+            "hotel lobby",
+            "public area",
+            "hotel room"
+          ],
+          "visual_proxies": [
+            "people using laptops in lobby",
+            "working at table in hotel room",
+            "video call in hotel public area"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images with visible digital devices",
+            "prefer relaxed, collaborative feel"
+          ]
+        },
+        {
+          "lane_name": "Dining at Hotel/Motel",
+          "lane_goal": "Find moments of guests eating at hotels and motels",
+          "embedding_query": "Bright handheld photos or videos of people enjoying breakfast, lunch, or dinner at a hotel or motel, indoors or on patio.",
+          "literal_terms_preserved": [
+            "breakfast",
+            "lunch",
+            "dinner",
+            "hotel",
+            "motel"
+          ],
+          "visual_proxies": [
+            "group eating together",
+            "buffet breakfast at hotel",
+            "coffee cups on hotel table"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer group interactions",
+            "prefer food and table in frame"
+          ]
+        },
+        {
+          "lane_name": "Hotel/Motel Poolside & Pool Activities",
+          "lane_goal": "Show cheerful poolside activities at hotels",
+          "embedding_query": "First-person or candid image of people sunbathing, swimming, or laughing together by a hotel or motel pool under bright sunlight.",
+          "literal_terms_preserved": [
+            "poolside",
+            "pool",
+            "hotel",
+            "motel"
+          ],
+          "visual_proxies": [
+            "swimming in outdoor hotel pool",
+            "lounging on pool chairs",
+            "splashing water at pool"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer strong sun and vivid blue water",
+            "prefer active, smiling subjects"
+          ]
+        },
+        {
+          "lane_name": "Hotel/Motel Gym",
+          "lane_goal": "Show hotel or motel gym moments",
+          "embedding_query": "Casual, sunny image of a traveler working out in a hotel gym, using equipment or stretching.",
+          "literal_terms_preserved": [
+            "hotel",
+            "motel",
+            "gym"
+          ],
+          "visual_proxies": [
+            "person lifting weights in small hotel gym",
+            "cardio on treadmill in hotel",
+            "yoga mat in hotel gym"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer lots of natural light",
+            "prefer focus on activity not equipment"
+          ]
+        },
+        {
+          "lane_name": "Beach Activities",
+          "lane_goal": "Find images of exciting travel activities on the beach",
+          "embedding_query": "First-person or social POV shots of people sunning, sailing, paragliding, or water skiing at the beach in clear, sunny weather.",
+          "literal_terms_preserved": [
+            "beach",
+            "sunning",
+            "sailing",
+            "paragliding",
+            "water skiing"
+          ],
+          "visual_proxies": [
+            "sailing near shore",
+            "lying on sandy beach",
+            "person paragliding over ocean"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer strong light and blue skies",
+            "prefer action shots"
+          ]
+        },
+        {
+          "lane_name": "Forest and Countryside Travel",
+          "lane_goal": "Show cheerful travel moments in forests or countryside",
+          "embedding_query": "Bright, casual images of people hiking, relaxing, or enjoying scenic views in forests, woods, or rural countryside.",
+          "literal_terms_preserved": [
+            "forest",
+            "countryside"
+          ],
+          "visual_proxies": [
+            "hiking on wooded trail",
+            "picnic in green meadow",
+            "walking among trees"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer lush greenery",
+            "prefer happy facial expressions"
+          ]
+        },
+        {
+          "lane_name": "Urban City Travel Activities",
+          "lane_goal": "Highlight fun travel activities in cities",
+          "embedding_query": "Handheld or POV images of people walking, riding bikes or scooters in a city, surrounded by buildings and sunny streets.",
+          "literal_terms_preserved": [
+            "city",
+            "walks",
+            "scooter rides",
+            "bike rides"
+          ],
+          "visual_proxies": [
+            "biking through urban streets",
+            "walking in busy plaza",
+            "electric scooter on city sidewalk"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer clear urban context",
+            "prefer energetic movement"
+          ]
+        }
+      ]
+    },
+    {
+      "iteration": 1,
+      "lanes": [
+        {
+          "lane_name": "Band Tours POV",
+          "lane_goal": "Retrieve social POV imagery from the perspective of a touring band",
+          "embedding_query": "First-person view of musicians traveling with band equipment, relaxing backstage, or on a tour bus.",
+          "literal_terms_preserved": [
+            "band tour",
+            "POV",
+            "tour bus"
+          ],
+          "visual_proxies": [
+            "backstage band preparations",
+            "musicians riding on tour bus",
+            "bands with gear from first-person perspective"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images showing a casual, candid feel",
+            "prefer shots clearly from the band's perspective"
+          ]
+        },
+        {
+          "lane_name": "Concert and Festival Goers",
+          "lane_goal": "Find UGC-style imagery of people attending concerts and festivals",
+          "embedding_query": "Handheld photo or video of happy people enjoying a concert or music festival, seen from attendee perspective.",
+          "literal_terms_preserved": [
+            "concert",
+            "festival",
+            "goers"
+          ],
+          "visual_proxies": [
+            "crowd cheering near stage",
+            "group selfies at festival",
+            "wristbands and concert accessories"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer crowd images with visible happiness",
+            "prefer dynamic, energetic scenes"
+          ]
+        },
+        {
+          "lane_name": "Road Trips",
+          "lane_goal": "Curate cheerful, candid travel moments from road trips",
+          "embedding_query": "First-person or companion-captured scenes of friends or family traveling in cars, vans, or campers on the road during a sunny day.",
+          "literal_terms_preserved": [
+            "road trip",
+            "car",
+            "camper",
+            "minivan"
+          ],
+          "visual_proxies": [
+            "view out car window on highway",
+            "people inside a minivan with luggage",
+            "packing up car for road trip"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer visible bright natural light",
+            "prefer candid, relaxed interactions"
+          ]
+        },
+        {
+          "lane_name": "Family Vacations",
+          "lane_goal": "Show happy moments of families traveling together",
+          "embedding_query": "Casual photos or videos of families celebrating vacation moments, either in transit or at their destination, with a sense of togetherness and fun.",
+          "literal_terms_preserved": [
+            "family vacation"
+          ],
+          "visual_proxies": [
+            "family at airport check-in",
+            "group selfie at tourist spot",
+            "parents and children with suitcases"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images showing all family members' faces",
+            "prefer joyful expressions"
+          ]
+        },
+        {
+          "lane_name": "Airport Travel",
+          "lane_goal": "Find images of travelers with suitcases in airports",
+          "embedding_query": "Handheld style image of people with suitcases or carry-on bags walking through or waiting in an airport terminal, in bright daylight.",
+          "literal_terms_preserved": [
+            "airport",
+            "suitcases"
+          ],
+          "visual_proxies": [
+            "suitcase rolling through airport",
+            "walking under departure boards",
+            "airport seating areas"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images with movement",
+            "prefer relaxed, not rushed, mood"
+          ]
+        },
+        {
+          "lane_name": "On Tour Bus",
+          "lane_goal": "Show fun and relaxed moments on a tour bus",
+          "embedding_query": "First-person or candid group images of people resting or laughing together on a tour bus, bright daylight coming through windows.",
+          "literal_terms_preserved": [
+            "tour bus"
+          ],
+          "visual_proxies": [
+            "bands chatting on bus seats",
+            "people looking out bus windows",
+            "instruments or bags in bus aisles"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer group scenes",
+            "prefer visible bus interior"
+          ]
+        },
+        {
+          "lane_name": "Travel by Train",
+          "lane_goal": "Curate scenes of happy travelers on trains",
+          "embedding_query": "First-person or UGC images of individuals or groups enjoying a train journey, looking out windows or interacting with each other.",
+          "literal_terms_preserved": [
+            "train"
+          ],
+          "visual_proxies": [
+            "view out train window",
+            "people in train seats with luggage",
+            "friends chatting on train"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer window views",
+            "prefer friendly interactions"
+          ]
+        },
+        {
+          "lane_name": "Cheerful Stays Indoors (Hotel/Motel)",
+          "lane_goal": "Highlight comfortable, happy indoor hotel/motel scenes",
+          "embedding_query": "UGC-style bright photo of a person or group relaxing in a hotel or motel room, lounging, watching TV, or chatting together.",
+          "literal_terms_preserved": [
+            "hotel",
+            "motel",
+            "room",
+            "relaxing"
+          ],
+          "visual_proxies": [
+            "hotel room with people relaxing",
+            "friends chatting on the bed",
+            "watching TV in hotel"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer cozy, welcoming spaces",
+            "prefer people who appear comfortable"
+          ]
+        },
+        {
+          "lane_name": "Working in Hotels (Lobby/Public Area/Room)",
+          "lane_goal": "Show candid moments of people working in hotels",
+          "embedding_query": "Casual photo or video of travelers sitting with laptops or tablets, working in a hotel lobby, common area, or in their room.",
+          "literal_terms_preserved": [
+            "working",
+            "hotel lobby",
+            "public area",
+            "hotel room"
+          ],
+          "visual_proxies": [
+            "people using laptops in lobby",
+            "working at table in hotel room",
+            "video call in hotel public area"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer images with visible digital devices",
+            "prefer relaxed, collaborative feel"
+          ]
+        },
+        {
+          "lane_name": "Dining at Hotel/Motel",
+          "lane_goal": "Find moments of guests eating at hotels and motels",
+          "embedding_query": "Bright handheld photos or videos of people enjoying breakfast, lunch, or dinner at a hotel or motel, indoors or on patio.",
+          "literal_terms_preserved": [
+            "breakfast",
+            "lunch",
+            "dinner",
+            "hotel",
+            "motel"
+          ],
+          "visual_proxies": [
+            "group eating together",
+            "buffet breakfast at hotel",
+            "coffee cups on hotel table"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer group interactions",
+            "prefer food and table in frame"
+          ]
+        },
+        {
+          "lane_name": "Hotel/Motel Poolside & Pool Activities",
+          "lane_goal": "Show cheerful poolside activities at hotels",
+          "embedding_query": "First-person or candid image of people sunbathing, swimming, or laughing together by a hotel or motel pool under bright sunlight.",
+          "literal_terms_preserved": [
+            "poolside",
+            "pool",
+            "hotel",
+            "motel"
+          ],
+          "visual_proxies": [
+            "swimming in outdoor hotel pool",
+            "lounging on pool chairs",
+            "splashing water at pool"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer strong sun and vivid blue water",
+            "prefer active, smiling subjects"
+          ]
+        },
+        {
+          "lane_name": "Hotel/Motel Gym",
+          "lane_goal": "Show hotel or motel gym moments",
+          "embedding_query": "Casual, sunny image of a traveler working out in a hotel gym, using equipment or stretching.",
+          "literal_terms_preserved": [
+            "hotel",
+            "motel",
+            "gym"
+          ],
+          "visual_proxies": [
+            "person lifting weights in small hotel gym",
+            "cardio on treadmill in hotel",
+            "yoga mat in hotel gym"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer lots of natural light",
+            "prefer focus on activity not equipment"
+          ]
+        },
+        {
+          "lane_name": "Beach Activities",
+          "lane_goal": "Find images of exciting travel activities on the beach",
+          "embedding_query": "First-person or social POV shots of people sunning, sailing, paragliding, or water skiing at the beach in clear, sunny weather.",
+          "literal_terms_preserved": [
+            "beach",
+            "sunning",
+            "sailing",
+            "paragliding",
+            "water skiing"
+          ],
+          "visual_proxies": [
+            "sailing near shore",
+            "lying on sandy beach",
+            "person paragliding over ocean"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer strong light and blue skies",
+            "prefer action shots"
+          ]
+        },
+        {
+          "lane_name": "Forest and Countryside Travel",
+          "lane_goal": "Show cheerful travel moments in forests or countryside",
+          "embedding_query": "Bright, casual images of people hiking, relaxing, or enjoying scenic views in forests, woods, or rural countryside.",
+          "literal_terms_preserved": [
+            "forest",
+            "countryside"
+          ],
+          "visual_proxies": [
+            "hiking on wooded trail",
+            "picnic in green meadow",
+            "walking among trees"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer lush greenery",
+            "prefer happy facial expressions"
+          ]
+        },
+        {
+          "lane_name": "Urban City Travel Activities",
+          "lane_goal": "Highlight fun travel activities in cities",
+          "embedding_query": "Handheld or POV images of people walking, riding bikes or scooters in a city, surrounded by buildings and sunny streets.",
+          "literal_terms_preserved": [
+            "city",
+            "walks",
+            "scooter rides",
+            "bike rides"
+          ],
+          "visual_proxies": [
+            "biking through urban streets",
+            "walking in busy plaza",
+            "electric scooter on city sidewalk"
+          ],
+          "lane_filters": [],
+          "ranking_hints": [
+            "prefer clear urban context",
+            "prefer energetic movement"
+          ]
+        }
+      ]
+    }
+  ]
+}

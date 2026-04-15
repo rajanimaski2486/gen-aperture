@@ -1,0 +1,11 @@
+{
+  "timestamp_utc": "2026-04-15T12:19:47.762129+00:00",
+  "total_runtime_s": 29.195,
+  "curator_scored_count": 15,
+  "curator_latency_sum_s": 49.024,
+  "curator_latency_avg_s": 3.268,
+  "candidate_pool_count": 15,
+  "shortlist_count": 15,
+  "final_collection_count": 15,
+  "feedback": "done"
+}

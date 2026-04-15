@@ -1,0 +1,35 @@
+{
+  "timestamp_utc": "2026-04-15T12:27:20.886904+00:00",
+  "node": "planner_only_run_intent_node",
+  "v1": {
+    "planner_version": "v1",
+    "runtime_s": 2.936,
+    "lane_count": 4,
+    "output_json_chars": 1676,
+    "query_chars_total": 234,
+    "query_chars_avg": 58.5,
+    "lane_names": [
+      "Lemon Drink Table",
+      "Friends Having Fun",
+      "Close-up Lemon Zest",
+      "Summer Party UGC"
+    ]
+  },
+  "v2": {
+    "planner_version": "v2",
+    "runtime_s": 2.197,
+    "lane_count": 4,
+    "output_json_chars": 1717,
+    "query_chars_total": 291,
+    "query_chars_avg": 72.75,
+    "lane_names": [
+      "lemon drink outdoors",
+      "vibrant lemon products",
+      "social media fun",
+      "influencer lifestyle"
+    ]
+  },
+  "delta_runtime_s": -0.739,
+  "delta_runtime_pct": -25.17,
+  "delta_output_chars": 41
+}

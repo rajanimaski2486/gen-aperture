@@ -1,0 +1,88 @@
+{
+  "raw_v2": {
+    "shared_filters": [],
+    "search_lanes": [
+      {
+        "lane_name": "Lemon Zest Drink",
+        "embedding_query": "refreshing glass of lemon zest soda with ice and lemon slices"
+      },
+      {
+        "lane_name": "Summer Vibes",
+        "embedding_query": "group of friends laughing outdoors at a summer picnic with bright drinks"
+      },
+      {
+        "lane_name": "Influencer Moment",
+        "embedding_query": "young influencer holding lemon zest drink and smiling at camera"
+      },
+      {
+        "lane_name": "Social Media Flatlay",
+        "embedding_query": "colorful flatlay of lemon zest drinks on a vibrant summer background"
+      }
+    ]
+  },
+  "normalized_for_pipeline": {
+    "brief_diagnostics": {
+      "brief_form": "conceptual_creative",
+      "retrieval_intent": "concept_translation",
+      "search_complexity": "high",
+      "is_multi_lane": true,
+      "reasoning_summary": "Compact planner v2 output focused on embedding queries."
+    },
+    "hard_constraints": {
+      "subjects_required": [],
+      "demographics_required": [],
+      "composition_required": [],
+      "style_required": [],
+      "location_required": [],
+      "media_type_required": [],
+      "licensing_required": [],
+      "exclusions": []
+    },
+    "operational_constraints": {
+      "output_structure": [],
+      "volume_targets": [],
+      "coverage_requirements": [],
+      "reference_dependency": [],
+      "attachment_dependency": []
+    },
+    "shared_filters": [],
+    "search_lanes": [
+      {
+        "lane_name": "Lemon Zest Drink",
+        "lane_goal": "Lemon Zest Drink",
+        "embedding_query": "refreshing glass of lemon zest soda with ice and lemon slices",
+        "literal_terms_preserved": [],
+        "visual_proxies": [],
+        "lane_filters": [],
+        "ranking_hints": []
+      },
+      {
+        "lane_name": "Summer Vibes",
+        "lane_goal": "Summer Vibes",
+        "embedding_query": "group of friends laughing outdoors at a summer picnic with bright drinks",
+        "literal_terms_preserved": [],
+        "visual_proxies": [],
+        "lane_filters": [],
+        "ranking_hints": []
+      },
+      {
+        "lane_name": "Influencer Moment",
+        "lane_goal": "Influencer Moment",
+        "embedding_query": "young influencer holding lemon zest drink and smiling at camera",
+        "literal_terms_preserved": [],
+        "visual_proxies": [],
+        "lane_filters": [],
+        "ranking_hints": []
+      },
+      {
+        "lane_name": "Social Media Flatlay",
+        "lane_goal": "Social Media Flatlay",
+        "embedding_query": "colorful flatlay of lemon zest drinks on a vibrant summer background",
+        "literal_terms_preserved": [],
+        "visual_proxies": [],
+        "lane_filters": [],
+        "ranking_hints": []
+      }
+    ]
+  }
+}

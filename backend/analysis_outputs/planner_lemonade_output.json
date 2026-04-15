@@ -1,0 +1,137 @@
+{
+  "brief_diagnostics": {
+    "brief_form": "attachment_or_sheet_driven",
+    "retrieval_intent": "concept_translation",
+    "search_complexity": "high",
+    "is_multi_lane": true,
+    "reasoning_summary": "The brief is a marketing campaign overview with visual reference and brand themes, requiring translation into multiple distinct themes/subjects. Campaign focuses on summer beverage imagery, vibrancy, and influencer/UGC activity, with a clean and modern visual aesthetic inferred from the attachment."
+  },
+  "hard_constraints": {
+    "subjects_required": [
+      "lemon beverage",
+      "refreshing summer drink",
+      "people enjoying drinks",
+      "social media activity",
+      "influencer moments",
+      "bright summer setting"
+    ],
+    "demographics_required": [],
+    "composition_required": [],
+    "style_required": [
+      "warm",
+      "understated",
+      "sleek",
+      "modern",
+      "professional",
+      "clean"
+    ],
+    "location_required": [],
+    "media_type_required": [],
+    "licensing_required": [],
+    "exclusions": []
+  },
+  "operational_constraints": {
+    "output_structure": [],
+    "volume_targets": [],
+    "coverage_requirements": [],
+    "reference_dependency": [
+      "attached PDF"
+    ],
+    "attachment_dependency": [
+      "attached PDF"
+    ]
+  },
+  "shared_filters": [
+    "mood:warm",
+    "mood:understated",
+    "mood:sleek",
+    "mood:modern",
+    "mood:professional",
+    "mood:clean"
+  ],
+  "search_lanes": [
+    {
+      "lane_name": "lemon_beverage",
+      "lane_goal": "Visually striking imagery of lemon-based drinks as the campaign's hero product.",
+      "embedding_query": "A close-up photo of a chilled lemon drink with condensation, garnished with a lemon slice, set on a minimal clean surface in soft, natural lighting.",
+      "literal_terms_preserved": [
+        "lemon drink",
+        "lemon beverage"
+      ],
+      "visual_proxies": [
+        "cold lemonade glass",
+        "lemon slice garnish",
+        "minimal modern surface"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer bright and clean backgrounds",
+        "prefer soft natural lighting",
+        "deprioritise busy or cluttered scenes"
+      ]
+    },
+    {
+      "lane_name": "refreshing_summer_drink_moments",
+      "lane_goal": "Showcase the feeling of refreshment and summer enjoyment tied to drinks.",
+      "embedding_query": "A sunlit outdoor scene of a person holding a glass of lemonade, smiling and enjoying a warm summer day with soft, airy colors.",
+      "literal_terms_preserved": [
+        "lemonade",
+        "summer drink",
+        "outdoor"
+      ],
+      "visual_proxies": [
+        "person holding lemonade",
+        "sunny outdoor setting",
+        "happy summer vibes"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer visible expressions of enjoyment",
+        "prefer warm, sunlit environments",
+        "prefer airy, clean color palettes"
+      ]
+    },
+    {
+      "lane_name": "people_social_media_influencer_moments",
+      "lane_goal": "Capture social or influencer-driven moments with the beverage as the hero.",
+      "embedding_query": "A modern, well-lit photo of a young person taking a selfie while holding a lemon drink, styled for social media with a sleek and minimal background.",
+      "literal_terms_preserved": [
+        "selfie",
+        "lemon drink",
+        "influencer"
+      ],
+      "visual_proxies": [
+        "person taking selfie with drink",
+        "modern interior or trendy setting",
+        "sleek minimal decor"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer vertical orientation typical of mobile selfies",
+        "prefer minimal, uncluttered backgrounds",
+        "prefer shots with subject and drink both in focus"
+      ]
+    },
+    {
+      "lane_name": "brand_aesthetic_vibes",
+      "lane_goal": "Convey the warm, clean, and professional mood of the Lemon Zest brand.",
+      "embedding_query": "Editorial still life of lemon, glassware, and beverage ingredients arranged on a beige or white background with soft shadows, evoking a clean and modern atmosphere.",
+      "literal_terms_preserved": [
+        "lemon",
+        "glassware",
+        "modern"
+      ],
+      "visual_proxies": [
+        "still life with lemons",
+        "beige or white backdrops",
+        "minimal, professional styling"
+      ],
+      "lane_filters": [],
+      "ranking_hints": [
+        "prefer clean composition and negative space",
+        "prefer soft shadow and matte textures",
+        "deprioritise overly bright or saturated colors"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,498 @@
+{
+  "queries": [
+    "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light.",
+    "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting.",
+    "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day.",
+    "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+  ],
+  "results": {
+    "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light.": [
+      {
+        "asset_id": "2459381483",
+        "max_retrieval_score": 1.6418247,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2457786831",
+        "max_retrieval_score": 1.6397893,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "677263840",
+        "max_retrieval_score": 1.6239291,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2615616441",
+        "max_retrieval_score": 1.6126876,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2530141111",
+        "max_retrieval_score": 1.6053762,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2220945821",
+        "max_retrieval_score": 1.6043962,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "1340908319",
+        "max_retrieval_score": 1.6013588,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "1896156892",
+        "max_retrieval_score": 1.6012231,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2451547025",
+        "max_retrieval_score": 1.6005635,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2140695381",
+        "max_retrieval_score": 1.5976264,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "2451547023",
+        "max_retrieval_score": 1.5928105,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      },
+      {
+        "asset_id": "743694064",
+        "max_retrieval_score": 1.592297,
+        "origin_lane_names": [
+          "First-person POV inside a tour bus or backstage, showing ban..."
+        ],
+        "origin_lane_queries": [
+          "First-person POV inside a tour bus or backstage, showing band members relaxing or preparing for a performance, shot in bright and sunny natural light."
+        ]
+      }
+    ],
+    "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting.": [
+      {
+        "asset_id": "1129966169",
+        "max_retrieval_score": 1.6952643,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "2290262359",
+        "max_retrieval_score": 1.6769879,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "680248414",
+        "max_retrieval_score": 1.673497,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "2177420393",
+        "max_retrieval_score": 1.6722516,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "609395753",
+        "max_retrieval_score": 1.6716528,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "1132704860",
+        "max_retrieval_score": 1.6695764,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "673290721",
+        "max_retrieval_score": 1.6694174,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "1125830315",
+        "max_retrieval_score": 1.6691527,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "1627567027",
+        "max_retrieval_score": 1.6686435,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "1447945346",
+        "max_retrieval_score": 1.6683962,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "1125830330",
+        "max_retrieval_score": 1.6631062,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      },
+      {
+        "asset_id": "2157047637",
+        "max_retrieval_score": 1.6625686,
+        "origin_lane_names": [
+          "First-person style UGC photo of cheerful people at a music f..."
+        ],
+        "origin_lane_queries": [
+          "First-person style UGC photo of cheerful people at a music festival, smiling or waving in a bright outdoor setting."
+        ]
+      }
+    ],
+    "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day.": [
+      {
+        "asset_id": "1849686439",
+        "max_retrieval_score": 1.699155,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2263128719",
+        "max_retrieval_score": 1.6986885,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "1958074096",
+        "max_retrieval_score": 1.6920766,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "1430471015",
+        "max_retrieval_score": 1.6897593,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2221942635",
+        "max_retrieval_score": 1.6887548,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2269386929",
+        "max_retrieval_score": 1.6885834,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2468879795",
+        "max_retrieval_score": 1.6885439,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "1189852333",
+        "max_retrieval_score": 1.6854429,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2023832513",
+        "max_retrieval_score": 1.6853257,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2136395593",
+        "max_retrieval_score": 1.685255,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "588788405",
+        "max_retrieval_score": 1.6819096,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      },
+      {
+        "asset_id": "2048558036",
+        "max_retrieval_score": 1.6806382,
+        "origin_lane_names": [
+          "First-person UGC video from inside a car or camper showing f..."
+        ],
+        "origin_lane_queries": [
+          "First-person UGC video from inside a car or camper showing friends or family laughing and looking out the window while traveling on a sunny day."
+        ]
+      }
+    ],
+    "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather.": [
+      {
+        "asset_id": "2368481169",
+        "max_retrieval_score": 1.7131948,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1549485614",
+        "max_retrieval_score": 1.7049518,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "326490512",
+        "max_retrieval_score": 1.7015986,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1287966466",
+        "max_retrieval_score": 1.7015295,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1945720975",
+        "max_retrieval_score": 1.6956713,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "2025751835",
+        "max_retrieval_score": 1.6903386,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1951498531",
+        "max_retrieval_score": 1.6897774,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "2162401207",
+        "max_retrieval_score": 1.689528,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "508047298",
+        "max_retrieval_score": 1.6827343,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1568320069",
+        "max_retrieval_score": 1.6818225,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1711939912",
+        "max_retrieval_score": 1.6765456,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      },
+      {
+        "asset_id": "1033802215",
+        "max_retrieval_score": 1.6761861,
+        "origin_lane_names": [
+          "UGC photo of a family smiling together at a scenic location ..."
+        ],
+        "origin_lane_queries": [
+          "UGC photo of a family smiling together at a scenic location with luggage and travel gear, shot in sunny weather."
+        ]
+      }
+    ]
+  }
+}

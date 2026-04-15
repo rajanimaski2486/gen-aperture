@@ -1,0 +1,147 @@
+{
+  "prompts": [
+    "minimalist blue and white geometric abstract pattern",
+    "monochrome architectural symmetry modern facade",
+    "futuristic AI data visualization lines and grids",
+    "studio style conceptual artwork navy white palette"
+  ],
+  "num_lanes": 4,
+  "num_candidates_total": 1677,
+  "embedding_dims": [
+    256,
+    256,
+    256,
+    256
+  ],
+  "top_assets": [
+    {
+      "asset_id": "2261509101",
+      "score": 0.72378117,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2261509101.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "1152795143",
+      "score": 0.7227171,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1152795143.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2182793081",
+      "score": 0.71774405,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2182793081.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2159460823",
+      "score": 0.7169053,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2159460823.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2561830975",
+      "score": 0.7153422,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2561830975.jpg",
+      "origin_lane_names": [
+        "Lane 2",
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2475355979",
+      "score": 0.7147667,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2475355979.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2442621651",
+      "score": 0.7131005,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2442621651.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2122748372",
+      "score": 0.7129014,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2122748372.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "1148287136",
+      "score": 0.71248627,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1148287136.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "1683106243",
+      "score": 0.7118201,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1683106243.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "1791890984",
+      "score": 0.71172374,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1791890984.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "1101635090",
+      "score": 0.71150273,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1101635090.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "380378011",
+      "score": 0.71091974,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-380378011.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "1683078592",
+      "score": 0.7107942,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-1683078592.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2233807663",
+      "score": 0.7104897,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2233807663.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    },
+    {
+      "asset_id": "2243568513",
+      "score": 0.7094556,
+      "thumbnail_url": "https://image.shutterstock.com/image-photo/words-words-words-words-260nw-2243568513.jpg",
+      "origin_lane_names": [
+        "Lane 3"
+      ]
+    }
+  ]
+}
