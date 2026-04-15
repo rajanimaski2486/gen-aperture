@@ -14,6 +14,11 @@ from openai import OpenAI
 
 from app.config import Settings
 
+
+def _is_non_retryable_image_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return ("invalid_image_url" in text) or ("error while downloading" in text)
+
 def get_client(api_key_override: str | None = None) -> OpenAI:
     """
     Build an OpenAI client for this request.
@@ -112,6 +117,9 @@ def call_llm_vision_json(
             return json.loads(text)
 
         except Exception as exc:
+            if _is_non_retryable_image_error(exc):
+                # Deterministic URL/download errors won't recover on retry.
+                raise RuntimeError(f"Vision LLM call failed (non-retryable): {exc}")
             last_err = exc
             if attempt < retries:
                 time.sleep(sleep_seconds * attempt)

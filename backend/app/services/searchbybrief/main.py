@@ -239,7 +239,9 @@ def _assess_brief_readiness(
     has_lexical = len(subjects_required) >= 2
     has_semantic = len(semantic_terms) >= 4
     has_brand_domain = bool(subjects_required)
-    has_categories = bool(subjects_required)
+    # SearchByBrief no longer uses category matching in preprocessing/readiness.
+    # Keep this as neutral-true so category warnings do not fire.
+    has_categories = True
     has_named_entities = bool(locations_required)
     has_supporting_requirements = bool(
         hard_constraints.get("composition_required")
@@ -265,7 +267,6 @@ def _assess_brief_readiness(
         (not has_lexical, "We could not extract enough concrete keywords from the brief."),
         (not has_semantic, "The semantic search query is too thin to strongly guide retrieval."),
         (not has_brand_domain, "No clear subject, product, or brand domain was identified."),
-        (not has_categories, "No strong category signals were found."),
     ]
     gaps = [message for condition, message in gap_rules if condition]
 
@@ -275,7 +276,6 @@ def _assess_brief_readiness(
         (is_pdf and not has_images, "No images were found in the uploaded PDF, so search relied on extracted text only."),
         (is_pdf and has_images and image_count <= 2, "2 or fewer images were found in the uploaded PDF, so visual guidance may be limited."),
         ((not has_lexical) or (not has_semantic), "Only a limited number of concrete keywords were extracted, which may reduce search precision."),
-        (not has_categories, "No strong category signals were found, so results may be less targeted."),
     ]
     warnings = [message for condition, message in warning_rules if condition]
 
