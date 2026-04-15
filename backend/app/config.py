@@ -38,6 +38,22 @@ class Settings(BaseSettings):
     rerank_borderline_threshold: float = 3.5
     # Jaccard similarity above which two results are treated as near-duplicates
     rerank_duplicate_similarity_threshold: float = 0.5
+
+    # SearchByBrief Stage 1 retriever
+    searchbybrief_retriever_endpoint: str = (
+        "http://creative-image-similarity-search.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+    )
+    searchbybrief_retriever_collection_type: str = "APPROVED_V1"
+    searchbybrief_retriever_top_k_per_lane: int = 500
+    searchbybrief_retriever_use_pca: bool = True
+    # Optional explicit override; when unset retriever falls back to repo ipca_10m.pkl
+    searchbybrief_retriever_pca_model_path: Optional[str] = None
+    searchbybrief_retriever_clip_model: str = "ViT-B/32"
+    searchbybrief_retriever_clip_device: Optional[str] = None
+    searchbybrief_retriever_clip_download_root: str = "/tmp/clip"
+    searchbybrief_retriever_normalize_embeddings: bool = True
+    searchbybrief_retriever_truncate_text: bool = False
+    searchbybrief_retriever_timeout_seconds: int = 60
     
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
     bifrost_api_key: str
