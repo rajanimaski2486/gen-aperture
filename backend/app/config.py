@@ -74,6 +74,9 @@ class Settings(BaseSettings):
     # SearchByBrief Stage 3 curator
     # Number of parallel Bifrost visual-scoring calls.
     searchbybrief_curator_concurrency: int = 5
+    # Soft penalty applied per prior pick from the same lane during shortlist
+    # interleaving. Higher => more diversity, lower => stronger score dominance.
+    searchbybrief_curator_diversity_penalty: float = 0.4
     
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
     bifrost_api_key: str | None = None

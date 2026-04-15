@@ -582,6 +582,54 @@ def _build_shortlist(
     if "asset_id" in base.columns:
         base = base.sort_values("stage3_score", ascending=False).drop_duplicates(subset=["asset_id"], keep="first")
 
+    # Interleave lanes while preserving score order within each lane.
+    # Use score-aware scheduling so clearly stronger lanes can still dominate,
+    # while a soft diversity penalty avoids long contiguous blocks.
+    if lane_name_key in base.columns and not base.empty:
+        lane_groups: dict[str, list[dict[str, Any]]] = {}
+        for lane_name, group in base.groupby(lane_name_key):
+            sorted_group = group.sort_values("stage3_score", ascending=False)
+            records = sorted_group.to_dict(orient="records")
+            lane_groups[str(lane_name)] = records
+        lane_order = sorted(
+            lane_groups.keys(),
+            key=lambda name: lane_groups[name][0].get("stage3_score", 0.0),
+            reverse=True,
+        )
+        lane_idx = {name: 0 for name in lane_order}
+        lane_pick_count = {name: 0 for name in lane_order}
+        interleaved: list[dict[str, Any]] = []
+
+        diversity_penalty = float(
+            getattr(settings, "searchbybrief_curator_diversity_penalty", 0.03) or 0.03
+        )
+        while len(interleaved) < top_n:
+            best_lane: Optional[str] = None
+            best_priority = float("-inf")
+
+            for lane_name in lane_order:
+                idx = lane_idx[lane_name]
+                lane_items = lane_groups[lane_name]
+                if idx >= len(lane_items):
+                    continue
+                next_score = float(lane_items[idx].get("stage3_score") or 0.0)
+                # Higher score wins, but repeated picks from the same lane are
+                # softly penalized to keep variation in the feed.
+                priority = next_score - diversity_penalty * lane_pick_count[lane_name]
+                if priority > best_priority:
+                    best_priority = priority
+                    best_lane = lane_name
+
+            if best_lane is None:
+                break
+
+            idx = lane_idx[best_lane]
+            interleaved.append(lane_groups[best_lane][idx])
+            lane_idx[best_lane] = idx + 1
+            lane_pick_count[best_lane] += 1
+
+        return interleaved
+
     return base.sort_values("stage3_score", ascending=False).head(top_n).to_dict(orient="records")
 
 

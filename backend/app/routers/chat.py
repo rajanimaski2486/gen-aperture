@@ -37,6 +37,66 @@ def _safe_int(value):
         return None
 
 
+def _build_searchbybrief_pdf_detail(final_state: dict, had_uploaded_file: bool) -> Optional[dict]:
+    """
+    Build PDF readiness diagnostics for SearchByBrief, mirroring AgentSquad's
+    high-level guardrail signals.
+    """
+    if not had_uploaded_file:
+        return None
+
+    file_type = (final_state.get("file_type") or "").lower()
+    file_images = final_state.get("file_images") or []
+    image_analysis = final_state.get("image_analysis") or {}
+    attachment_text = (final_state.get("attachment_text") or "").strip()
+
+    image_count = len(file_images)
+    text_extracted = bool(attachment_text)
+    is_pdf = file_type == "pdf"
+    search_terms = image_analysis.get("search_terms") or []
+    if not isinstance(search_terms, list):
+        search_terms = []
+    search_terms = [str(t).strip() for t in search_terms if str(t).strip()]
+    enrichment_added = search_terms[:4]
+
+    has_image_analysis = bool(image_analysis and image_analysis.get("analysis_source") not in {"none", None})
+
+    score = (
+        (2 if text_extracted else 0)
+        + (1 if image_count > 0 else 0)
+        + (1 if has_image_analysis else 0)
+        + (2 if len(search_terms) >= 2 else 0)
+    )
+    if score >= 5:
+        quality = "strong"
+    elif score >= 3:
+        quality = "partial"
+    elif score >= 2:
+        quality = "weak"
+    else:
+        quality = "insufficient"
+
+    gaps = []
+    warnings = []
+    if not text_extracted:
+        gaps.append("No usable text was extracted from the uploaded file.")
+    if is_pdf and image_count == 0:
+        gaps.append("No images were found in the uploaded PDF.")
+    if len(search_terms) < 2:
+        warnings.append("Only limited image-derived search cues were extracted.")
+    if is_pdf and image_count <= 2:
+        warnings.append("2 or fewer images were found in the uploaded PDF, so visual guidance may be limited.")
+
+    return {
+        "images_extracted": image_count,
+        "text_extracted": text_extracted,
+        "enrichment_added": enrichment_added,
+        "quality": quality,
+        "gaps": gaps,
+        "warnings": warnings,
+    }
+
+
 def _run_searchbybrief_workflow(
     user_message: str,
     file_bytes: Optional[bytes],
@@ -146,6 +206,10 @@ def _run_searchbybrief_workflow(
         f"SearchByBrief completed with {len(search_results)} curated result(s) "
         f"across {len(lane_names)} lane(s)."
     )
+    pdf_search_detail = _build_searchbybrief_pdf_detail(
+        final_state=final_state,
+        had_uploaded_file=bool(file_bytes),
+    )
     return {
         "response": response,
         "search_results": search_results,
@@ -155,6 +219,7 @@ def _run_searchbybrief_workflow(
         "rerank_decisions": [],
         "rerank_explanation": None,
         "filter_metadata": None,
+        "pdf_search_detail": pdf_search_detail,
     }
 
 
