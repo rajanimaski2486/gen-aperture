@@ -495,7 +495,7 @@ function App() {
           content: response.response,
           results: response.results,
           filter_metadata: response.filter_metadata || null,
-          search_detail: response.search_detail || null,
+          pdf_search_detail: response.pdf_search_detail || null,
           workflow_steps: response.workflow_steps || [],
           search_mode: response.search_mode || "relevance",
           rerank_applied: response.rerank_applied || false,
@@ -668,21 +668,21 @@ function App() {
                 ) : (
                   <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
                 )}
-                {msg.role === "assistant" && msg.search_detail && (
+                {msg.role === "assistant" && msg.pdf_search_detail && (
                   <div className="search-detail">
-                    <div className="search-detail-title">PDF Search Extraction Detail</div>
+                    <div className="search-detail-title">PDF Search Detail</div>
                     <div>
                       <strong>Images extracted:</strong>{" "}
-                      {msg.search_detail.images_extracted ?? 0}
+                      {msg.pdf_search_detail.images_extracted ?? 0}
                     </div>
                     <div>
                       <strong>Text extracted:</strong>{" "}
-                      {msg.search_detail.text_extracted ? "Yes" : "No"}
+                      {msg.pdf_search_detail.text_extracted ? "Yes" : "No"}
                     </div>
                     <div>
                       <strong>Enrichment added:</strong>{" "}
-                      {msg.search_detail.enrichment_added?.length > 0
-                        ? msg.search_detail.enrichment_added.join(", ")
+                      {msg.pdf_search_detail.enrichment_added?.length > 0
+                        ? msg.pdf_search_detail.enrichment_added.join(", ")
                         : "none"}
                     </div>
                   </div>

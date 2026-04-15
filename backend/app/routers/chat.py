@@ -223,7 +223,7 @@ async def chat(
             response=response_text,
             results=results,
             filter_metadata=agent_result.get('filter_metadata'),
-            search_detail=agent_result.get('search_detail'),
+            pdf_search_detail=agent_result.get('pdf_search_detail'),
             api_key_valid=True,
             processing_time_ms=processing_time_ms,
             workflow_steps=workflow_steps,
