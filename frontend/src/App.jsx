@@ -691,6 +691,23 @@ function App() {
                         ? msg.pdf_search_detail.enrichment_added.join(", ")
                         : "none"}
                     </div>
+                    {msg.pdf_search_detail.quality && (
+                      <div>
+                        <strong>Quality:</strong> {msg.pdf_search_detail.quality}
+                      </div>
+                    )}
+                    {msg.pdf_search_detail.warnings?.length > 0 && (
+                      <div>
+                        <strong>Warnings:</strong>{" "}
+                        {msg.pdf_search_detail.warnings.join(" | ")}
+                      </div>
+                    )}
+                    {msg.pdf_search_detail.gaps?.length > 0 && (
+                      <div>
+                        <strong>Gaps:</strong>{" "}
+                        {msg.pdf_search_detail.gaps.join(" | ")}
+                      </div>
+                    )}
                   </div>
                 )}
                 {msg.file && (

@@ -73,7 +73,16 @@ class Settings(BaseSettings):
     searchbybrief_planner_max_tokens_v2: int = 900
     # SearchByBrief Stage 3 curator
     # Number of parallel Bifrost visual-scoring calls.
-    searchbybrief_curator_concurrency: int = 5
+    searchbybrief_curator_concurrency: int = 6
+    # Token caps for Stage 3 vision calls (lower values reduce latency).
+    searchbybrief_curator_visual_max_tokens: int = 420
+    searchbybrief_curator_set_audit_max_tokens: int = 560
+    # Optional per-call sleep (seconds) between Stage 3 LLM calls.
+    searchbybrief_curator_sleep_between_calls: float = 0.0
+    # Max candidates that receive expensive visual scoring.
+    searchbybrief_curator_max_visual_scoring_candidates: int = 30
+    # Per-lane thumbnail count used in set-level audit.
+    searchbybrief_curator_audit_top_per_lane: int = 6
     # Soft penalty applied per prior pick from the same lane during shortlist
     # interleaving. Higher => more diversity, lower => stronger score dominance.
     searchbybrief_curator_diversity_penalty: float = 0.4

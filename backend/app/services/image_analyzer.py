@@ -22,6 +22,10 @@ from PIL import Image
 logger = logging.getLogger(__name__)
 
 _IMAGE_ANALYSIS_MODEL = "gpt-4o-mini"
+_IMAGE_ANALYSIS_MAX_IMAGES = 3
+_IMAGE_ANALYSIS_MAX_DIM = 1024
+_IMAGE_ANALYSIS_JPEG_QUALITY = 75
+_IMAGE_ANALYSIS_MAX_TOKENS = 400
 
 # Lightweight color naming retained for fallback/debug context only.
 _COLOR_NAMES = {
@@ -107,11 +111,24 @@ def _image_to_data_url(img_dict: Dict[str, Any]) -> str | None:
     data = img_dict.get("data")
     if not data:
         return None
-    image_format = str(img_dict.get("format") or "jpeg").lower()
-    if image_format == "jpg":
-        image_format = "jpeg"
-    encoded = base64.b64encode(data).decode("ascii")
-    return f"data:image/{image_format};base64,{encoded}"
+    try:
+        image = Image.open(BytesIO(data)).convert("RGB")
+        image.thumbnail((_IMAGE_ANALYSIS_MAX_DIM, _IMAGE_ANALYSIS_MAX_DIM))
+        buff = BytesIO()
+        image.save(
+            buff,
+            format="JPEG",
+            quality=_IMAGE_ANALYSIS_JPEG_QUALITY,
+            optimize=True,
+        )
+        encoded = base64.b64encode(buff.getvalue()).decode("ascii")
+        return f"data:image/jpeg;base64,{encoded}"
+    except Exception:
+        image_format = str(img_dict.get("format") or "jpeg").lower()
+        if image_format == "jpg":
+            image_format = "jpeg"
+        encoded = base64.b64encode(data).decode("ascii")
+        return f"data:image/{image_format};base64,{encoded}"
 
 
 def _fallback_image_analysis(images: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -227,7 +244,7 @@ def analyze_images(
         key=lambda item: (item.get("width") or 0) * (item.get("height") or 0),
         reverse=True,
     )
-    selected_images = ranked_images[:4]
+    selected_images = ranked_images[:_IMAGE_ANALYSIS_MAX_IMAGES]
     image_blocks = []
     for img_dict in selected_images:
         data_url = _image_to_data_url(img_dict)
@@ -235,7 +252,7 @@ def analyze_images(
             image_blocks.append(
                 {
                     "type": "image_url",
-                    "image_url": {"url": data_url},
+                    "image_url": {"url": data_url, "detail": "low"},
                 }
             )
 
@@ -251,12 +268,13 @@ Return JSON only with these keys:
 - summary: short 1-2 sentence summary of what the images depict
 - objects: list of concrete objects/products visible
 - scenes: list of concrete scenes/settings
-- concepts: list of high-level but retrieval-helpful concepts
 - text_in_image: list of important readable text/brand/product phrases visible in the images
-- scene_phrases: list of short scene/setting phrases, e.g. "sunlit beach", "outdoor picnic table", "summer lifestyle by the water"
 - visual_style_terms: list of 2-4 short visual descriptors that help find similar stock photos, e.g. "bright vibrant", "sunny tropical", "colorful lifestyle"
-- object_color_phrases: list of short phrases that attach color to an object or scene, e.g. "yellow bottle", "blue ocean background"
 - search_terms: list of 4-8 high-confidence subject-aware search phrases helpful for stock-photo retrieval
+# Disabled for latency (keep for future re-enable):
+# - concepts: list of high-level but retrieval-helpful concepts
+# - scene_phrases: list of short scene/setting phrases, e.g. "sunlit beach", "outdoor picnic table"
+# - object_color_phrases: list of short phrases attaching color to object/scene
 
 Rules:
 - Focus on concrete, visually searchable cues.
@@ -264,8 +282,8 @@ Rules:
 - Do NOT return generic design-board terms like "brand board", "mood board", "template", "layout", "social media calendar", "SWOT analysis".
 - Do NOT return abstract style-only words like "sleek", "modern", "understated", "professional" unless attached to a concrete subject phrase.
 - Prefer visual terms that would generalise across many PDFs rather than describing presentation layout.
-- Color phrases must be attached to an object or scene, not standalone colors.
 - Keep phrases short and literal.
+- Keep output concise.
 """
 
     user_content: List[Dict[str, Any]] = [
@@ -273,7 +291,7 @@ Rules:
             "type": "text",
             "text": (
                 "Analyze these extracted PDF images and return structured subject-aware cues "
-                "for stock-photo search enrichment."
+                "for stock-photo search enrichment. Return concise JSON only."
             ),
         }
     ]
@@ -288,7 +306,7 @@ Rules:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_content},
             ],
-            max_tokens=1200,
+            max_tokens=_IMAGE_ANALYSIS_MAX_TOKENS,
         )
         raw_content = response.choices[0].message.content or "{}"
         parsed = json.loads(raw_content)

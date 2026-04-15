@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from typing import Optional
 import time
 import logging
+import hashlib
 
 from app.models.schemas import ChatResponse, PhotoResult, AgentWorkflowStep, ErrorResponse, RerankerDecision
 from app.services.session_manager import session_manager
@@ -15,8 +16,10 @@ from app.services.searchbybrief.main import app as searchbybrief_workflow
 logger = logging.getLogger(__name__)
 router = APIRouter()
 MAX_RESULTS_RETURNED = 30
+IMAGE_ANALYSIS_CACHE_MAX = 64
 
 conversation_store = get_conversation_store()
+_image_analysis_cache: dict[str, dict] = {}
 
 
 def _generate_conversation_title(prompt: str, max_len: int = 60) -> str:
@@ -37,71 +40,16 @@ def _safe_int(value):
         return None
 
 
-def _build_searchbybrief_pdf_detail(final_state: dict, had_uploaded_file: bool) -> Optional[dict]:
-    """
-    Build PDF readiness diagnostics for SearchByBrief, mirroring AgentSquad's
-    high-level guardrail signals.
-    """
-    if not had_uploaded_file:
-        return None
-
-    file_type = (final_state.get("file_type") or "").lower()
-    file_images = final_state.get("file_images") or []
-    image_analysis = final_state.get("image_analysis") or {}
-    attachment_text = (final_state.get("attachment_text") or "").strip()
-
-    image_count = len(file_images)
-    text_extracted = bool(attachment_text)
-    is_pdf = file_type == "pdf"
-    search_terms = image_analysis.get("search_terms") or []
-    if not isinstance(search_terms, list):
-        search_terms = []
-    search_terms = [str(t).strip() for t in search_terms if str(t).strip()]
-    enrichment_added = search_terms[:4]
-
-    has_image_analysis = bool(image_analysis and image_analysis.get("analysis_source") not in {"none", None})
-
-    score = (
-        (2 if text_extracted else 0)
-        + (1 if image_count > 0 else 0)
-        + (1 if has_image_analysis else 0)
-        + (2 if len(search_terms) >= 2 else 0)
-    )
-    if score >= 5:
-        quality = "strong"
-    elif score >= 3:
-        quality = "partial"
-    elif score >= 2:
-        quality = "weak"
-    else:
-        quality = "insufficient"
-
-    gaps = []
-    warnings = []
-    if not text_extracted:
-        gaps.append("No usable text was extracted from the uploaded file.")
-    if is_pdf and image_count == 0:
-        gaps.append("No images were found in the uploaded PDF.")
-    if len(search_terms) < 2:
-        warnings.append("Only limited image-derived search cues were extracted.")
-    if is_pdf and image_count <= 2:
-        warnings.append("2 or fewer images were found in the uploaded PDF, so visual guidance may be limited.")
-
-    return {
-        "images_extracted": image_count,
-        "text_extracted": text_extracted,
-        "enrichment_added": enrichment_added,
-        "quality": quality,
-        "gaps": gaps,
-        "warnings": warnings,
-    }
-
-
 def _run_searchbybrief_workflow(
     user_message: str,
     file_bytes: Optional[bytes],
     file_name: Optional[str],
     api_key: Optional[str],
+    pre_attachment_text: Optional[str] = None,
+    pre_file_type: Optional[str] = None,
+    pre_file_images: Optional[list] = None,
+    pre_image_analysis: Optional[dict] = None,
+    pre_extraction_error: Optional[str] = None,
 ) -> dict:
     """
     Run SearchByBrief LangGraph workflow and adapt output to chat endpoint shape.
@@ -111,11 +59,13 @@ def _run_searchbybrief_workflow(
         "openai_api_key": api_key,
         "uploaded_file_bytes": file_bytes,
         "uploaded_file_name": file_name,
-        "file_type": None,
-        "file_images": [],
-        "image_analysis": None,
-        "extraction_error": None,
-        "attachment_text": None,
+        # Reuse precomputed extraction/analysis from /chat path when available
+        # to avoid duplicate preprocessing latency.
+        "file_type": pre_file_type,
+        "file_images": pre_file_images or [],
+        "image_analysis": pre_image_analysis,
+        "extraction_error": pre_extraction_error,
+        "attachment_text": pre_attachment_text,
         "search_params": None,
         "candidate_pool": [],
         "refined_pool": [],
@@ -126,6 +76,11 @@ def _run_searchbybrief_workflow(
         "final_collection": [],
         "feedback": "",
         "iterations": 0,
+        "brief_quality": None,
+        "brief_gaps": [],
+        "brief_warnings": [],
+        "can_search": None,
+        "pdf_search_detail": None,
     }
 
     final_state = searchbybrief_workflow.invoke(state)
@@ -206,10 +161,14 @@ def _run_searchbybrief_workflow(
         f"SearchByBrief completed with {len(search_results)} curated result(s) "
         f"across {len(lane_names)} lane(s)."
     )
-    pdf_search_detail = _build_searchbybrief_pdf_detail(
-        final_state=final_state,
-        had_uploaded_file=bool(file_bytes),
-    )
+    pdf_search_detail = final_state.get("pdf_search_detail") if file_bytes else None
+    brief_warnings = final_state.get("brief_warnings") or []
+    if brief_warnings:
+        response = (
+            f"{response}\n\n"
+            "Warning: I ran the search, but the uploaded brief has gaps please see below;\n\n"
+            f"Warning Gaps: {'; '.join(brief_warnings)};"
+        )
     return {
         "response": response,
         "search_results": search_results,
@@ -304,7 +263,18 @@ async def chat(
 
         # Analyze extracted images once the request/session API key is available
         if file_images:
-            image_analysis = analyze_images(file_images, api_key=api_key)
+            file_hash = hashlib.sha256(file_bytes).hexdigest() if file_bytes else None
+            if file_hash and file_hash in _image_analysis_cache:
+                image_analysis = _image_analysis_cache[file_hash]
+                logger.info("Image analysis cache hit for uploaded file")
+            else:
+                image_analysis = analyze_images(file_images, api_key=api_key)
+                if file_hash:
+                    if len(_image_analysis_cache) >= IMAGE_ANALYSIS_CACHE_MAX:
+                        # FIFO-ish eviction: remove oldest inserted key.
+                        oldest_key = next(iter(_image_analysis_cache))
+                        _image_analysis_cache.pop(oldest_key, None)
+                    _image_analysis_cache[file_hash] = image_analysis
             logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
             print(f"[DEBUG] Image analysis search_terms: {image_analysis.get('search_terms', [])}")  # Debug
         elif file is not None:
@@ -352,6 +322,11 @@ async def chat(
                 file_bytes=file_bytes,
                 file_name=file_name,
                 api_key=api_key,
+                pre_attachment_text=file_content,
+                pre_file_type=file_type,
+                pre_file_images=file_images,
+                pre_image_analysis=image_analysis,
+                pre_extraction_error=None,
             )
         else:
             # Run default AgentSquad workflow

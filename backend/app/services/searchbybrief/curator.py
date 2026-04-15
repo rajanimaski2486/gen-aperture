@@ -41,6 +41,7 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import statistics
+import threading
 import time
 from typing import Any, Optional
 
@@ -64,6 +65,9 @@ MEDIAN_SCORE_THRESHOLD = 0.70
 # Cap expensive visual scoring calls. Candidates are selected in a lane-balanced
 # way so each lane contributes top items before we hit this ceiling.
 MAX_VISUAL_SCORING_CANDIDATES = 50
+_VISUAL_SCORE_CACHE_MAX = 5000
+_visual_score_cache: dict[str, dict[str, Any]] = {}
+_visual_score_cache_lock = threading.Lock()
 
 
 # ---------------------------------------------------------------------------
@@ -253,6 +257,15 @@ def _score_candidate_for_lane(
     model: str = VISION_MODEL,
     api_key_override: Optional[str] = None,
 ) -> dict[str, Any]:
+    lane_name = str(lane.get("lane_name") or "")
+    lane_query = str(lane.get("embedding_query") or "")
+    asset_id = str((candidate_metadata or {}).get("asset_id") or "")
+    cache_key = f"{asset_id}|{thumbnail_url}|{lane_name}|{lane_query}"
+    with _visual_score_cache_lock:
+        cached = _visual_score_cache.get(cache_key)
+    if cached is not None:
+        return dict(cached)
+
     payload = _build_visual_scoring_payload(
         search_params=search_params,
         lane=lane,
@@ -268,19 +281,25 @@ def _score_candidate_for_lane(
             ],
         },
     ]
-    return call_llm_vision_json(
+    result = call_llm_vision_json(
         messages=messages,
         model=model,
-        max_tokens=1400,
+        max_tokens=int(getattr(settings, "searchbybrief_curator_visual_max_tokens", 500) or 500),
         api_key_override=api_key_override,
     )
+    with _visual_score_cache_lock:
+        if len(_visual_score_cache) >= _VISUAL_SCORE_CACHE_MAX:
+            oldest = next(iter(_visual_score_cache))
+            _visual_score_cache.pop(oldest, None)
+        _visual_score_cache[cache_key] = dict(result)
+    return result
 
 
 def _score_all_candidates(
     candidates: list[dict[str, Any]],
     search_params: dict[str, Any],
     model: str = VISION_MODEL,
-    sleep_between_calls: float = 0.05,
+    sleep_between_calls: float = 0.0,
     api_key_override: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """
@@ -289,6 +308,10 @@ def _score_all_candidates(
     Candidates without a thumbnail_url are passed through with visual_audit_error set.
     """
     lane_lookup = _build_lane_lookup(search_params)
+    if sleep_between_calls <= 0:
+        sleep_between_calls = float(
+            getattr(settings, "searchbybrief_curator_sleep_between_calls", 0.0) or 0.0
+        )
 
     def _score_one_candidate(idx: int, candidate: dict[str, Any], total_candidates: int) -> dict[str, Any]:
         enriched = dict(candidate)
@@ -666,7 +689,7 @@ def _audit_lane_batch(
     return call_llm_vision_json(
         messages=messages,
         model=model,
-        max_tokens=1800,
+        max_tokens=int(getattr(settings, "searchbybrief_curator_set_audit_max_tokens", 700) or 700),
         api_key_override=api_key_override,
     )
 
@@ -779,10 +802,14 @@ def _audit_top_candidates_by_lane(
     top_per_lane: int = 8,
     lane_name_key: str = "origin_lane_name",
     model: str = VISION_MODEL,
-    sleep_between_calls: float = 0.05,
+    sleep_between_calls: float = 0.0,
     api_key_override: Optional[str] = None,
 ) -> tuple[list[dict[str, Any]], list[RepairRequest]]:
     lane_lookup = _build_lane_lookup(search_params)
+    if sleep_between_calls <= 0:
+        sleep_between_calls = float(
+            getattr(settings, "searchbybrief_curator_sleep_between_calls", 0.0) or 0.0
+        )
     df = pd.DataFrame(candidates)
 
     if df.empty or lane_name_key not in df.columns:
@@ -922,14 +949,22 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
 
     candidates = state.get("refined_pool", [])
     api_key_override = state.get("openai_api_key")
+    max_scoring_candidates = int(
+        getattr(
+            settings,
+            "searchbybrief_curator_max_visual_scoring_candidates",
+            MAX_VISUAL_SCORING_CANDIDATES,
+        )
+        or MAX_VISUAL_SCORING_CANDIDATES
+    )
     scoring_candidates = _select_candidates_for_visual_scoring(
         candidates=candidates,
-        max_total=MAX_VISUAL_SCORING_CANDIDATES,
+        max_total=max_scoring_candidates,
         lane_name_key="origin_lane_name",
     )
     print(
         f"\n[curator] candidate prefilter — selected {len(scoring_candidates)} / {len(candidates)} "
-        f"for visual scoring (lane-balanced cap={MAX_VISUAL_SCORING_CANDIDATES})",
+        f"for visual scoring (lane-balanced cap={max_scoring_candidates})",
         flush=True,
     )
 
@@ -979,7 +1014,7 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
     audits, repair_requests = _audit_top_candidates_by_lane(
         candidates=shortlist,
         search_params=search_params,
-        top_per_lane=8,
+        top_per_lane=int(getattr(settings, "searchbybrief_curator_audit_top_per_lane", 6) or 6),
         lane_name_key="origin_lane_name",
         api_key_override=api_key_override,
     )
@@ -1014,9 +1049,17 @@ def score_candidates_node(state: dict[str, Any]) -> dict[str, Any]:
     search_params = state["search_params"]
     candidates = state.get("refined_pool", [])
     api_key_override = state.get("openai_api_key")
+    max_scoring_candidates = int(
+        getattr(
+            settings,
+            "searchbybrief_curator_max_visual_scoring_candidates",
+            MAX_VISUAL_SCORING_CANDIDATES,
+        )
+        or MAX_VISUAL_SCORING_CANDIDATES
+    )
     scoring_candidates = _select_candidates_for_visual_scoring(
         candidates=candidates,
-        max_total=MAX_VISUAL_SCORING_CANDIDATES,
+        max_total=max_scoring_candidates,
         lane_name_key="origin_lane_name",
     )
 
@@ -1079,7 +1122,7 @@ def audit_lanes_node(state: dict[str, Any]) -> dict[str, Any]:
     audits, repair_requests = _audit_top_candidates_by_lane(
         candidates=candidates,
         search_params=search_params,
-        top_per_lane=8,
+        top_per_lane=int(getattr(settings, "searchbybrief_curator_audit_top_per_lane", 6) or 6),
         lane_name_key="origin_lane_name",
         api_key_override=api_key_override,
     )
