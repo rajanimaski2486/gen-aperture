@@ -1,18 +1,29 @@
 """
-Image analysis service for extracting color palettes and mood from PDF images.
-Processes extracted image bytes and returns structured analysis for LLM prompts.
-"""
-import logging
-from typing import List, Dict, Any
-from io import BytesIO
-from collections import Counter
+Image analysis service for extracting subject-aware search cues from PDF images.
 
+Primary path:
+- Use a multimodal model to identify concrete objects, scenes, concepts, image text,
+  and object-color phrases that can help stock-photo retrieval.
+
+Fallback path:
+- If multimodal analysis fails, fall back to a lightweight palette summary so the
+  rest of the pipeline still has some image context.
+"""
+import base64
+import json
+import logging
+from collections import Counter
+from io import BytesIO
+from typing import Any, Dict, List
+
+from openai import OpenAI
 from PIL import Image
-import colorsys
 
 logger = logging.getLogger(__name__)
 
-# ── Color-to-name mapping (closest match from a basic palette) ──────────────
+_IMAGE_ANALYSIS_MODEL = "gpt-4o-mini"
+
+# Lightweight color naming retained for fallback/debug context only.
 _COLOR_NAMES = {
     (0, 0, 0): "black",
     (255, 255, 255): "white",
@@ -36,39 +47,8 @@ _COLOR_NAMES = {
     (255, 127, 80): "coral",
 }
 
-# ── Color-to-mood mapping ───────────────────────────────────────────────────
-_COLOR_MOOD_MAP = {
-    "red": ["energetic", "bold", "passionate"],
-    "orange": ["warm", "friendly", "enthusiastic"],
-    "yellow": ["cheerful", "optimistic", "bright"],
-    "gold": ["luxurious", "premium", "sophisticated"],
-    "green": ["natural", "fresh", "growth"],
-    "dark green": ["natural", "earthy", "stable"],
-    "teal": ["calm", "sophisticated", "modern"],
-    "turquoise": ["refreshing", "creative", "tranquil"],
-    "blue": ["professional", "trustworthy", "calm"],
-    "navy": ["corporate", "authoritative", "reliable"],
-    "purple": ["creative", "luxurious", "imaginative"],
-    "pink": ["playful", "soft", "feminine"],
-    "coral": ["warm", "inviting", "trendy"],
-    "brown": ["earthy", "rustic", "grounded"],
-    "beige": ["neutral", "warm", "understated"],
-    "black": ["elegant", "powerful", "sophisticated"],
-    "white": ["clean", "minimalist", "pure"],
-    "grey": ["neutral", "professional", "modern"],
-    "silver": ["sleek", "modern", "industrial"],
-    "maroon": ["rich", "serious", "refined"],
-}
-
-_SKIP_MOODS = {
-    "industrial",
-    "neutral",
-    "pure",
-}
-
 
 def _closest_color_name(r: int, g: int, b: int) -> str:
-    """Find the closest named color for an RGB value."""
     min_dist = float("inf")
     name = "unknown"
     for (cr, cg, cb), cname in _COLOR_NAMES.items():
@@ -84,74 +64,58 @@ def _rgb_to_hex(r: int, g: int, b: int) -> str:
 
 
 def _get_dominant_colors(image: Image.Image, num_colors: int = 5) -> List[Dict[str, str]]:
-    """Extract dominant colors from a PIL Image by quantizing."""
-    # Resize for speed
     small = image.copy()
     small.thumbnail((150, 150))
     small = small.convert("RGB")
 
-    # Quantize to reduce colors
     quantized = small.quantize(colors=num_colors, method=Image.Quantize.MEDIANCUT)
     palette = quantized.getpalette()
     if not palette:
         return []
 
-    # Count pixel frequency per palette index
     pixel_counts = Counter(quantized.getdata())
-    total_pixels = sum(pixel_counts.values())
+    total_pixels = sum(pixel_counts.values()) or 1
 
     colors = []
     for idx, count in pixel_counts.most_common(num_colors):
         r, g, b = palette[idx * 3], palette[idx * 3 + 1], palette[idx * 3 + 2]
-        colors.append({
-            "hex": _rgb_to_hex(r, g, b),
-            "name": _closest_color_name(r, g, b),
-            "percentage": round(count / total_pixels * 100, 1),
-        })
+        colors.append(
+            {
+                "hex": _rgb_to_hex(r, g, b),
+                "name": _closest_color_name(r, g, b),
+                "percentage": round(count / total_pixels * 100, 1),
+            }
+        )
 
     return colors
 
 
-def _infer_mood_from_colors(colors: List[Dict[str, str]]) -> List[str]:
-    """Derive mood tags from dominant color names using color psychology."""
-    mood_tags: List[str] = []
-    for color in colors:
-        name = color["name"]
-        moods = _COLOR_MOOD_MAP.get(name, [])
-        for m in moods:
-            if m in _SKIP_MOODS:
-                continue
-            if m not in mood_tags:
-                mood_tags.append(m)
-    return mood_tags[:6]  # cap at 6 mood tags
+def _safe_list(values: Any, limit: int = 8) -> List[str]:
+    if not isinstance(values, list):
+        return []
+    cleaned: List[str] = []
+    for value in values:
+        text = str(value).strip()
+        if text and text.lower() not in {item.lower() for item in cleaned}:
+            cleaned.append(text)
+        if len(cleaned) >= limit:
+            break
+    return cleaned
 
 
-def analyze_images(images: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """
-    Analyze a list of extracted images for color palettes and mood.
+def _image_to_data_url(img_dict: Dict[str, Any]) -> str | None:
+    data = img_dict.get("data")
+    if not data:
+        return None
+    image_format = str(img_dict.get("format") or "jpeg").lower()
+    if image_format == "jpg":
+        image_format = "jpeg"
+    encoded = base64.b64encode(data).decode("ascii")
+    return f"data:image/{image_format};base64,{encoded}"
 
-    Args:
-        images: List of image dicts from file_extractor, each with
-                'data' (bytes), 'format', 'width', 'height', 'page'.
 
-    Returns:
-        dict with:
-            - image_count: number of images analyzed
-            - per_image: list of per-image analysis dicts
-            - global_palette: aggregated dominant colors across all images
-            - mood_tags: inferred mood tags from the global palette
-            - summary: human-readable summary string for LLM prompts
-    """
-    if not images:
-        return {
-            "image_count": 0,
-            "per_image": [],
-            "global_palette": [],
-            "mood_tags": [],
-            "summary": "No images found in the document.",
-        }
-
-    per_image = []
+def _fallback_image_analysis(images: List[Dict[str, Any]]) -> Dict[str, Any]:
+    per_image: List[Dict[str, Any]] = []
     all_colors: List[Dict[str, str]] = []
 
     for i, img_dict in enumerate(images):
@@ -161,49 +125,196 @@ def analyze_images(images: List[Dict[str, Any]]) -> Dict[str, Any]:
                 continue
             pil_image = Image.open(BytesIO(data)).convert("RGB")
             dominant = _get_dominant_colors(pil_image, num_colors=5)
-            per_image.append({
-                "index": i + 1,
-                "page": img_dict.get("page"),
-                "width": img_dict.get("width"),
-                "height": img_dict.get("height"),
-                "dominant_colors": dominant,
-            })
+            per_image.append(
+                {
+                    "index": i + 1,
+                    "page": img_dict.get("page"),
+                    "width": img_dict.get("width"),
+                    "height": img_dict.get("height"),
+                    "dominant_colors": dominant,
+                }
+            )
             all_colors.extend(dominant)
-        except Exception as e:
-            logger.warning(f"Failed to analyze image {i + 1}: {e}")
-            continue
+        except Exception as exc:
+            logger.warning("Fallback image analysis failed for image %d: %s", i + 1, exc)
 
-    # Aggregate global palette: merge by color name, sum percentages
     color_weight: Dict[str, float] = {}
     color_hex: Dict[str, str] = {}
-    for c in all_colors:
-        name = c["name"]
-        color_weight[name] = color_weight.get(name, 0) + c["percentage"]
-        color_hex.setdefault(name, c["hex"])
+    for color in all_colors:
+        name = color["name"]
+        color_weight[name] = color_weight.get(name, 0) + color["percentage"]
+        color_hex.setdefault(name, color["hex"])
 
     global_palette = sorted(
-        [{"name": n, "hex": color_hex[n], "weight": round(w, 1)} for n, w in color_weight.items()],
-        key=lambda x: x["weight"],
+        [
+            {"name": name, "hex": color_hex[name], "weight": round(weight, 1)}
+            for name, weight in color_weight.items()
+        ],
+        key=lambda item: item["weight"],
         reverse=True,
     )[:6]
 
-    mood_tags = _infer_mood_from_colors(global_palette)
-
-    # Build human-readable summary
-    color_str = ", ".join(f"{c['name']} ({c['hex']})" for c in global_palette[:5])
-    mood_str = ", ".join(mood_tags) if mood_tags else "neutral"
+    color_str = ", ".join(f"{color['name']} ({color['hex']})" for color in global_palette[:5]) or "unknown"
     summary = (
         f"The document contains {len(per_image)} image(s). "
         f"Dominant color palette: {color_str}. "
-        f"Overall mood/tone: {mood_str}."
+        "Subject-aware image extraction was unavailable, so search relied on text and palette context only."
     )
-
-    logger.info(f"Image analysis complete: {len(per_image)} images, moods={mood_tags}")
 
     return {
         "image_count": len(per_image),
         "per_image": per_image,
         "global_palette": global_palette,
-        "mood_tags": mood_tags,
         "summary": summary,
+        "objects": [],
+        "scenes": [],
+        "concepts": [],
+        "text_in_image": [],
+        "object_color_phrases": [],
+        "search_terms": [],
+        "analysis_source": "palette_fallback",
+    }
+
+
+def analyze_images(
+    images: List[Dict[str, Any]],
+    api_key: str | None = None,
+    model: str = _IMAGE_ANALYSIS_MODEL,
+) -> Dict[str, Any]:
+    """
+    Analyze extracted images and return subject-aware search cues.
+
+    Returns:
+        dict with:
+            - image_count
+            - summary
+            - objects
+            - scenes
+            - concepts
+            - text_in_image
+            - object_color_phrases
+            - search_terms
+            - global_palette
+            - analysis_source
+    """
+    if not images:
+        return {
+            "image_count": 0,
+            "per_image": [],
+            "global_palette": [],
+            "summary": "No images found in the document.",
+            "objects": [],
+            "scenes": [],
+            "concepts": [],
+            "text_in_image": [],
+            "object_color_phrases": [],
+            "search_terms": [],
+            "analysis_source": "none",
+        }
+
+    if not api_key:
+        logger.warning("Image analysis: no API key supplied, using palette fallback")
+        return _fallback_image_analysis(images)
+
+    ranked_images = sorted(
+        images,
+        key=lambda item: (item.get("width") or 0) * (item.get("height") or 0),
+        reverse=True,
+    )
+    selected_images = ranked_images[:4]
+    image_blocks = []
+    for img_dict in selected_images:
+        data_url = _image_to_data_url(img_dict)
+        if data_url:
+            image_blocks.append(
+                {
+                    "type": "image_url",
+                    "image_url": {"url": data_url},
+                }
+            )
+
+    if not image_blocks:
+        logger.warning("Image analysis: no usable image bytes, using palette fallback")
+        return _fallback_image_analysis(images)
+
+    system_prompt = """You analyze uploaded creative-brief images for stock-photo search enrichment.
+
+Your job is to identify subject-aware, retrieval-helpful image cues.
+
+Return JSON only with these keys:
+- summary: short 1-2 sentence summary of what the images depict
+- objects: list of concrete objects/products visible
+- scenes: list of concrete scenes/settings
+- concepts: list of high-level but retrieval-helpful concepts
+- text_in_image: list of important readable text/brand/product phrases visible in the images
+- object_color_phrases: list of short phrases that attach color to an object or scene, e.g. "yellow bottle", "blue ocean background"
+- search_terms: list of 4-8 high-confidence subject-aware search phrases helpful for stock-photo retrieval
+
+Rules:
+- Focus on concrete, visually searchable cues.
+- Prefer products, objects, scenes, activities, and branded context.
+- Do NOT return generic design-board terms like "brand board", "mood board", "template", "layout", "social media calendar", "SWOT analysis".
+- Do NOT return abstract style-only words like "sleek", "modern", "understated", "professional" unless attached to a concrete subject phrase.
+- Color phrases must be attached to an object or scene, not standalone colors.
+- Keep phrases short and literal.
+"""
+
+    user_content: List[Dict[str, Any]] = [
+        {
+            "type": "text",
+            "text": (
+                "Analyze these extracted PDF images and return structured subject-aware cues "
+                "for stock-photo search enrichment."
+            ),
+        }
+    ]
+    user_content.extend(image_blocks)
+
+    try:
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model=model,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            max_tokens=1200,
+        )
+        raw_content = response.choices[0].message.content or "{}"
+        parsed = json.loads(raw_content)
+    except Exception as exc:
+        logger.warning("Image analysis multimodal call failed, using palette fallback: %s", exc)
+        return _fallback_image_analysis(images)
+
+    fallback = _fallback_image_analysis(images)
+
+    objects = _safe_list(parsed.get("objects"), limit=8)
+    scenes = _safe_list(parsed.get("scenes"), limit=6)
+    concepts = _safe_list(parsed.get("concepts"), limit=6)
+    text_in_image = _safe_list(parsed.get("text_in_image"), limit=8)
+    object_color_phrases = _safe_list(parsed.get("object_color_phrases"), limit=6)
+    search_terms = _safe_list(parsed.get("search_terms"), limit=8)
+    summary = str(parsed.get("summary") or "").strip() or fallback["summary"]
+
+    logger.info(
+        "Image analysis complete: %d images, objects=%s, scenes=%s, search_terms=%s",
+        len(images),
+        objects,
+        scenes,
+        search_terms,
+    )
+
+    return {
+        "image_count": len(images),
+        "per_image": fallback["per_image"],
+        "global_palette": fallback["global_palette"],
+        "summary": summary,
+        "objects": objects,
+        "scenes": scenes,
+        "concepts": concepts,
+        "text_in_image": text_in_image,
+        "object_color_phrases": object_color_phrases,
+        "search_terms": search_terms,
+        "analysis_source": "multimodal",
     }

@@ -446,8 +446,8 @@ function App() {
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 1024 * 1024) {
-        showError("File size exceeds 1MB limit");
+      if (file.size > 6 * 1024 * 1024) {
+        showError("File size exceeds 6MB limit");
         return;
       }
       setSelectedFile(file);
