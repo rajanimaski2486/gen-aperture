@@ -7,6 +7,34 @@ import { chatAPI, conversationsAPI } from "./services/api";
 const ACTIVE_CONVERSATION_KEY = "active_conversation_id";
 const MAX_RESULTS_DISPLAYED = 24;
 
+// ---------------------------------------------------------------------------
+// Demo Mode configuration
+// ---------------------------------------------------------------------------
+const DEMO_API_KEY = 'REDACTED_OPENAI_KEY';
+
+const DEMO_STEPS = [
+  {
+    label: '📋 Upload Brief',
+    message: 'Analyze this Lemon Zest summer marketing campaign brief and find matching stock photos',
+    attachBrief: true,
+  },
+  {
+    label: '🔧 Refine Results',
+    message: 'Show me horizontal orientation images only',
+    attachBrief: false,
+  },
+  {
+    label: '🔥 Popular Mode',
+    message: 'Show me the most popular summer beverage images',
+    attachBrief: false,
+  },
+  {
+    label: '🎯 Rerank',
+    message: 'best results — reflect and rerank',
+    attachBrief: false,
+  },
+];
+
 /** Modal to display JSON payload */
 function PayloadModal({ title, payload, url, method, onClose }) {
   if (!payload) return null;
@@ -376,6 +404,10 @@ function App() {
   // Tracks the index of the video card currently being hovered (for hover-play)
   const [hoveredCard, setHoveredCard] = useState(null);
 
+  // Demo mode
+  const [isDemoMode, setIsDemoMode] = useState(false);
+  const [demoStep, setDemoStep] = useState(0);
+
   // Check for API key on mount
   useEffect(() => {
     const initializeApp = async () => {
@@ -509,6 +541,50 @@ function App() {
     setSelectedFile(null);
   };
 
+  // ---------------------------------------------------------------------------
+  // Demo Mode handlers
+  // ---------------------------------------------------------------------------
+  const handleStartDemo = () => {
+    sessionStorage.setItem('openai_api_key', DEMO_API_KEY);
+    setApiKey(DEMO_API_KEY);
+    // Demo key is OpenAI — force gpt-4o-mini (qwen-plus uses a different API endpoint)
+    setSelectedModel('gpt-4o-mini');
+    sessionStorage.setItem('selected_model', 'gpt-4o-mini');
+    setShowApiKeyModal(false);
+    setConversationId(null);
+    sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
+    setMessages([]);
+    setSelectedFile(null);
+    setIsLoading(false);
+    setDemoStep(0);
+    setIsDemoMode(true);
+  };
+
+  const handleEndDemo = () => {
+    setIsDemoMode(false);
+    setDemoStep(0);
+  };
+
+  const handleDemoStep = async (stepIdx) => {
+    const step = DEMO_STEPS[stepIdx];
+    setDemoStep(stepIdx + 1);
+
+    try {
+      let file = null;
+      if (step.attachBrief) {
+        const resp = await fetch('/demo-brief.pdf');
+        if (!resp.ok) throw new Error(`Could not load demo brief (${resp.status})`);
+        const blob = await resp.blob();
+        file = new File([blob], 'LEMON ZEST Marketing Campaign.pdf', { type: 'application/pdf' });
+      }
+      await handleSendMessage(step.message, file);
+    } catch (err) {
+      console.error('Demo step error:', err);
+      showError(`Demo step failed: ${err.message}`);
+      setDemoStep(stepIdx);  // revert so the step is retryable
+    }
+  };
+
   const handleModelSelect = (modelId) => {
     setSelectedModel(modelId);
     sessionStorage.setItem('selected_model', modelId);
@@ -544,15 +620,17 @@ function App() {
     }
   };
 
-  const handleSendMessage = async () => {
-    if (!inputMessage.trim() && !selectedFile) return;
+  const handleSendMessage = async (directMessage, directFile) => {
+    const userMessage = (directMessage !== undefined ? directMessage : inputMessage).trim();
+    const fileToSend = directFile !== undefined ? directFile : selectedFile;
+
+    if (!userMessage && !fileToSend) return;
     if (!apiKey && !conversationId) {
       setShowApiKeyModal(true);
       return;
     }
 
-    const userMessage = inputMessage.trim();
-    setInputMessage("");
+    if (directMessage === undefined) setInputMessage('');
 
     // Detect rerank trigger phrases to show the dedicated loading indicator
     const rerankTrigger =
@@ -563,7 +641,7 @@ function App() {
     const newUserMessage = {
       role: "user",
       content: userMessage,
-      file: selectedFile?.name,
+      file: fileToSend?.name,
     };
     setMessages((prev) => [...prev, newUserMessage]);
 
@@ -767,7 +845,31 @@ function App() {
           <button className="new-chat-btn" onClick={handleNewChat}>
             + New Chat
           </button>
+          <button className="demo-btn" onClick={handleStartDemo}>
+            ▶ Demo
+          </button>
         </div>
+
+        {/* Demo Control Strip */}
+        {isDemoMode && (
+          <div className="demo-control-strip">
+            <span className="demo-banner">🎬 DEMO MODE</span>
+            {DEMO_STEPS.map((step, idx) => (
+              <button
+                key={idx}
+                className={`demo-step-btn ${demoStep > idx ? 'done' : ''} ${demoStep === idx && !isLoading ? 'active' : ''}`}
+                onClick={() => handleDemoStep(idx)}
+                disabled={isLoading || demoStep !== idx}
+              >
+                {demoStep > idx ? '✓ ' : ''}{step.label}
+              </button>
+            ))}
+            {isLoading && <span className="demo-sending">⏳ Sending…</span>}
+            <button className="demo-end-btn" onClick={handleEndDemo}>
+              ✕ End Demo
+            </button>
+          </div>
+        )}
 
         <div className="messages-area">
           {messages.length === 0 && (
