@@ -73,6 +73,14 @@ def _run_searchbybrief_workflow(
 
     lanes = (search_params or {}).get("search_lanes", []) if isinstance(search_params, dict) else []
     lane_names = [lane.get("lane_name") for lane in lanes if isinstance(lane, dict) and lane.get("lane_name")]
+    lane_queries = [
+        {
+            "lane_name": lane.get("lane_name"),
+            "embedding_query": lane.get("embedding_query"),
+        }
+        for lane in lanes
+        if isinstance(lane, dict)
+    ]
 
     final_collection = final_state.get("final_collection") or final_state.get("stage3_shortlist") or []
     search_results = []
@@ -109,7 +117,10 @@ def _run_searchbybrief_workflow(
             "agent": "SearchByBrief Planner",
             "action": "Generate search lanes",
             "reasoning": f"Built {len(lane_names)} lane(s) from the brief and attachment context.",
-            "output": {"lane_names": lane_names},
+            "output": {
+                "lane_names": lane_names,
+                "lane_queries": lane_queries,
+            },
         },
         {
             "agent": "SearchByBrief Retriever",
