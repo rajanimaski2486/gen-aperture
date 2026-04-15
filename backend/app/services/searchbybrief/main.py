@@ -214,11 +214,6 @@ def _assess_brief_readiness(
         for v in (hard_constraints.get("subjects_required") or [])
         if str(v).strip()
     ]
-    locations_required = [
-        str(v).strip()
-        for v in (hard_constraints.get("location_required") or [])
-        if str(v).strip()
-    ]
     semantic_terms: list[str] = []
     for lane in search_lanes:
         if not isinstance(lane, dict):
@@ -239,10 +234,6 @@ def _assess_brief_readiness(
     has_lexical = len(subjects_required) >= 2
     has_semantic = len(semantic_terms) >= 4
     has_brand_domain = bool(subjects_required)
-    # SearchByBrief no longer uses category matching in preprocessing/readiness.
-    # Keep this as neutral-true so category warnings do not fire.
-    has_categories = True
-    has_named_entities = bool(locations_required)
     has_supporting_requirements = bool(
         hard_constraints.get("composition_required")
         or hard_constraints.get("style_required")
@@ -256,8 +247,6 @@ def _assess_brief_readiness(
         + (2 if has_lexical else 0)
         + (2 if has_semantic else 0)
         + (1 if has_brand_domain else 0)
-        + (1 if has_categories else 0)
-        + (1 if has_named_entities else 0)
         + (1 if has_supporting_requirements else 0)
     )
 
@@ -272,7 +261,6 @@ def _assess_brief_readiness(
 
     warning_rules = [
         (not has_text and has_images, "No usable text was extracted from the uploaded file, so search relied mainly on image-derived signals."),
-        (not has_named_entities, "No named entities were extracted from the brief, so results may be broader."),
         (is_pdf and not has_images, "No images were found in the uploaded PDF, so search relied on extracted text only."),
         (is_pdf and has_images and image_count <= 2, "2 or fewer images were found in the uploaded PDF, so visual guidance may be limited."),
         ((not has_lexical) or (not has_semantic), "Only a limited number of concrete keywords were extracted, which may reduce search precision."),
