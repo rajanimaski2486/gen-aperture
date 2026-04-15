@@ -17,6 +17,7 @@ except Exception:
 class AgentState(TypedDict):
     # the original customer request
     user_request: str
+    openai_api_key: Optional[str]
 
     # Optional raw file payload provided by the caller (e.g. API layer).
     # If present, brief_preprocess_node extracts text + image signals.
@@ -98,7 +99,11 @@ def brief_preprocess_node(state: AgentState):
 
     extracted_text = extraction.get("text") or ""
     images = extraction.get("images") or []
-    image_analysis = analyze_images(images) if images else None
+    image_analysis = (
+        analyze_images(images, api_key=state.get("openai_api_key"))
+        if images
+        else None
+    )
 
     parts = [existing_attachment]
     if extracted_text:
@@ -127,9 +132,9 @@ def _format_image_analysis_for_llm(image_analysis: Optional[dict]) -> Optional[s
     if summary:
         lines.append(f"- Summary: {summary}")
 
-    moods = image_analysis.get("mood_tags") or []
-    if moods:
-        lines.append(f"- Mood tags: {', '.join(moods)}")
+    analysis_source = image_analysis.get("analysis_source")
+    if analysis_source:
+        lines.append(f"- Analysis source: {analysis_source}")
 
     palette = image_analysis.get("global_palette") or []
     if palette:
@@ -140,6 +145,20 @@ def _format_image_analysis_for_llm(image_analysis: Optional[dict]) -> Optional[s
         )
         if palette_text:
             lines.append(f"- Dominant palette: {palette_text}")
+
+    def _append_list(label: str, key: str, limit: int = 10):
+        values = image_analysis.get(key) or []
+        if isinstance(values, list) and values:
+            cleaned = [str(v).strip() for v in values if str(v).strip()]
+            if cleaned:
+                lines.append(f"- {label}: {', '.join(cleaned[:limit])}")
+
+    _append_list("Search terms", "search_terms", limit=12)
+    _append_list("Objects", "objects", limit=10)
+    _append_list("Scenes", "scenes", limit=10)
+    _append_list("Scene phrases", "scene_phrases", limit=10)
+    _append_list("Visual style terms", "visual_style_terms", limit=8)
+    _append_list("Object-color phrases", "object_color_phrases", limit=8)
 
     return "\n".join(lines) if len(lines) > 1 else None
 
@@ -185,6 +204,7 @@ def planner_node(state: AgentState):
     search_params = run_intent_node(
         brief_text=brief_text,
         attachment_text=attachment_text,
+        api_key_override=state.get("openai_api_key"),
     )
 
     return {

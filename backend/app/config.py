@@ -76,12 +76,12 @@ class Settings(BaseSettings):
     searchbybrief_curator_concurrency: int = 5
     
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
-    bifrost_api_key: str = "sk-bf-b831d159-3865-46df-9df3-f5c0a2919e41"
+    bifrost_api_key: str | None = None
     bifrost_base_url: str = "https://bifrost.shuttercorp.net/openai"
     bifrost_model: str = "gpt-4.1"
 
     # File upload
-    max_file_size_bytes: int = 1 * 1024 * 1024  # 1MB
+    max_file_size_bytes: int = 6 * 1024 * 1024  # 6MB
     allowed_file_types: list[str] = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"]
     
     class Config:

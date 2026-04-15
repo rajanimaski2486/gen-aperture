@@ -41,12 +41,14 @@ def _run_searchbybrief_workflow(
     user_message: str,
     file_bytes: Optional[bytes],
     file_name: Optional[str],
+    api_key: Optional[str],
 ) -> dict:
     """
     Run SearchByBrief LangGraph workflow and adapt output to chat endpoint shape.
     """
     state = {
         "user_request": user_message,
+        "openai_api_key": api_key,
         "uploaded_file_bytes": file_bytes,
         "uploaded_file_name": file_name,
         "file_type": None,
@@ -170,7 +172,7 @@ async def chat(
     - **message**: User's query
     - **conversation_id**: UUID of existing conversation or None for new
     - **openai_api_key**: Required for new conversation or if session expired
-    - **file**: Optional PDF/DOCX/TXT file (max 1MB)
+    - **file**: Optional PDF/DOCX/TXT file (max 6MB)
     """
     start_time = time.time()
     
@@ -200,14 +202,8 @@ async def chat(
             file_name = file.filename
             logger.info(f"Extracted {len(file_content)} characters and {len(file_images)} images from {file.filename}")
             print(f"[DEBUG] Extracted {len(file_content)} chars and {len(file_images)} images from {file.filename}")  # Debug
-
-            # Analyze extracted images for color palettes and mood
-            if file_images:
-                image_analysis = analyze_images(file_images)
-                logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
-                print(f"[DEBUG] Image analysis mood_tags: {image_analysis.get('mood_tags', [])}")  # Debug
-            else:
-                print(f"[DEBUG] No images found in PDF — file_images is empty")  # Debug
+            print(f"[DEBUG] file_images count: {len(file_images)}")  # Debug
+            print(f"[DEBUG] file_images pages: {[img.get('page') for img in file_images]}")  # Debug
 
         # ── Step 2: Create new conversation OR validate existing session ──
         is_new_conversation = False
@@ -240,6 +236,14 @@ async def chat(
                         status_code=401,
                         detail="Session expired. Please provide OpenAI API key."
                     )
+
+        # Analyze extracted images once the request/session API key is available
+        if file_images:
+            image_analysis = analyze_images(file_images, api_key=api_key)
+            logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
+            print(f"[DEBUG] Image analysis search_terms: {image_analysis.get('search_terms', [])}")  # Debug
+        elif file is not None:
+            print(f"[DEBUG] No images found in PDF — file_images is empty")  # Debug
 
         # ── Step 3: Load conversation history AND stored file context ──
         conversation_history = []
@@ -282,6 +286,7 @@ async def chat(
                 user_message=message,
                 file_bytes=file_bytes,
                 file_name=file_name,
+                api_key=api_key,
             )
         else:
             # Run default AgentSquad workflow
@@ -359,6 +364,7 @@ async def chat(
             response=response_text,
             results=results,
             filter_metadata=agent_result.get('filter_metadata'),
+            pdf_search_detail=agent_result.get('pdf_search_detail'),
             api_key_valid=True,
             processing_time_ms=processing_time_ms,
             workflow_steps=workflow_steps,

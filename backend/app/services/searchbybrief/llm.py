@@ -14,19 +14,26 @@ from openai import OpenAI
 
 from app.config import Settings
 
-_client: OpenAI | None = None
+def get_client(api_key_override: str | None = None) -> OpenAI:
+    """
+    Build an OpenAI client for this request.
 
-
-def get_client() -> OpenAI:
-    """Return a lazily-initialised Bifrost OpenAI client (singleton)."""
-    global _client
-    if _client is None:
-        settings = Settings()
-        _client = OpenAI(
+    Priority:
+    1) Configured Bifrost key (uses Bifrost base URL)
+    2) Explicit per-request API key override (popup key)
+    """
+    settings = Settings()
+    if settings.bifrost_api_key:
+        return OpenAI(
             api_key=settings.bifrost_api_key,
             base_url=settings.bifrost_base_url,
         )
-    return _client
+    if api_key_override:
+        return OpenAI(api_key=api_key_override)
+    raise RuntimeError(
+        "SearchByBrief LLM auth is not configured. "
+        "Provide a popup API key or set BIFROST_API_KEY."
+    )
 
 
 def call_llm_json(
@@ -36,6 +43,7 @@ def call_llm_json(
     max_tokens: int = 4000,
     retries: int = 3,
     sleep_seconds: float = 2.0,
+    api_key_override: str | None = None,
 ) -> dict[str, Any]:
     """
     Call the LLM via Bifrost and return a parsed JSON dict.
@@ -43,7 +51,7 @@ def call_llm_json(
     Strips markdown fenced code blocks if the model wraps its response.
     Retries with linear backoff on any exception.
     """
-    client = get_client()
+    client = get_client(api_key_override=api_key_override)
     last_err: Exception | None = None
 
     for attempt in range(1, retries + 1):
@@ -74,6 +82,7 @@ def call_llm_vision_json(
     max_tokens: int = 2000,
     retries: int = 3,
     sleep_seconds: float = 2.0,
+    api_key_override: str | None = None,
 ) -> dict[str, Any]:
     """
     Call the LLM via Bifrost with a pre-built messages list and return a parsed JSON dict.
@@ -84,7 +93,7 @@ def call_llm_vision_json(
     Strips markdown fenced code blocks if the model wraps its response.
     Retries with linear backoff on any exception.
     """
-    client = get_client()
+    client = get_client(api_key_override=api_key_override)
     last_err: Exception | None = None
 
     for attempt in range(1, retries + 1):

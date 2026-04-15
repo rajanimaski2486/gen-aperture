@@ -365,6 +365,7 @@ def run_intent_node(
     brief_text: str,
     attachment_text: Optional[str] = None,
     model: Optional[str] = None,
+    api_key_override: Optional[str] = None,
 ) -> IntentResult:
     """
     Extract a structured search plan from a customer brief.
@@ -392,6 +393,7 @@ def run_intent_node(
             user_prompt=user_prompt,
             model=model,
             max_tokens=settings.searchbybrief_planner_max_tokens_v2,
+            api_key_override=api_key_override,
         )
         normalized = _normalize_compact_output(raw)
         return IntentResult.model_validate(normalized)
@@ -409,5 +411,6 @@ def run_intent_node(
         user_prompt=user_prompt,
         model=model,
         max_tokens=settings.searchbybrief_planner_max_tokens_v1,
+        api_key_override=api_key_override,
     )
     return IntentResult.model_validate(raw)

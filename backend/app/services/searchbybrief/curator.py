@@ -251,6 +251,7 @@ def _score_candidate_for_lane(
     lane: dict[str, Any],
     candidate_metadata: Optional[dict[str, Any]] = None,
     model: str = VISION_MODEL,
+    api_key_override: Optional[str] = None,
 ) -> dict[str, Any]:
     payload = _build_visual_scoring_payload(
         search_params=search_params,
@@ -267,7 +268,12 @@ def _score_candidate_for_lane(
             ],
         },
     ]
-    return call_llm_vision_json(messages=messages, model=model, max_tokens=1400)
+    return call_llm_vision_json(
+        messages=messages,
+        model=model,
+        max_tokens=1400,
+        api_key_override=api_key_override,
+    )
 
 
 def _score_all_candidates(
@@ -275,6 +281,7 @@ def _score_all_candidates(
     search_params: dict[str, Any],
     model: str = VISION_MODEL,
     sleep_between_calls: float = 0.05,
+    api_key_override: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     """
     Score each candidate thumbnail against its origin lane (or all lanes if unknown).
@@ -323,6 +330,7 @@ def _score_all_candidates(
                     lane=lane,
                     candidate_metadata=candidate_metadata,
                     model=model,
+                    api_key_override=api_key_override,
                 )
                 score = float(result.get("overall_fit", 0.0))
                 lane_results[lane["lane_name"]] = result
@@ -587,6 +595,7 @@ def _audit_lane_batch(
     lane: dict[str, Any],
     candidate_ids: Optional[list[Any]] = None,
     model: str = VISION_MODEL,
+    api_key_override: Optional[str] = None,
 ) -> dict[str, Any]:
     if candidate_ids is None:
         candidate_ids = list(range(len(thumbnail_urls)))
@@ -606,7 +615,12 @@ def _audit_lane_batch(
         {"role": "system", "content": SET_AUDIT_SYSTEM_PROMPT},
         {"role": "user", "content": user_content},
     ]
-    return call_llm_vision_json(messages=messages, model=model, max_tokens=1800)
+    return call_llm_vision_json(
+        messages=messages,
+        model=model,
+        max_tokens=1800,
+        api_key_override=api_key_override,
+    )
 
 
 def _rewrite_embedding_query(
@@ -614,6 +628,7 @@ def _rewrite_embedding_query(
     missing_attributes: list[str],
     lane_goal: str,
     model: str = VISION_MODEL,
+    api_key_override: Optional[str] = None,
 ) -> str:
     """
     Ask the LLM to write a genuinely different embedding_query for the lane.
@@ -627,34 +642,32 @@ def _rewrite_embedding_query(
     if not missing_attributes:
         return original_query
 
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "You are a vision-language embedding expert helping fix a failing image search lane.\n\n"
-                "The original embedding_query already ran and returned candidates that did NOT match the lane goal. "
-                "Your task is to write a NEW query that will retrieve DIFFERENT images by approaching the same "
-                "subject from a different visual angle — different scene moment, different framing, different POV, "
-                "or different concrete visual details.\n\n"
-                "Rules:\n"
-                "- Do NOT just rephrase or lightly edit the original. It already failed — write something meaningfully different.\n"
-                "- Incorporate the listed missing visual attributes into the new caption.\n"
-                "- Output must read as a fluent, descriptive image caption (1-2 sentences), never an instruction.\n"
-                "- Never use prefixes like 'Emphasize:', 'Note:', 'Image of:', etc.\n"
-                'Return JSON: {"embedding_query": "<new caption>"}'
-            ),
-        },
-        {
-            "role": "user",
-            "content": (
-                f"Lane goal: {lane_goal}\n"
-                f"Failed query (do NOT just rephrase this): {original_query}\n"
-                f"Missing visual attributes that were absent from retrieved candidates: {', '.join(missing_attributes)}"
-            ),
-        },
-    ]
+    system_prompt = (
+        "You are a vision-language embedding expert helping fix a failing image search lane.\n\n"
+        "The original embedding_query already ran and returned candidates that did NOT match the lane goal. "
+        "Your task is to write a NEW query that will retrieve DIFFERENT images by approaching the same "
+        "subject from a different visual angle — different scene moment, different framing, different POV, "
+        "or different concrete visual details.\n\n"
+        "Rules:\n"
+        "- Do NOT just rephrase or lightly edit the original. It already failed — write something meaningfully different.\n"
+        "- Incorporate the listed missing visual attributes into the new caption.\n"
+        "- Output must read as a fluent, descriptive image caption (1-2 sentences), never an instruction.\n"
+        "- Never use prefixes like 'Emphasize:', 'Note:', 'Image of:', etc.\n"
+        'Return JSON: {"embedding_query": "<new caption>"}'
+    )
+    user_prompt = (
+        f"Lane goal: {lane_goal}\n"
+        f"Failed query (do NOT just rephrase this): {original_query}\n"
+        f"Missing visual attributes that were absent from retrieved candidates: {', '.join(missing_attributes)}"
+    )
     try:
-        result = call_llm_json(messages=messages, model=model, max_tokens=200)
+        result = call_llm_json(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            model=model,
+            max_tokens=200,
+            api_key_override=api_key_override,
+        )
         rewritten = result.get("embedding_query", "").strip()
         return rewritten if rewritten else original_query
     except Exception:
@@ -664,6 +677,7 @@ def _rewrite_embedding_query(
 def _build_repair_request(
     audit_result: dict[str, Any],
     lane: dict[str, Any],
+    api_key_override: Optional[str] = None,
 ) -> Optional[RepairRequest]:
     """Convert a lane audit result into a RepairRequest if repair is needed."""
     if not audit_result.get("repair_needed"):
@@ -678,6 +692,7 @@ def _build_repair_request(
         original_query=lane.get("embedding_query", ""),
         missing_attributes=missing_attributes,
         lane_goal=lane.get("lane_goal", ""),
+        api_key_override=api_key_override,
     )
     print(f"    [repair query] {lane.get('lane_name')!r} → {repair_query!r}", flush=True)
 
@@ -717,6 +732,7 @@ def _audit_top_candidates_by_lane(
     lane_name_key: str = "origin_lane_name",
     model: str = VISION_MODEL,
     sleep_between_calls: float = 0.05,
+    api_key_override: Optional[str] = None,
 ) -> tuple[list[dict[str, Any]], list[RepairRequest]]:
     lane_lookup = _build_lane_lookup(search_params)
     df = pd.DataFrame(candidates)
@@ -753,6 +769,7 @@ def _audit_top_candidates_by_lane(
                 lane=lane,
                 candidate_ids=candidate_ids,
                 model=model,
+                api_key_override=api_key_override,
             )
             rn = audit.get("repair_needed", False)
             cov = audit.get("coverage", "?")
@@ -762,7 +779,7 @@ def _audit_top_candidates_by_lane(
                   f"{('  missing=' + str(missing)) if missing else ''}", flush=True)
             audits.append({"lane_name": lane_name, "candidate_ids": candidate_ids, "audit_result": audit})
 
-            repair = _build_repair_request(audit, lane)
+            repair = _build_repair_request(audit, lane, api_key_override=api_key_override)
             if repair:
                 repair_requests.append(repair)
 
@@ -856,6 +873,7 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
         search_params = search_params.model_dump()
 
     candidates = state.get("refined_pool", [])
+    api_key_override = state.get("openai_api_key")
     scoring_candidates = _select_candidates_for_visual_scoring(
         candidates=candidates,
         max_total=MAX_VISUAL_SCORING_CANDIDATES,
@@ -869,7 +887,11 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
 
     # Step 1: visual scoring
     print(f"[curator] Step 1/3 — visual scoring {len(scoring_candidates)} candidate(s)...", flush=True)
-    visually_scored = _score_all_candidates(candidates=scoring_candidates, search_params=search_params)
+    visually_scored = _score_all_candidates(
+        candidates=scoring_candidates,
+        search_params=search_params,
+        api_key_override=api_key_override,
+    )
     flattened = _flatten_candidates(visually_scored)
     stage3_candidates = _compute_stage3_scores(flattened)
 
@@ -911,6 +933,7 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
         search_params=search_params,
         top_per_lane=8,
         lane_name_key="origin_lane_name",
+        api_key_override=api_key_override,
     )
 
     feedback = _format_repair_feedback(repair_requests) if repair_requests else "done"
@@ -942,6 +965,7 @@ def score_candidates_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     search_params = state["search_params"]
     candidates = state.get("refined_pool", [])
+    api_key_override = state.get("openai_api_key")
     scoring_candidates = _select_candidates_for_visual_scoring(
         candidates=candidates,
         max_total=MAX_VISUAL_SCORING_CANDIDATES,
@@ -955,6 +979,7 @@ def score_candidates_node(state: dict[str, Any]) -> dict[str, Any]:
     visually_scored = _score_all_candidates(
         candidates=scoring_candidates,
         search_params=search_params,
+        api_key_override=api_key_override,
     )
     flattened = _flatten_candidates(visually_scored)
     stage3_candidates = _compute_stage3_scores(flattened)
@@ -1001,12 +1026,14 @@ def audit_lanes_node(state: dict[str, Any]) -> dict[str, Any]:
         search_params = search_params.model_dump()
 
     candidates = state.get("stage3_shortlist") or state.get("stage3_candidates") or []
+    api_key_override = state.get("openai_api_key")
 
     audits, repair_requests = _audit_top_candidates_by_lane(
         candidates=candidates,
         search_params=search_params,
         top_per_lane=8,
         lane_name_key="origin_lane_name",
+        api_key_override=api_key_override,
     )
 
     if repair_requests:

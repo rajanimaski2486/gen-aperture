@@ -116,6 +116,11 @@ class AgentState(TypedDict):
     media_type: str | None                     # "image" | "video" | "both" | None (informational)
     boolean_query: str | None                  # Lucene boolean string with AND/OR (≤6 terms)
     named_entities: Dict[str, List[str]] | None  # locations, brands_trademarks, celebrities, seasons
+    brief_quality: Literal["strong", "partial", "weak", "insufficient"] | None
+    brief_gaps: List[str] | None
+    brief_warnings: List[str] | None
+    can_search: bool | None
+    pdf_search_detail: Dict[str, Any] | None
 
     # Search intent (determined by LLM)
     search_mode: Literal["relevance", "popular"] | None
@@ -198,6 +203,93 @@ class AgentSquad:
         workflow.add_edge("synthesize", END)
         
         return workflow.compile()
+
+    def _assess_brief_readiness(
+        self,
+        state: AgentState,
+        structured_data: Dict[str, Any],
+        lexical_q: str,
+        semantic_q: str,
+        matched_categories: List[str],
+    ) -> tuple[Literal["strong", "partial", "weak", "insufficient"], List[str], List[str], bool]:
+        """Assess whether the extracted brief produced enough useful search signal."""
+        file_content = (state.get("file_content") or "").strip()
+        file_images = state.get("file_images") or []
+        image_analysis = state.get("image_analysis") or {}
+        print(f"[DEBUG PM] file_type: {state.get('file_type')}")
+        print(f"[DEBUG PM] file_images count: {len(file_images)}")
+        print(f"[DEBUG PM] image_analysis present: {bool(image_analysis)}")
+        brand_domain = str(structured_data.get("brand_domain") or "").strip()
+        visual_requirements = [str(v).strip() for v in (structured_data.get("visual_requirements") or []) if str(v).strip()]
+        technical_constraints = [str(v).strip() for v in (structured_data.get("technical_constraints") or []) if str(v).strip()]
+        named_entities = structured_data.get("named_entities") or {}
+        named_entity_count = sum(
+            len(named_entities.get(key) or [])
+            for key in ("locations", "brands_trademarks", "celebrities", "seasons")
+        )
+
+        lexical_terms = [term for term in lexical_q.split() if term.strip()]
+        semantic_terms = [term for term in semantic_q.split() if term.strip()]
+        is_pdf = state.get("file_type") == "pdf"
+        image_count = len(file_images)
+        has_text = bool(file_content and len(file_content) >= 40)
+        has_images = image_count > 0
+        has_image_analysis = bool(
+            image_analysis.get("search_terms")
+            or image_analysis.get("object_color_phrases")
+            or image_analysis.get("objects")
+            or image_analysis.get("scenes")
+            or image_analysis.get("summary")
+        )
+        has_lexical = len(lexical_terms) >= 2
+        has_semantic = len(semantic_terms) >= 4
+        has_brand_domain = bool(brand_domain)
+        has_categories = bool(matched_categories)
+        has_named_entities = named_entity_count > 0
+        has_supporting_requirements = bool(visual_requirements or technical_constraints)
+
+        score = (
+            (2 if has_text else 0)
+            + (1 if has_images else 0)
+            + (1 if has_image_analysis else 0)
+            + (2 if has_lexical else 0)
+            + (2 if has_semantic else 0)
+            + (1 if has_brand_domain else 0)
+            + (1 if has_categories else 0)
+            + (1 if has_named_entities else 0)
+            + (1 if has_supporting_requirements else 0)
+        )
+
+        gap_rules = [
+            (not has_text, "No usable text was extracted from the uploaded file."),
+            (is_pdf and not has_images, "No images were found in the uploaded PDF."),
+            (not has_lexical, "We could not extract enough concrete keywords from the brief."),
+            (not has_semantic, "The semantic search query is too thin to strongly guide retrieval."),
+            (not has_brand_domain, "No clear subject, product, or brand domain was identified."),
+            (not has_categories, "No strong category signals were found."),
+        ]
+        gaps = [message for condition, message in gap_rules if condition]
+
+        warning_rules = [
+            (not has_text and has_images, "No usable text was extracted from the uploaded file, so search relied mainly on image-derived signals."),
+            (not has_named_entities, "No named entities were extracted from the brief, so results may be broader."),
+            (is_pdf and not has_images, "No images were found in the uploaded PDF, so search relied on extracted text only."),
+            (is_pdf and has_images and image_count <= 2, "2 or fewer images were found in the uploaded PDF, so visual guidance may be limited."),
+            ((not has_lexical) or (not has_semantic), "Only a limited number of concrete keywords were extracted, which may reduce search precision."),
+            (not has_categories, "No strong category signals were found, so results may be less targeted."),
+        ]
+        warnings = [message for condition, message in warning_rules if condition]
+
+        if score >= 7:
+            quality: Literal["strong", "partial", "weak", "insufficient"] = "strong"
+        elif score >= 5:
+            quality = "partial"
+        elif score >= 3:
+            quality = "weak"
+        else:
+            quality = "insufficient"
+
+        return quality, gaps, warnings, True
     
     def _router_node(self, state: AgentState) -> AgentState:
         """
@@ -400,13 +492,24 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         # Include image analysis if available
         if state.get('image_analysis') and state['image_analysis'].get('summary'):
             user_context += f"\n\nImage analysis from the uploaded document:\n{state['image_analysis']['summary']}"
-            palette = state['image_analysis'].get('global_palette', [])
-            if palette:
-                palette_str = ", ".join(f"{c['name']} ({c['hex']})" for c in palette)
-                user_context += f"\nDominant colors: {palette_str}"
-            mood_tags = state['image_analysis'].get('mood_tags', [])
-            if mood_tags:
-                user_context += f"\nInferred mood/tone: {', '.join(mood_tags)}"
+            objects = state['image_analysis'].get('objects', [])
+            if objects:
+                user_context += f"\nDetected objects/products: {', '.join(objects)}"
+            scenes = state['image_analysis'].get('scenes', [])
+            if scenes:
+                user_context += f"\nDetected scenes/settings: {', '.join(scenes)}"
+            image_text = state['image_analysis'].get('text_in_image', [])
+            if image_text:
+                user_context += f"\nDetected text/brand cues in images: {', '.join(image_text)}"
+            scene_phrases = state['image_analysis'].get('scene_phrases', [])
+            if scene_phrases:
+                user_context += f"\nDetected scene phrases: {', '.join(scene_phrases)}"
+            visual_style_terms = state['image_analysis'].get('visual_style_terms', [])
+            if visual_style_terms:
+                user_context += f"\nDetected visual style terms: {', '.join(visual_style_terms)}"
+            object_color_phrases = state['image_analysis'].get('object_color_phrases', [])
+            if object_color_phrases:
+                user_context += f"\nObject-color cues: {', '.join(object_color_phrases)}"
         
         # Call LLM
         messages = [
@@ -434,6 +537,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                         break
             if json_match:
                 structured_data = _json.loads(json_match)
+            print("[DEBUG PM] structured_data:", _json.dumps(structured_data, indent=2))
         except Exception as e:
             logger.warning(f"Project Manager: Could not parse JSON block: {e}")
 
@@ -455,27 +559,70 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         semantic_terms = semantic_q.split()[:7]
         semantic_q = " ".join(semantic_terms)
 
+        # ── Image-analysis subject enrichment block START ────────────────────
         image_analysis = state.get('image_analysis') or {}
         print(f"\n{'='*60}")
         print(f"[DEBUG MOOD] image_analysis present: {bool(image_analysis)}")
         print(f"[DEBUG MOOD] image_analysis keys: {list(image_analysis.keys()) if image_analysis else 'EMPTY'}")
-        print(f"[DEBUG MOOD] mood_tags: {image_analysis.get('mood_tags', [])}")
+        print(f"[DEBUG MOOD] image search_terms: {image_analysis.get('search_terms', [])}")
+        print(f"[DEBUG MOOD] scene_phrases: {image_analysis.get('scene_phrases', [])}")
+        print(f"[DEBUG MOOD] visual_style_terms: {image_analysis.get('visual_style_terms', [])}")
+        print(f"[DEBUG MOOD] object_color_phrases: {image_analysis.get('object_color_phrases', [])}")
         print(f"[DEBUG MOOD] global_palette: {[c['name'] for c in image_analysis.get('global_palette', [])]}")
         print(f"[DEBUG MOOD] semantic_q BEFORE enrichment: '{semantic_q}'")
-        existing_terms = set(semantic_q.lower().split())
-        mood_tags = image_analysis.get('mood_tags', [])
-        mood_additions = [
-            t for t in mood_tags
-            if t.lower() not in existing_terms
-        ][:3]
-        if mood_additions:
-            semantic_q = f"{semantic_q} {' '.join(mood_additions)}"
-            logger.info(f"Project Manager: Enriched semantic query with mood tags: {mood_additions}")
-            print(f"[DEBUG MOOD] mood_additions: {mood_additions}")
+        semantic_q_lower = semantic_q.lower()
+        image_search_terms = image_analysis.get('search_terms', [])
+        scene_phrases = image_analysis.get('scene_phrases', [])
+        visual_style_terms = image_analysis.get('visual_style_terms', [])
+        object_color_phrases = image_analysis.get('object_color_phrases', [])
+        palette = image_analysis.get('global_palette', [])
+        skip_palette_colors = {"white", "black", "grey", "silver", "beige"}
+        print(f"[DEBUG COLOR] raw global_palette: {palette}")
+        print(f"[DEBUG COLOR] skip_palette_colors: {skip_palette_colors}")
+        palette_candidates = [
+            color["name"]
+            for color in palette
+            if str(color.get("name", "")).strip()
+        ]
+        print(f"[DEBUG COLOR] palette_candidates: {palette_candidates}")
+        palette_additions = [
+            color["name"]
+            for color in palette
+            if str(color.get("name", "")).strip()
+            and color["name"].lower() not in skip_palette_colors
+            and color["name"].lower() not in semantic_q_lower
+        ][:2]
+        print(f"[DEBUG COLOR] palette_additions after filtering: {palette_additions}")
+        def _pick_unique_terms(terms: List[str], limit: int) -> List[str]:
+            picked: List[str] = []
+            seen = set()
+            for term in terms:
+                term_text = str(term).strip()
+                term_lower = term_text.lower()
+                if not term_text or term_lower in semantic_q_lower or term_lower in seen:
+                    continue
+                seen.add(term_lower)
+                picked.append(term_text)
+                if len(picked) >= limit:
+                    break
+            return picked
+
+        subject_additions = _pick_unique_terms(image_search_terms, 2)
+        scene_style_additions = _pick_unique_terms(scene_phrases + visual_style_terms, 1)
+        color_additions = _pick_unique_terms(object_color_phrases + palette_additions, 1)
+        combined_additions = subject_additions + scene_style_additions + color_additions
+        print(f"[DEBUG COLOR] combined_additions before cap: {combined_additions}")
+        image_additions = combined_additions[:4]
+        print(f"[DEBUG COLOR] final image_additions after cap: {image_additions}")
+        if image_additions:
+            semantic_q = f"{semantic_q} {' '.join(image_additions)}"
+            logger.info(f"Project Manager: Enriched semantic query with image search cues: {image_additions}")
+            print(f"[DEBUG MOOD] image_additions: {image_additions}")
             print(f"[DEBUG MOOD] semantic_q AFTER enrichment: '{semantic_q}'")
         else:
-            print(f"[DEBUG MOOD] NO mood additions — SKIPPED")
+            print(f"[DEBUG MOOD] NO image additions — SKIPPED")
         print(f"{'='*60}\n")
+        # ── Image-analysis subject enrichment block END ──────────────────────
 
         print(f"Extracted lexical query: '{lexical_q}'")  # Debug log for lexical query
         print(f"Extracted semantic query: '{semantic_q}'")  # Debug log for semantic query
@@ -483,6 +630,11 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         state["lexical_query"] = lexical_q
         state["semantic_query"] = semantic_q
         state["extracted_queries"] = [semantic_q, lexical_q]  # keep for backward compat
+        state["pdf_search_detail"] = {
+            "images_extracted": len(state.get("file_images") or []),
+            "text_extracted": bool((state.get("file_content") or "").strip()),
+            "enrichment_added": image_additions,
+        }
 
         logger.info(
             f"Project Manager: lexical_query='{lexical_q}', semantic_query='{semantic_q}'"
@@ -558,6 +710,22 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             len(cat_gids), cat_names,
         )
 
+        brief_quality, brief_gaps, brief_warnings, can_search = self._assess_brief_readiness(
+            state=state,
+            structured_data=structured_data,
+            lexical_q=lexical_q,
+            semantic_q=semantic_q,
+            matched_categories=cat_names,
+        )
+        state["brief_quality"] = brief_quality
+        state["brief_gaps"] = brief_gaps
+        state["brief_warnings"] = brief_warnings
+        state["can_search"] = can_search
+        print(f"[DEBUG PM] brief_quality: {brief_quality}")
+        print(f"[DEBUG PM] brief_gaps: {brief_gaps}")
+        print(f"[DEBUG PM] brief_warnings: {brief_warnings}")
+        print(f"[DEBUG PM] can_search: {can_search}")
+
         # ── Refinement filter extraction ─────────────────────────────────────
         state["refinement_filters"] = extract_refinement_filters(
             state["requirements"],
@@ -584,7 +752,8 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 f"Found {len(brief_exclusions)} exclusion term(s): {brief_exclusions}. "
                 f"Extracted {len(state['refinement_filters'])} refinement filter(s). "
                 f"Named entities: {state.get('named_entities', {})}. "
-                f"Media type: {state.get('media_type')}. Is generated: {pm_is_generated}."
+                f"Media type: {state.get('media_type')}. Is generated: {pm_is_generated}. "
+                f"Brief readiness: {brief_quality}; can_search={can_search}."
             ),
             "output": {
                 "brand_domain": structured_data.get("brand_domain", ""),
@@ -602,6 +771,10 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "quality_requirements": structured_data.get("quality_requirements", []),
                 "themes_moods": structured_data.get("themes_moods", []),
                 "technical_constraints": structured_data.get("technical_constraints", []),
+                "brief_quality": brief_quality,
+                "brief_gaps": brief_gaps,
+                "brief_warnings": brief_warnings,
+                "can_search": can_search,
                 "analysis_summary": analysis[:500] + "..." if len(analysis) > 500 else analysis
             }
         })
@@ -1596,6 +1769,13 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
             response_parts.append("**Brief Analysis:**")
             response_parts.append(state["requirements"]["analysis"])
             response_parts.append("")
+
+        if state.get("brief_warnings"):
+            response_parts.append(
+                "Warning: I ran the search, but the uploaded brief has gaps please see below;"
+            )
+            response_parts.append("Warning Gaps: " + "; ".join(state["brief_warnings"]) + ";")
+            response_parts.append("")
         
         # Add search results summary
         total = state.get("total_results", 0)
@@ -2011,6 +2191,11 @@ Rules:
                 media_type=None,
                 boolean_query=None,
                 named_entities=None,
+                brief_quality=None,
+                brief_gaps=None,
+                brief_warnings=None,
+                can_search=None,
+                pdf_search_detail=None,
                 search_results=None,
                 total_results=0,
                 # Reranker state — defaults to None/False until triggered
@@ -2023,7 +2208,11 @@ Rules:
             )
             
             # Run graph
-            print(f"[DEBUG RUN] image_analysis before graph.invoke: {bool(initial_state.get('image_analysis'))}, mood_tags: {(initial_state.get('image_analysis') or {}).get('mood_tags', [])}")
+            print(
+                f"[DEBUG RUN] image_analysis before graph.invoke: "
+                f"{bool(initial_state.get('image_analysis'))}, "
+                f"search_terms: {(initial_state.get('image_analysis') or {}).get('search_terms', [])}"
+            )
             logger.info(f"Starting agent execution for query: {user_query[:100]}...")
             final_state = self.graph.invoke(initial_state)
             
@@ -2038,6 +2227,7 @@ Rules:
                 "processing_time_ms": final_state.get("processing_time_ms", 0),
                 "workflow_steps": final_state.get("workflow_steps", []),
                 "search_mode": final_state.get("search_mode", "relevance"),
+                "pdf_search_detail": final_state.get("pdf_search_detail"),
                 # Reranker outputs
                 "rerank_applied": final_state.get("rerank_applied") or False,
                 "rerank_decisions": final_state.get("rerank_decisions"),
