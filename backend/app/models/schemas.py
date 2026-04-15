@@ -60,6 +60,7 @@ class ChatResponse(BaseModel):
     response: str
     results: List[PhotoResult] = []
     filter_metadata: Optional[Dict[str, Any]] = None
+    search_detail: Optional[Dict[str, Any]] = None
     api_key_valid: bool = True
     processing_time_ms: int = 0
     workflow_steps: List[AgentWorkflowStep] = []

@@ -120,6 +120,7 @@ class AgentState(TypedDict):
     brief_gaps: List[str] | None
     brief_warnings: List[str] | None
     can_search: bool | None
+    search_detail: Dict[str, Any] | None
 
     # Search intent (determined by LLM)
     search_mode: Literal["relevance", "popular"] | None
@@ -629,6 +630,11 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         state["lexical_query"] = lexical_q
         state["semantic_query"] = semantic_q
         state["extracted_queries"] = [semantic_q, lexical_q]  # keep for backward compat
+        state["search_detail"] = {
+            "images_extracted": len(state.get("file_images") or []),
+            "text_extracted": bool((state.get("file_content") or "").strip()),
+            "enrichment_added": image_additions,
+        }
 
         logger.info(
             f"Project Manager: lexical_query='{lexical_q}', semantic_query='{semantic_q}'"
@@ -2189,6 +2195,7 @@ Rules:
                 brief_gaps=None,
                 brief_warnings=None,
                 can_search=None,
+                search_detail=None,
                 search_results=None,
                 total_results=0,
                 # Reranker state — defaults to None/False until triggered
@@ -2220,6 +2227,7 @@ Rules:
                 "processing_time_ms": final_state.get("processing_time_ms", 0),
                 "workflow_steps": final_state.get("workflow_steps", []),
                 "search_mode": final_state.get("search_mode", "relevance"),
+                "search_detail": final_state.get("search_detail"),
                 # Reranker outputs
                 "rerank_applied": final_state.get("rerank_applied") or False,
                 "rerank_decisions": final_state.get("rerank_decisions"),
