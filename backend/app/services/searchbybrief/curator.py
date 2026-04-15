@@ -38,6 +38,7 @@ Dependency notes
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import statistics
 import time
@@ -45,6 +46,7 @@ from typing import Any, Optional
 
 import pandas as pd
 
+from app.config import settings
 from .llm import call_llm_vision_json, call_llm_json
 from .schemas import RepairRequest
 
@@ -58,6 +60,10 @@ VISION_MODEL = "gpt-4o-mini"
 # Loop back to the planner if the shortlist median stage3_score is below this.
 # A few weak lanes are acceptable; the median captures the overall collection quality.
 MEDIAN_SCORE_THRESHOLD = 0.70
+
+# Cap expensive visual scoring calls. Candidates are selected in a lane-balanced
+# way so each lane contributes top items before we hit this ceiling.
+MAX_VISUAL_SCORING_CANDIDATES = 50
 
 
 # ---------------------------------------------------------------------------
@@ -276,9 +282,8 @@ def _score_all_candidates(
     Candidates without a thumbnail_url are passed through with visual_audit_error set.
     """
     lane_lookup = _build_lane_lookup(search_params)
-    output: list[dict[str, Any]] = []
 
-    for candidate in candidates:
+    def _score_one_candidate(idx: int, candidate: dict[str, Any], total_candidates: int) -> dict[str, Any]:
         enriched = dict(candidate)
         thumbnail_url = _get_thumbnail_url(candidate)
         lane_name = candidate.get("origin_lane_name")
@@ -286,8 +291,7 @@ def _score_all_candidates(
         if not thumbnail_url:
             enriched["visual_audit_result"] = None
             enriched["visual_audit_error"] = "Missing thumbnail_url — visual scoring skipped"
-            output.append(enriched)
-            continue
+            return enriched
 
         candidate_metadata = {
             "asset_id": candidate.get("asset_id"),
@@ -303,8 +307,6 @@ def _score_all_candidates(
             else list(lane_lookup.values())
         )
 
-        idx = len(output) + 1
-        total_candidates = len(candidates)
         print(f"  [stage3 score] ({idx}/{total_candidates}) asset_id={candidate.get('asset_id')}  "
               f"lane={lane_name or 'all'}  scoring {len(lanes_to_score)} lane(s)...", flush=True)
         try:
@@ -353,11 +355,98 @@ def _score_all_candidates(
             enriched["visual_audit_result"] = None
             enriched["visual_audit_error"] = str(exc)
 
-        output.append(enriched)
         if sleep_between_calls > 0:
             time.sleep(sleep_between_calls)
+        return enriched
 
-    return output
+    total_candidates = len(candidates)
+    if total_candidates == 0:
+        return []
+
+    configured_workers = int(getattr(settings, "searchbybrief_curator_concurrency", 1) or 1)
+    max_workers = max(1, configured_workers)
+    if max_workers == 1 or total_candidates == 1:
+        return [
+            _score_one_candidate(idx=i, candidate=candidate, total_candidates=total_candidates)
+            for i, candidate in enumerate(candidates, start=1)
+        ]
+
+    max_workers = min(max_workers, total_candidates)
+    indexed_results: dict[int, dict[str, Any]] = {}
+    print(f"[curator] Stage 3 parallel scoring enabled (workers={max_workers})", flush=True)
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(_score_one_candidate, i, candidate, total_candidates): i
+            for i, candidate in enumerate(candidates, start=1)
+        }
+        for future in as_completed(futures):
+            idx = futures[future]
+            try:
+                indexed_results[idx] = future.result()
+            except Exception as exc:
+                candidate = candidates[idx - 1]
+                indexed_results[idx] = {
+                    **candidate,
+                    "visual_audit_result": None,
+                    "visual_audit_error": f"Parallel scoring worker failed: {exc}",
+                }
+
+    return [indexed_results[i] for i in range(1, total_candidates + 1)]
+
+
+def _select_candidates_for_visual_scoring(
+    candidates: list[dict[str, Any]],
+    max_total: int = MAX_VISUAL_SCORING_CANDIDATES,
+    lane_name_key: str = "origin_lane_name",
+) -> list[dict[str, Any]]:
+    """
+    Select a lane-balanced subset of top candidates for visual scoring.
+
+    Strategy:
+    - Bucket by lane.
+    - Sort each lane by stage2_score descending (stable with input order).
+    - Round-robin pick one from each lane until max_total is reached.
+    """
+    if max_total <= 0 or not candidates:
+        return []
+    if len(candidates) <= max_total:
+        return candidates
+
+    buckets: dict[str, list[dict[str, Any]]] = {}
+    for idx, candidate in enumerate(candidates):
+        lane = str(candidate.get(lane_name_key) or "unknown-lane")
+        row = dict(candidate)
+        row["_input_idx"] = idx
+        score = pd.to_numeric(row.get("stage2_score"), errors="coerce")
+        row["_stage2_score"] = float(score) if pd.notna(score) else float("-inf")
+        buckets.setdefault(lane, []).append(row)
+
+    lane_order = list(buckets.keys())
+    for lane in lane_order:
+        buckets[lane].sort(key=lambda r: (r["_stage2_score"], -r["_input_idx"]), reverse=True)
+
+    selected: list[dict[str, Any]] = []
+    lane_positions = {lane: 0 for lane in lane_order}
+
+    while len(selected) < max_total:
+        made_progress = False
+        for lane in lane_order:
+            pos = lane_positions[lane]
+            lane_items = buckets[lane]
+            if pos >= len(lane_items):
+                continue
+            picked = dict(lane_items[pos])
+            picked.pop("_input_idx", None)
+            picked.pop("_stage2_score", None)
+            selected.append(picked)
+            lane_positions[lane] = pos + 1
+            made_progress = True
+            if len(selected) >= max_total:
+                break
+        if not made_progress:
+            break
+
+    return selected
 
 
 # ---------------------------------------------------------------------------
@@ -451,6 +540,7 @@ def _build_shortlist(
     top_n: int = 100,
     per_lane_cap: int = 20,
     lane_name_key: str = "origin_lane_name",
+    min_subject_score: float = 0.5,
 ) -> list[dict[str, Any]]:
     df = pd.DataFrame(candidates)
     if df.empty:
@@ -459,15 +549,30 @@ def _build_shortlist(
     if "stage3_score" not in df.columns:
         raise ValueError("Candidates must include stage3_score before shortlist construction.")
 
+    df["stage3_score"] = pd.to_numeric(df["stage3_score"], errors="coerce")
+    df = df.sort_values("stage3_score", ascending=False)
+
+    # Drop clearly off-subject assets before shortlist assembly.
+    if "visual_subject_match" in df.columns:
+        subject_scores = pd.to_numeric(df["visual_subject_match"], errors="coerce")
+        df = df[subject_scores.isna() | (subject_scores >= min_subject_score)]
+
+    # Deduplicate globally by asset_id, keeping the highest stage3_score.
+    if "asset_id" in df.columns:
+        df = df.drop_duplicates(subset=["asset_id"], keep="first")
+
     pieces: list[pd.DataFrame] = []
     if lane_name_key in df.columns:
         for _, group in df.groupby(lane_name_key):
             pieces.append(
                 group.sort_values("stage3_score", ascending=False).head(per_lane_cap)
             )
-        base = pd.concat(pieces, axis=0).drop_duplicates(subset=["asset_id"])
+        base = pd.concat(pieces, axis=0)
     else:
         base = df.copy()
+
+    if "asset_id" in base.columns:
+        base = base.sort_values("stage3_score", ascending=False).drop_duplicates(subset=["asset_id"], keep="first")
 
     return base.sort_values("stage3_score", ascending=False).head(top_n).to_dict(orient="records")
 
@@ -751,10 +856,20 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
         search_params = search_params.model_dump()
 
     candidates = state.get("refined_pool", [])
+    scoring_candidates = _select_candidates_for_visual_scoring(
+        candidates=candidates,
+        max_total=MAX_VISUAL_SCORING_CANDIDATES,
+        lane_name_key="origin_lane_name",
+    )
+    print(
+        f"\n[curator] candidate prefilter — selected {len(scoring_candidates)} / {len(candidates)} "
+        f"for visual scoring (lane-balanced cap={MAX_VISUAL_SCORING_CANDIDATES})",
+        flush=True,
+    )
 
     # Step 1: visual scoring
-    print(f"\n[curator] Step 1/3 — visual scoring {len(candidates)} candidate(s)...", flush=True)
-    visually_scored = _score_all_candidates(candidates=candidates, search_params=search_params)
+    print(f"[curator] Step 1/3 — visual scoring {len(scoring_candidates)} candidate(s)...", flush=True)
+    visually_scored = _score_all_candidates(candidates=scoring_candidates, search_params=search_params)
     flattened = _flatten_candidates(visually_scored)
     stage3_candidates = _compute_stage3_scores(flattened)
 
@@ -827,13 +942,18 @@ def score_candidates_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     search_params = state["search_params"]
     candidates = state.get("refined_pool", [])
+    scoring_candidates = _select_candidates_for_visual_scoring(
+        candidates=candidates,
+        max_total=MAX_VISUAL_SCORING_CANDIDATES,
+        lane_name_key="origin_lane_name",
+    )
 
     # If search_params is a Pydantic model, convert to dict for downstream helpers
     if hasattr(search_params, "model_dump"):
         search_params = search_params.model_dump()
 
     visually_scored = _score_all_candidates(
-        candidates=candidates,
+        candidates=scoring_candidates,
         search_params=search_params,
     )
     flattened = _flatten_candidates(visually_scored)
@@ -904,60 +1024,3 @@ def audit_lanes_node(state: dict[str, Any]) -> dict[str, Any]:
         "feedback": "done",
         "final_collection": state.get("stage3_shortlist", []),
     }
-=======
-Stage 3: Agentic Curation
-"""
-
-
-import mlx_vlm
-from PIL import Image
-
-
-# Load the model once (35B MoE 4-bit fits easily in M4 Pro 48GB/64GB)
-model_path = "mlx-community/Qwen3.5-35B-A3B-4bit"
-model, processor = mlx_vlm.load(model_path)
-
-
-def curator_node(state: AgentState):
-    refined_images = state["refined_pool"]
-    final_selection = []
-    
-    # SYSTEM PROMPT for the Curator
-    curator_prompt = f"""
-    User Request: {state['user_request']}
-    Goal: Select the best images from this batch that perfectly match the request.
-    Constraint: Ensure diversity in background, lighting, and composition. 
-    Review each image and output the IDs of the keepers.
-    """
-
-    # For local performance, we process in small visual batches
-    batch_size = 5 
-    for i in range(0, len(refined_images), batch_size):
-        batch = refined_images[i:i + batch_size]
-        
-        # Prepare images and prompt
-        images = [Image.open(img['path']) for img in batch]
-        
-        # Use MLX-VLM generate
-        response = mlx_vlm.generate(
-            model, 
-            processor, 
-            prompt=curator_prompt, 
-            images=images,
-            max_tokens=1000,
-            temp=0.0 # Keep it deterministic for curation
-        )
-        
-        # Logic to parse response and add to final_selection
-        # (Assuming Qwen returns a list of IDs or indices)
-        selected_ids = parse_ids_from_response(response)
-        final_selection.extend([img for img in batch if img['id'] in selected_ids])
-
-    # Check if we met the "100 images" goal
-    if len(final_selection) < 100:
-        return {
-            "final_collection": final_selection,
-            "feedback": f"Found {len(final_selection)} images. Need more variety in outdoor settings."
-        }
-    
-    return {"final_collection": final_selection[:100], "feedback": "done"}

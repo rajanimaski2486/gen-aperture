@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     rerank_duplicate_similarity_threshold: float = 0.5
 
     # SearchByBrief Stage 1 retriever
+    # Modes:
+    # - "embedding": CLIP + PCA + creativeImageSearchByEmbedding
+    # - "text_relevance": Search Service MCP relevance query (text-only)
+    # - "text-intent": Search Intent API GraphQL recommendations endpoint
+    searchbybrief_retriever_mode: str = "text-intent"
     searchbybrief_retriever_endpoint: str = (
         "http://creative-image-similarity-search.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
     )
@@ -54,9 +59,24 @@ class Settings(BaseSettings):
     searchbybrief_retriever_normalize_embeddings: bool = True
     searchbybrief_retriever_truncate_text: bool = False
     searchbybrief_retriever_timeout_seconds: int = 60
+    searchbybrief_search_intent_endpoint: str = (
+        "http://search-intent-api.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+    )
+    searchbybrief_search_intent_client_name: str = (
+        "gen-aperture/search-results-page/retriever"
+    )
+    searchbybrief_search_intent_client_version: str = "1.0.0"
+    # SearchByBrief Stage 0 planner
+    # "v1" = full schema, "v2" = compact lanes-first output
+    searchbybrief_planner_version: str = "v2"
+    searchbybrief_planner_max_tokens_v1: int = 2500
+    searchbybrief_planner_max_tokens_v2: int = 900
+    # SearchByBrief Stage 3 curator
+    # Number of parallel Bifrost visual-scoring calls.
+    searchbybrief_curator_concurrency: int = 5
     
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
-    bifrost_api_key: str
+    bifrost_api_key: str = "sk-bf-b831d159-3865-46df-9df3-f5c0a2919e41"
     bifrost_base_url: str = "https://bifrost.shuttercorp.net/openai"
     bifrost_model: str = "gpt-4.1"
 

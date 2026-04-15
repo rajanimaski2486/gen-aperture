@@ -7,9 +7,10 @@ export const api = axios.create({
 });
 
 export const chatAPI = {
-  sendMessage: async (message, conversationId, openaiApiKey, file) => {
+  sendMessage: async (message, conversationId, openaiApiKey, file, workflowMode = 'agent_squad') => {
     const formData = new FormData();
     formData.append('message', message);
+    formData.append('workflow_mode', workflowMode);
     
     if (conversationId) {
       formData.append('conversation_id', conversationId);

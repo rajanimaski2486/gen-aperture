@@ -10,9 +10,11 @@ from app.services.conversation_store import get_conversation_store
 from app.services.file_extractor import file_extractor
 from app.services.image_analyzer import analyze_images
 from app.services.agent_squad import AgentSquad
+from app.services.searchbybrief.main import app as searchbybrief_workflow
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+MAX_RESULTS_RETURNED = 30
 
 conversation_store = get_conversation_store()
 
@@ -28,12 +30,128 @@ def _generate_conversation_title(prompt: str, max_len: int = 60) -> str:
     return truncated
 
 
+def _safe_int(value):
+    try:
+        return int(str(value))
+    except Exception:
+        return None
+
+
+def _run_searchbybrief_workflow(
+    user_message: str,
+    file_bytes: Optional[bytes],
+    file_name: Optional[str],
+) -> dict:
+    """
+    Run SearchByBrief LangGraph workflow and adapt output to chat endpoint shape.
+    """
+    state = {
+        "user_request": user_message,
+        "uploaded_file_bytes": file_bytes,
+        "uploaded_file_name": file_name,
+        "file_type": None,
+        "file_images": [],
+        "image_analysis": None,
+        "extraction_error": None,
+        "attachment_text": None,
+        "search_params": None,
+        "candidate_pool": [],
+        "refined_pool": [],
+        "stage3_candidates": [],
+        "stage3_shortlist": [],
+        "stage3_lane_audits": [],
+        "stage3_repair_requests": [],
+        "final_collection": [],
+        "feedback": "",
+        "iterations": 0,
+    }
+
+    final_state = searchbybrief_workflow.invoke(state)
+    search_params = final_state.get("search_params")
+    if hasattr(search_params, "model_dump"):
+        search_params = search_params.model_dump()
+
+    lanes = (search_params or {}).get("search_lanes", []) if isinstance(search_params, dict) else []
+    lane_names = [lane.get("lane_name") for lane in lanes if isinstance(lane, dict) and lane.get("lane_name")]
+
+    final_collection = final_state.get("final_collection") or final_state.get("stage3_shortlist") or []
+    search_results = []
+    for item in final_collection:
+        asset_id = str(item.get("asset_id", ""))
+        thumbnail_url = item.get("thumbnail_url") or ""
+        score = item.get("stage3_score")
+        if not isinstance(score, (int, float)):
+            score = float(item.get("stage2_score") or 0.0)
+        origin_lane = item.get("origin_lane_name") or "lane"
+        description = (
+            f"{origin_lane} · stage3={score:.3f}"
+            if isinstance(score, float)
+            else f"{origin_lane} asset"
+        )
+        search_results.append(
+            {
+                "hadron_id": asset_id,
+                "ext_id": _safe_int(asset_id),
+                "description": description,
+                "image_url": thumbnail_url,
+                "thumbnail_url": thumbnail_url,
+                "date_added": None,
+                "license_count": 0,
+                "categories": [],
+                "keywords": [],
+                "score": score if isinstance(score, float) else 0.0,
+                "is_generated": False,
+            }
+        )
+
+    workflow_steps = [
+        {
+            "agent": "SearchByBrief Planner",
+            "action": "Generate search lanes",
+            "reasoning": f"Built {len(lane_names)} lane(s) from the brief and attachment context.",
+            "output": {"lane_names": lane_names},
+        },
+        {
+            "agent": "SearchByBrief Retriever",
+            "action": "Retrieve lane candidates",
+            "reasoning": "Retrieved candidates per lane using configured retriever mode.",
+            "output": {"candidate_pool_count": len(final_state.get("candidate_pool") or [])},
+        },
+        {
+            "agent": "SearchByBrief Curator",
+            "action": "Visual scoring, filtering, dedup, and final selection",
+            "reasoning": "Scored lane candidates and produced final collection.",
+            "output": {
+                "feedback": final_state.get("feedback"),
+                "final_collection_count": len(final_collection),
+                "shortlist_count": len(final_state.get("stage3_shortlist") or []),
+            },
+        },
+    ]
+
+    response = (
+        f"SearchByBrief completed with {len(search_results)} curated result(s) "
+        f"across {len(lane_names)} lane(s)."
+    )
+    return {
+        "response": response,
+        "search_results": search_results,
+        "workflow_steps": workflow_steps,
+        "search_mode": "relevance",
+        "rerank_applied": False,
+        "rerank_decisions": [],
+        "rerank_explanation": None,
+        "filter_metadata": None,
+    }
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     message: str = Form(...),
     conversation_id: Optional[str] = Form(None),
     openai_api_key: Optional[str] = Form(None),
-    file: Optional[UploadFile] = File(None)
+    file: Optional[UploadFile] = File(None),
+    workflow_mode: Optional[str] = Form("agent_squad"),
 ):
     """
     Main chat endpoint
@@ -52,6 +170,7 @@ async def chat(
         image_analysis = None
         file_type = None
         file_name = None
+        file_bytes: Optional[bytes] = None
 
         if file:
             logger.info(f"Processing uploaded file: {file.filename}")
@@ -145,22 +264,30 @@ async def chat(
                 )
                 logger.info(f"Updated stored file content for conversation {conversation_id[:8]}...")
         
-        # Run agent squad
-        logger.info(f"Running agent squad for conversation {conversation_id[:8]}...")
-        agent_squad = AgentSquad(openai_api_key=api_key)
-        
-        agent_result = agent_squad.run(
-            user_query=message,
-            file_content=file_content,
-            file_images=file_images,
-            image_analysis=image_analysis,
-            file_type=file_type,
-            conversation_history=conversation_history
-        )
+        selected_mode = (workflow_mode or "agent_squad").strip().lower()
+        if selected_mode in {"searchbybrief", "search_by_brief", "brief"}:
+            logger.info(f"Running SearchByBrief workflow for conversation {conversation_id[:8]}...")
+            agent_result = _run_searchbybrief_workflow(
+                user_message=message,
+                file_bytes=file_bytes,
+                file_name=file_name,
+            )
+        else:
+            # Run default AgentSquad workflow
+            logger.info(f"Running agent squad for conversation {conversation_id[:8]}...")
+            agent_squad = AgentSquad(openai_api_key=api_key)
+            agent_result = agent_squad.run(
+                user_query=message,
+                file_content=file_content,
+                file_images=file_images,
+                image_analysis=image_analysis,
+                file_type=file_type,
+                conversation_history=conversation_history
+            )
         
         # Format results (unfiltered)
         results = []
-        for photo in agent_result.get('search_results', [])[:10]:
+        for photo in agent_result.get('search_results', [])[:MAX_RESULTS_RETURNED]:
             results.append(PhotoResult(
                 hadron_id=photo.get('hadron_id'),
                 ext_id=photo.get('ext_id'),

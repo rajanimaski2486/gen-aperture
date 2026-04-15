@@ -3,14 +3,31 @@ from typing import List, Optional, TypedDict
 
 from .curator import curator_node
 from .planner import run_intent_node
-from .reranker import run_reranker_node
 from .retriever import run_retriever_node
 from .schemas import IntentResult
+from app.services.file_extractor import file_extractor
+from app.services.image_analyzer import analyze_images
+
+try:
+    from .reranker import run_reranker_node
+except Exception:
+    run_reranker_node = None
 
 
 class AgentState(TypedDict):
     # the original customer request
     user_request: str
+
+    # Optional raw file payload provided by the caller (e.g. API layer).
+    # If present, brief_preprocess_node extracts text + image signals.
+    uploaded_file_bytes: Optional[bytes]
+    uploaded_file_name: Optional[str]
+
+    # File extraction outputs (written by brief_preprocess_node)
+    file_type: Optional[str]
+    file_images: List[dict]
+    image_analysis: Optional[dict]
+    extraction_error: Optional[str]
 
     # optional context extracted from an uploaded file (PDF/DOCX/TXT).
     # populated by the caller before invoking the graph
@@ -55,12 +72,88 @@ class AgentState(TypedDict):
     iterations: int
 
 
+# PRE-STAGE: Brief preprocessing (optional file extraction + image analysis)
+def brief_preprocess_node(state: AgentState):
+    file_bytes = state.get("uploaded_file_bytes")
+    file_name = state.get("uploaded_file_name") or "uploaded-file"
+    existing_attachment = state.get("attachment_text") or ""
+
+    # No file provided — pass through current attachment_text unchanged.
+    if not file_bytes:
+        return {
+            "file_type": state.get("file_type"),
+            "file_images": state.get("file_images", []),
+            "image_analysis": state.get("image_analysis"),
+            "extraction_error": state.get("extraction_error"),
+        }
+
+    extraction = file_extractor.extract_text_and_images(file_bytes, file_name)
+    if extraction.get("error"):
+        return {
+            "file_type": extraction.get("file_type"),
+            "file_images": [],
+            "image_analysis": None,
+            "extraction_error": extraction["error"],
+        }
+
+    extracted_text = extraction.get("text") or ""
+    images = extraction.get("images") or []
+    image_analysis = analyze_images(images) if images else None
+
+    parts = [existing_attachment]
+    if extracted_text:
+        parts.append(extracted_text)
+
+    # Keep attachment_text focused on extracted document text.
+    # Image analysis is stored in state and injected into planner LLM context
+    # at prompt-build time (see planner_node), rather than baked into node output.
+    attachment_text = "\n\n".join(p for p in parts if p).strip() or None
+
+    return {
+        "attachment_text": attachment_text,
+        "file_type": extraction.get("file_type"),
+        "file_images": images,
+        "image_analysis": image_analysis,
+        "extraction_error": None,
+    }
+
+
+def _format_image_analysis_for_llm(image_analysis: Optional[dict]) -> Optional[str]:
+    if not image_analysis:
+        return None
+
+    lines = ["IMAGE ANALYSIS CONTEXT (from uploaded brief visuals):"]
+    summary = image_analysis.get("summary")
+    if summary:
+        lines.append(f"- Summary: {summary}")
+
+    moods = image_analysis.get("mood_tags") or []
+    if moods:
+        lines.append(f"- Mood tags: {', '.join(moods)}")
+
+    palette = image_analysis.get("global_palette") or []
+    if palette:
+        palette_text = ", ".join(
+            f"{c.get('name')} ({c.get('hex')})"
+            for c in palette[:6]
+            if isinstance(c, dict)
+        )
+        if palette_text:
+            lines.append(f"- Dominant palette: {palette_text}")
+
+    return "\n".join(lines) if len(lines) > 1 else None
+
+
 # STAGE-0: Intent extraction
 def planner_node(state: AgentState):
     # On the first iteration, use the file attachment text as-is.
     # On repair iterations, pass the CURRENT search plan + curator feedback so
     # the planner can apply surgical updates rather than re-deriving from scratch.
-    base_attachment = state.get("attachment_text") or ""
+    base_attachment_parts = [state.get("attachment_text") or ""]
+    image_context = _format_image_analysis_for_llm(state.get("image_analysis"))
+    if image_context:
+        base_attachment_parts.append(image_context)
+    base_attachment = "\n\n".join(p for p in base_attachment_parts if p).strip()
     feedback = state.get("feedback", "")
     existing_params = state.get("search_params")
 
@@ -109,9 +202,38 @@ def retriever_node(state: AgentState):
 
 # STAGE-2: Reranking
 def reranker_node(state: AgentState):
-    # Score candidate_pool against user_request
-    # Filter for top 200-500 images
-    return run_reranker_node(state)
+    # TEMP BYPASS:
+    # We currently skip Stage-2 reranking because the reranker model is not
+    # loaded in this environment. Keep run_reranker_node import/code intact,
+    # but map Stage-1 candidates into the Stage-3 expected refined_pool shape.
+    #
+    # To re-enable reranking later, replace this return with:
+    #   return run_reranker_node(state)
+    candidate_pool = state.get("candidate_pool", [])
+    refined_pool: list[dict] = []
+
+    for item in candidate_pool:
+        asset_id = str(item.get("asset_id", ""))
+        origin_lanes = item.get("origin_lane_names", []) or []
+        origin_lane_name = origin_lanes[0] if origin_lanes else "unknown-lane"
+
+        # Stage 3 requires thumbnail_url + stage2_score fields.
+        refined_pool.append(
+            {
+                "asset_id": asset_id,
+                "origin_lane_name": origin_lane_name,
+                "thumbnail_url": (
+                    f"https://image.shutterstock.com/image-photo/"
+                    f"words-words-words-words-260nw-{asset_id}.jpg"
+                ),
+                # Neutral placeholder score while reranker is bypassed.
+                "stage2_score": 0.75,
+                "media_type": "image",
+                "title": f"Asset {asset_id}",
+            }
+        )
+
+    return {"refined_pool": refined_pool}
 
 
 #--- BUILD THE GRAPH -----------------------------------------------------------
@@ -120,15 +242,17 @@ workflow = StateGraph(AgentState)
 
 
 # add the nodes
+workflow.add_node("brief_preprocess", brief_preprocess_node)
 workflow.add_node("planner", planner_node)
 workflow.add_node("retriever", retriever_node)
 workflow.add_node("reranker", reranker_node)
 workflow.add_node("curator", curator_node)
 
 # set entry Point
-workflow.set_entry_point("planner")
+workflow.set_entry_point("brief_preprocess")
 
 # define fixed edges
+workflow.add_edge("brief_preprocess", "planner")
 workflow.add_edge("planner", "retriever")
 workflow.add_edge("retriever", "reranker")
 workflow.add_edge("reranker", "curator")

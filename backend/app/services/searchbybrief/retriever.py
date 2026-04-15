@@ -21,6 +21,8 @@ import numpy as np
 import requests
 import torch
 from app.config import settings
+from app.services.photo_search import photo_search_service
+from app.services.search_service_mcp import search_service_mcp
 
 DEFAULT_SEARCH_ENDPOINT = (
     "http://creative-image-similarity-search.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
@@ -236,6 +238,156 @@ def merge_candidate_results(lane_results: list[dict[str, Any]]) -> list[dict[str
     )
 
 
+def _run_text_relevance_lane(
+    lane_name: str,
+    lane_query: str,
+    top_k_per_lane: int,
+) -> dict[str, Any]:
+    """
+    Retrieve candidates for one lane using Search Service MCP relevance mode.
+
+    Returns a lane_result compatible with merge_candidate_results().
+    """
+    mcp_result = search_service_mcp.call_tool("search_relevant", lane_query)
+    opensearch_query = mcp_result.get("opensearch_query")
+    if not opensearch_query:
+        return {
+            "lane_name": lane_name,
+            "lane_query": lane_query,
+            "retrieval_mode": "text_relevance",
+            "entities": [],
+            "raw_response": {"mcp_result": mcp_result},
+        }
+
+    # Limit recall to lane cap
+    opensearch_query = dict(opensearch_query)
+    opensearch_query["size"] = top_k_per_lane
+
+    raw = photo_search_service.execute_raw_query(
+        opensearch_query=opensearch_query,
+        index=settings.opensearch_photo_index,
+    )
+    hits = raw.get("results", [])
+
+    entities = []
+    for hit in hits:
+        ext_id = hit.get("ext_id")
+        if not ext_id:
+            continue
+        entities.append(
+            {
+                "classicId": str(ext_id),
+                "score": hit.get("score"),
+            }
+        )
+
+    return {
+        "lane_name": lane_name,
+        "lane_query": lane_query,
+        "retrieval_mode": "text_relevance",
+        "entities": entities,
+        "raw_response": {
+            "mcp_result": mcp_result,
+            "opensearch_result": raw,
+        },
+    }
+
+
+def _build_search_intent_graphql_query(search_text: str, limit: int) -> str:
+    escaped = json.dumps(search_text)
+    return (
+        "query SearchIntent { "
+        f"recommendations(anchors:{{text:{escaped}}}, "
+        "filters:{channels:[SHUTTERSTOCK], mediaType: IMAGE}, "
+        f"limit: {limit}, strategy: INTENT) "
+        "{ response { results { media { ... on CreativeImage { classicId } } "
+        "scores { candidateScore rankingScore } } } } }"
+    )
+
+
+def _run_text_intent_lane(
+    lane_name: str,
+    lane_query: str,
+    top_k_per_lane: int,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    # Search Intent API pipeline currently enforces maxCandidates=30.
+    safe_limit = min(int(top_k_per_lane), 30)
+
+    endpoint = settings.searchbybrief_search_intent_endpoint
+    headers = {
+        "Content-Type": "application/json",
+        "apollographql-client-name": settings.searchbybrief_search_intent_client_name,
+        "apollographql-client-version": settings.searchbybrief_search_intent_client_version,
+    }
+    payload = {
+        "query": _build_search_intent_graphql_query(
+            search_text=lane_query,
+            limit=safe_limit,
+        )
+    }
+
+    response = requests.post(
+        endpoint,
+        headers=headers,
+        json=payload,
+        timeout=timeout_seconds,
+    )
+    response.raise_for_status()
+    raw_response = response.json()
+
+    data = raw_response.get("data") or {}
+    rec = data.get("recommendations")
+    if not isinstance(rec, dict):
+        # GraphQL can return recommendations: null with errors
+        return {
+            "lane_name": lane_name,
+            "lane_query": lane_query,
+            "retrieval_mode": "text-intent",
+            "entities": [],
+            "raw_response": raw_response,
+        }
+
+    response_block = rec.get("response")
+    if not isinstance(response_block, dict):
+        return {
+            "lane_name": lane_name,
+            "lane_query": lane_query,
+            "retrieval_mode": "text-intent",
+            "entities": [],
+            "raw_response": raw_response,
+        }
+
+    results = response_block.get("results", [])
+
+    entities = []
+    for item in results:
+        media = item.get("media", {}) if isinstance(item, dict) else {}
+        scores = item.get("scores", {}) if isinstance(item, dict) else {}
+        classic_id = media.get("classicId")
+        if not classic_id:
+            continue
+
+        score = scores.get("rankingScore")
+        if score is None:
+            score = scores.get("candidateScore")
+
+        entities.append(
+            {
+                "classicId": str(classic_id),
+                "score": score,
+            }
+        )
+
+    return {
+        "lane_name": lane_name,
+        "lane_query": lane_query,
+        "retrieval_mode": "text-intent",
+        "entities": entities,
+        "raw_response": raw_response,
+    }
+
+
 def _default_pca_path() -> str | None:
     # .../backend/app/services/searchbybrief/retriever.py -> repo root
     repo_root = Path(__file__).resolve().parents[4]
@@ -261,6 +413,8 @@ def run_retriever_node(state: dict[str, Any]) -> dict[str, Any]:
             "lane_retrieval_results": [],
         }
 
+    retriever_mode = (settings.searchbybrief_retriever_mode or "embedding").strip().lower()
+
     pca_model_path = settings.searchbybrief_retriever_pca_model_path or _default_pca_path()
     use_pca = settings.searchbybrief_retriever_use_pca
     top_k_per_lane = settings.searchbybrief_retriever_top_k_per_lane
@@ -273,38 +427,64 @@ def run_retriever_node(state: dict[str, Any]) -> dict[str, Any]:
     truncate = settings.searchbybrief_retriever_truncate_text
     timeout_seconds = settings.searchbybrief_retriever_timeout_seconds
 
-    embedder = LocalClipTextEmbedder(
-        model_name=clip_model_name,
-        device=clip_device,
-        download_root=clip_download_root,
-        pca_model_path=pca_model_path,
-    )
-    lane_queries = [lane["embedding_query"] for lane in search_lanes]
-    lane_embeddings = embedder.embed_texts(
-        lane_queries,
-        pca=use_pca,
-        normalize=normalize,
-        truncate=truncate,
-    )
-
     lane_retrieval_results: list[dict[str, Any]] = []
-    for lane, embedding in zip(search_lanes, lane_embeddings):
-        response_json = call_embedding_search_service(
-            embedding=embedding,
-            endpoint=search_endpoint,
-            top_k=top_k_per_lane,
-            collection_type=collection_type,
-            timeout_seconds=timeout_seconds,
+    if retriever_mode == "text_relevance":
+        for lane in search_lanes:
+            lane_retrieval_results.append(
+                _run_text_relevance_lane(
+                    lane_name=lane["lane_name"],
+                    lane_query=lane["embedding_query"],
+                    top_k_per_lane=top_k_per_lane,
+                )
+            )
+    elif retriever_mode in {"text-intent", "text_intent", "search_intent_api"}:
+        for lane in search_lanes:
+            lane_retrieval_results.append(
+                _run_text_intent_lane(
+                    lane_name=lane["lane_name"],
+                    lane_query=lane["embedding_query"],
+                    top_k_per_lane=top_k_per_lane,
+                    timeout_seconds=timeout_seconds,
+                )
+            )
+    elif retriever_mode == "embedding":
+        embedder = LocalClipTextEmbedder(
+            model_name=clip_model_name,
+            device=clip_device,
+            download_root=clip_download_root,
+            pca_model_path=pca_model_path,
         )
-        entities = extract_entities_from_search_response(response_json)
-        lane_retrieval_results.append(
-            {
-                "lane_name": lane["lane_name"],
-                "lane_query": lane["embedding_query"],
-                "embedding_dim": len(embedding),
-                "entities": entities,
-                "raw_response": response_json,
-            }
+        lane_queries = [lane["embedding_query"] for lane in search_lanes]
+        lane_embeddings = embedder.embed_texts(
+            lane_queries,
+            pca=use_pca,
+            normalize=normalize,
+            truncate=truncate,
+        )
+
+        for lane, embedding in zip(search_lanes, lane_embeddings):
+            response_json = call_embedding_search_service(
+                embedding=embedding,
+                endpoint=search_endpoint,
+                top_k=top_k_per_lane,
+                collection_type=collection_type,
+                timeout_seconds=timeout_seconds,
+            )
+            entities = extract_entities_from_search_response(response_json)
+            lane_retrieval_results.append(
+                {
+                    "lane_name": lane["lane_name"],
+                    "lane_query": lane["embedding_query"],
+                    "retrieval_mode": "embedding",
+                    "embedding_dim": len(embedding),
+                    "entities": entities,
+                    "raw_response": response_json,
+                }
+            )
+    else:
+        raise ValueError(
+            f"Unsupported searchbybrief_retriever_mode={retriever_mode!r}. "
+            "Expected 'embedding', 'text_relevance', or 'text-intent'."
         )
 
     candidate_pool = merge_candidate_results(lane_retrieval_results)
