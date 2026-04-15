@@ -5,6 +5,7 @@ import "./index.css";
 import { chatAPI, conversationsAPI } from "./services/api";
 
 const ACTIVE_CONVERSATION_KEY = "active_conversation_id";
+const MAX_RESULTS_DISPLAYED = 24;
 
 /** Modal to display JSON payload */
 function PayloadModal({ title, payload, url, method, onClose }) {
@@ -312,6 +313,7 @@ function App() {
   const [apiKey, setApiKey] = useState("");
   const [tempApiKey, setTempApiKey] = useState("");
   const [error, setError] = useState(null);
+  const [workflowMode, setWorkflowMode] = useState('agent_squad');
 
   // Check for API key on mount
   useEffect(() => {
@@ -485,6 +487,7 @@ function App() {
         conversationId,
         apiKey, // Always send API key to extend session
         selectedFile,
+        workflowMode,
       );
 
       // Add agent response
@@ -501,6 +504,7 @@ function App() {
           rerank_applied: response.rerank_applied || false,
           rerank_decisions: response.rerank_decisions || [],
           rerank_explanation: response.rerank_explanation || null,
+          workflow_mode: workflowMode,
         },
       ]);
 
@@ -516,8 +520,10 @@ function App() {
       // Clear file selection
       setSelectedFile(null);
 
-      // Reload conversations list
-      await loadRecentConversations();
+      // Refresh sidebar in background so chat input unlocks immediately.
+      loadRecentConversations().catch((err) => {
+        console.error('Failed to refresh conversations:', err);
+      });
 
       // Handle expired API key
       if (!response.api_key_valid) {
@@ -685,6 +691,23 @@ function App() {
                         ? msg.pdf_search_detail.enrichment_added.join(", ")
                         : "none"}
                     </div>
+                    {msg.pdf_search_detail.quality && (
+                      <div>
+                        <strong>Quality:</strong> {msg.pdf_search_detail.quality}
+                      </div>
+                    )}
+                    {msg.pdf_search_detail.warnings?.length > 0 && (
+                      <div>
+                        <strong>Warnings:</strong>{" "}
+                        {msg.pdf_search_detail.warnings.join(" | ")}
+                      </div>
+                    )}
+                    {msg.pdf_search_detail.gaps?.length > 0 && (
+                      <div>
+                        <strong>Gaps:</strong>{" "}
+                        {msg.pdf_search_detail.gaps.join(" | ")}
+                      </div>
+                    )}
                   </div>
                 )}
                 {msg.file && (
@@ -711,7 +734,6 @@ function App() {
                     explanation={msg.rerank_explanation}
                   />
                 )}
-
                 {/* Image results - show up to 10 with filters applied inline */}
                 {msg.results &&
                   msg.results.length > 0 &&
@@ -720,7 +742,7 @@ function App() {
                     return (
                       <div className="image-results">
                         <div className="image-results-header">
-                          📸 Showing {Math.min(activeResults.length, 10)} images
+                          📸 Showing {Math.min(activeResults.length, MAX_RESULTS_DISPLAYED)} images
                           {msg.search_mode && (
                             <span
                               className={`search-mode-badge ${msg.search_mode}`}
@@ -765,7 +787,7 @@ function App() {
 
                         <div className="image-grid">
                           {activeResults
-                            .slice(0, 10)
+                            .slice(0, MAX_RESULTS_DISPLAYED)
                             .map((result, resultIdx) => (
                               <div
                                 key={resultIdx}
@@ -839,6 +861,22 @@ function App() {
         </div>
 
         <div className="input-area">
+          <div className="workflow-mode-toggle">
+            <button
+              className={`workflow-mode-btn ${workflowMode === 'agent_squad' ? 'active' : ''}`}
+              onClick={() => setWorkflowMode('agent_squad')}
+              disabled={isLoading}
+            >
+              Agent Squad
+            </button>
+            <button
+              className={`workflow-mode-btn ${workflowMode === 'searchbybrief' ? 'active' : ''}`}
+              onClick={() => setWorkflowMode('searchbybrief')}
+              disabled={isLoading}
+            >
+              SearchByBrief
+            </button>
+          </div>
           <div className="input-container">
             <label className="file-upload-label" htmlFor="file-upload">
               📎

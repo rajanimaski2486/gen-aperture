@@ -200,6 +200,34 @@ body {
   background: white;
 }
 
+.workflow-mode-toggle {
+  max-width: 800px;
+  margin: 0 auto 0.75rem;
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.workflow-mode-btn {
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #374151;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.workflow-mode-btn.active {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+.workflow-mode-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .input-container {
   display: flex;
   gap: 1rem;

@@ -10,7 +10,7 @@ Converts a customer creative brief into a structured search plan with:
 import json
 from typing import Optional
 
-from app.config import Settings
+from app.config import settings
 from .llm import call_llm_json
 from .schemas import IntentResult
 
@@ -167,7 +167,29 @@ Good: "A flat vector icon of a medical syringe and vaccine vial on a white backg
 - lane_filters: constraints for one lane only (e.g. "location:underwater" for a fish lane but not a beach bird lane).
 - ranking_hints: soft preferences for Stage 2 reranker, not hard filters. Examples: "prefer isolated on white over complex backgrounds", "prefer horizontal orientation", "deprioritise images with text overlays", "prefer images where the subject fills the frame", "prefer bright and sunny lighting".
 
-Return valid JSON only — no markdown fences, no commentary outside the JSON object.\
+Return valid JSON only — no markdown fences, no commentary outside the JSON object.
+
+## Handling CURATOR REPAIR FEEDBACK
+
+When the attachment text contains a block starting with "CURATOR REPAIR FEEDBACK", Stage 3
+found lanes whose retrieved candidates did NOT visually match the lane goal.
+
+The attachment will also contain a "CURRENT SEARCH PLAN" block with the full existing
+IntentResult JSON. Use that as your base — copy all fields verbatim and apply only the
+changes specified in the CURATOR REPAIR FEEDBACK directives.
+
+Rules:
+1. Preserve every lane NOT mentioned in the feedback exactly as it appears in the current plan.
+2. For each REPAIR LANE directive:
+   a. The "Failed query" is the embedding_query that already ran and produced bad results.
+      Do NOT copy it, rephrase it, or use it as a starting point. It failed.
+   b. Write a BRAND NEW embedding_query from scratch, starting only from the lane_goal
+      and the listed missing_attributes. Use a different visual scene, moment, framing,
+      or concrete detail set so the vector search hits a different part of the embedding space.
+   c. Replace visual_proxies and ranking_hints to match your new query.
+   d. Preserve lane_name, lane_goal, lane_filters, and literal_terms_preserved exactly.
+3. Do not add or remove lanes.
+4. Re-emit the full IntentResult JSON with only those targeted field replacements applied.\
 """
 
 _USER_TEMPLATE = """\
@@ -187,22 +209,152 @@ Optional attachment/reference text:
 {attachment_text}
 
 Instructions:
-1. Diagnose the brief (brief_form, retrieval_intent, search_complexity, is_multi_lane).
-2. Extract hard constraints and operational constraints. Always populate subjects_required with the named subjects, themes, and scene types from the brief.
-3. Infer implied style/media type ONLY if the brief strongly implies one — add to style_required and shared_filters. If the brief specifies a shooting style or POV (UGC, first-person, influencer), capture it in shared_filters (e.g. "style:ugc", "style:first_person_pov") and reflect it in embedding_queries.
-4. Decompose into search lanes:
+1. Check whether the attachment text contains a "CURATOR REPAIR FEEDBACK" block.
+   - YES: take the "CURRENT SEARCH PLAN" JSON as the base. For each REPAIR LANE directive,
+     find that lane by name and write a BRAND NEW embedding_query from the lane_goal and
+     missing_attributes — do NOT copy or rephrase the "Failed query". Update visual_proxies
+     and ranking_hints to match. Preserve all other lanes and all other fields exactly.
+     Skip steps 2-7.
+   - NO: proceed with full plan derivation (steps 2-7 below).
+2. Diagnose the brief (brief_form, retrieval_intent, search_complexity, is_multi_lane).
+3. Extract hard constraints and operational constraints. Always populate subjects_required with the named subjects, themes, and scene types from the brief.
+4. Infer implied style/media type ONLY if the brief strongly implies one — add to style_required and shared_filters. If the brief specifies a shooting style or POV (UGC, first-person, influencer), capture it in shared_filters (e.g. "style:ugc", "style:first_person_pov") and reflect it in embedding_queries.
+5. Decompose into search lanes:
    - One lane per distinct visual subject, scene type, or activity — never bundle visually different activities in one lane.
    - For composite concepts, split into one lane per component.
    - For enumerated lists, group into thematic lanes; preserve specific names in literal_terms_preserved.
    - For POV-specified sub-groups, write the embedding_query from the correct visual perspective (e.g. "band tour POV" → backstage/green-room/tour bus, not a stage shot).
-5. For each lane, write an embedding_query as an image caption: short, visual, single subject, no business language. Include the implied shooting style/POV if specified.
-6. Populate visual_proxies with 2–3 concrete visual descriptors that genuinely apply to this lane.
-7. Add ranking_hints where there are soft visual preferences (lighting, orientation, framing, mood, etc.).
-8. Add shared_filters for metadata constraints that apply across all lanes.
+6. For each lane, write an embedding_query as an image caption: short, visual, single subject, no business language. Include the implied shooting style/POV if specified.
+7. Populate visual_proxies with 2–3 concrete visual descriptors that genuinely apply to this lane.
+8. Add ranking_hints where there are soft visual preferences (lighting, orientation, framing, mood, etc.).
+9. Add shared_filters for metadata constraints that apply across all lanes.
 
 Return JSON with exactly these top-level keys:
 brief_diagnostics, hard_constraints, operational_constraints, shared_filters, search_lanes\
 """
+
+_SYSTEM_PROMPT_V2 = """\
+You are Stage 0 Planner (compact mode) for an embedding-based image search workflow.
+
+Goal:
+- Produce a SHORT search plan optimized for speed.
+- Focus on high-quality embedding queries; avoid verbose diagnostics.
+
+Rules:
+1. Return ONLY JSON.
+2. Create 2-6 lanes depending on brief complexity.
+3. Each lane must represent ONE clear visual subject/scene.
+4. embedding_query should be 1 sentence, concrete visual language, no business prose.
+5. If brief specifies style/POV (e.g. UGC, first-person), reflect that in the query.
+6. Keep shared_filters minimal (only explicit hard requirements).
+7. Keep lane_name short (2-6 words).
+8. On repair iterations (CURATOR REPAIR FEEDBACK present), preserve lane names and rewrite only failing lane embedding_query entries.
+"""
+
+_USER_TEMPLATE_V2 = """\
+Input brief:
+{brief_text}
+
+Optional attachment/reference text:
+{attachment_text}
+
+Return JSON with exactly this structure:
+{{
+  "shared_filters": ["optional", "global", "filters"],
+  "search_lanes": [
+    {{
+      "lane_name": "short lane name",
+      "embedding_query": "single-subject visual caption"
+    }}
+  ]
+}}
+"""
+
+
+def _normalize_compact_output(raw: dict) -> dict:
+    """
+    Convert compact v2 planner output into full IntentResult shape.
+    """
+    shared_filters = raw.get("shared_filters")
+    if not isinstance(shared_filters, list):
+        shared_filters = []
+    shared_filters = [str(x).strip() for x in shared_filters if str(x).strip()]
+
+    lanes_raw = raw.get("search_lanes")
+    if not isinstance(lanes_raw, list):
+        lanes_raw = []
+
+    lanes = []
+    seen_names: set[str] = set()
+    for idx, lane in enumerate(lanes_raw, start=1):
+        if not isinstance(lane, dict):
+            continue
+        lane_name = str(lane.get("lane_name") or "").strip()
+        embedding_query = str(lane.get("embedding_query") or "").strip()
+        if not embedding_query:
+            continue
+        if not lane_name:
+            lane_name = f"lane {idx}"
+        original_name = lane_name
+        suffix = 2
+        while lane_name.lower() in seen_names:
+            lane_name = f"{original_name} {suffix}"
+            suffix += 1
+        seen_names.add(lane_name.lower())
+        lanes.append(
+            {
+                "lane_name": lane_name,
+                "lane_goal": str(lane.get("lane_goal") or lane_name),
+                "embedding_query": embedding_query,
+                "literal_terms_preserved": [],
+                "visual_proxies": [],
+                "lane_filters": [],
+                "ranking_hints": [],
+            }
+        )
+
+    if not lanes:
+        fallback_query = "natural, commercially usable lifestyle image matching the brief"
+        lanes.append(
+            {
+                "lane_name": "primary lane",
+                "lane_goal": "primary lane",
+                "embedding_query": fallback_query,
+                "literal_terms_preserved": [],
+                "visual_proxies": [],
+                "lane_filters": [],
+                "ranking_hints": [],
+            }
+        )
+
+    return {
+        "brief_diagnostics": {
+            "brief_form": "conceptual_creative",
+            "retrieval_intent": "concept_translation",
+            "search_complexity": "medium" if len(lanes) <= 3 else "high",
+            "is_multi_lane": len(lanes) > 1,
+            "reasoning_summary": "Compact planner v2 output focused on embedding queries.",
+        },
+        "hard_constraints": {
+            "subjects_required": [],
+            "demographics_required": [],
+            "composition_required": [],
+            "style_required": [],
+            "location_required": [],
+            "media_type_required": [],
+            "licensing_required": [],
+            "exclusions": [],
+        },
+        "operational_constraints": {
+            "output_structure": [],
+            "volume_targets": [],
+            "coverage_requirements": [],
+            "reference_dependency": [],
+            "attachment_dependency": [],
+        },
+        "shared_filters": shared_filters,
+        "search_lanes": lanes,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -213,6 +365,7 @@ def run_intent_node(
     brief_text: str,
     attachment_text: Optional[str] = None,
     model: Optional[str] = None,
+    api_key_override: Optional[str] = None,
 ) -> IntentResult:
     """
     Extract a structured search plan from a customer brief.
@@ -227,7 +380,23 @@ def run_intent_node(
         Validated IntentResult parsed from the LLM response.
     """
     if model is None:
-        model = Settings().bifrost_model
+        model = settings.bifrost_model
+
+    planner_version = (settings.searchbybrief_planner_version or "v1").strip().lower()
+    if planner_version == "v2":
+        user_prompt = _USER_TEMPLATE_V2.format(
+            brief_text=brief_text,
+            attachment_text=attachment_text or "None provided",
+        )
+        raw = call_llm_json(
+            system_prompt=_SYSTEM_PROMPT_V2,
+            user_prompt=user_prompt,
+            model=model,
+            max_tokens=settings.searchbybrief_planner_max_tokens_v2,
+            api_key_override=api_key_override,
+        )
+        normalized = _normalize_compact_output(raw)
+        return IntentResult.model_validate(normalized)
 
     user_prompt = _USER_TEMPLATE.format(
         schema_json=json.dumps(INTENT_NODE_SCHEMA, indent=2),
@@ -241,5 +410,7 @@ def run_intent_node(
         system_prompt=_SYSTEM_PROMPT,
         user_prompt=user_prompt,
         model=model,
+        max_tokens=settings.searchbybrief_planner_max_tokens_v1,
+        api_key_override=api_key_override,
     )
     return IntentResult.model_validate(raw)

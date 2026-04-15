@@ -36,6 +36,7 @@ logs/
 
 # Build outputs
 backend/app/static/
+backend/analysis_outputs/
 
 # Temporary files
 *.tmp

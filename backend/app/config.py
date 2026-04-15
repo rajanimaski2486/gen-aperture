@@ -38,6 +38,54 @@ class Settings(BaseSettings):
     rerank_borderline_threshold: float = 3.5
     # Jaccard similarity above which two results are treated as near-duplicates
     rerank_duplicate_similarity_threshold: float = 0.5
+
+    # SearchByBrief Stage 1 retriever
+    # Modes:
+    # - "embedding": CLIP + PCA + creativeImageSearchByEmbedding
+    # - "text_relevance": Search Service MCP relevance query (text-only)
+    # - "text-intent": Search Intent API GraphQL recommendations endpoint
+    searchbybrief_retriever_mode: str = "text-intent"
+    searchbybrief_retriever_endpoint: str = (
+        "http://creative-image-similarity-search.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+    )
+    searchbybrief_retriever_collection_type: str = "APPROVED_V1"
+    searchbybrief_retriever_top_k_per_lane: int = 500
+    searchbybrief_retriever_use_pca: bool = True
+    # Optional explicit override; when unset retriever falls back to repo ipca_10m.pkl
+    searchbybrief_retriever_pca_model_path: Optional[str] = None
+    searchbybrief_retriever_clip_model: str = "ViT-B/32"
+    searchbybrief_retriever_clip_device: Optional[str] = None
+    searchbybrief_retriever_clip_download_root: str = "/tmp/clip"
+    searchbybrief_retriever_normalize_embeddings: bool = True
+    searchbybrief_retriever_truncate_text: bool = False
+    searchbybrief_retriever_timeout_seconds: int = 60
+    searchbybrief_search_intent_endpoint: str = (
+        "http://search-intent-api.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+    )
+    searchbybrief_search_intent_client_name: str = (
+        "gen-aperture/search-results-page/retriever"
+    )
+    searchbybrief_search_intent_client_version: str = "1.0.0"
+    # SearchByBrief Stage 0 planner
+    # "v1" = full schema, "v2" = compact lanes-first output
+    searchbybrief_planner_version: str = "v2"
+    searchbybrief_planner_max_tokens_v1: int = 2500
+    searchbybrief_planner_max_tokens_v2: int = 900
+    # SearchByBrief Stage 3 curator
+    # Number of parallel Bifrost visual-scoring calls.
+    searchbybrief_curator_concurrency: int = 6
+    # Token caps for Stage 3 vision calls (lower values reduce latency).
+    searchbybrief_curator_visual_max_tokens: int = 420
+    searchbybrief_curator_set_audit_max_tokens: int = 560
+    # Optional per-call sleep (seconds) between Stage 3 LLM calls.
+    searchbybrief_curator_sleep_between_calls: float = 0.0
+    # Max candidates that receive expensive visual scoring.
+    searchbybrief_curator_max_visual_scoring_candidates: int = 30
+    # Per-lane thumbnail count used in set-level audit.
+    searchbybrief_curator_audit_top_per_lane: int = 6
+    # Soft penalty applied per prior pick from the same lane during shortlist
+    # interleaving. Higher => more diversity, lower => stronger score dominance.
+    searchbybrief_curator_diversity_penalty: float = 0.4
     
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
     bifrost_api_key: str | None = None

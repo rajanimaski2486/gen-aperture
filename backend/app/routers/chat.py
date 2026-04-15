@@ -3,6 +3,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from typing import Optional
 import time
 import logging
+import hashlib
 
 from app.models.schemas import ChatResponse, PhotoResult, AgentWorkflowStep, ErrorResponse, RerankerDecision
 from app.services.session_manager import session_manager
@@ -10,11 +11,15 @@ from app.services.conversation_store import get_conversation_store
 from app.services.file_extractor import file_extractor
 from app.services.image_analyzer import analyze_images
 from app.services.agent_squad import AgentSquad
+from app.services.searchbybrief.main import app as searchbybrief_workflow
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+MAX_RESULTS_RETURNED = 30
+IMAGE_ANALYSIS_CACHE_MAX = 64
 
 conversation_store = get_conversation_store()
+_image_analysis_cache: dict[str, dict] = {}
 
 
 def _generate_conversation_title(prompt: str, max_len: int = 60) -> str:
@@ -28,12 +33,162 @@ def _generate_conversation_title(prompt: str, max_len: int = 60) -> str:
     return truncated
 
 
+def _safe_int(value):
+    try:
+        return int(str(value))
+    except Exception:
+        return None
+
+
+def _run_searchbybrief_workflow(
+    user_message: str,
+    file_bytes: Optional[bytes],
+    file_name: Optional[str],
+    api_key: Optional[str],
+    pre_attachment_text: Optional[str] = None,
+    pre_file_type: Optional[str] = None,
+    pre_file_images: Optional[list] = None,
+    pre_image_analysis: Optional[dict] = None,
+    pre_extraction_error: Optional[str] = None,
+) -> dict:
+    """
+    Run SearchByBrief LangGraph workflow and adapt output to chat endpoint shape.
+    """
+    state = {
+        "user_request": user_message,
+        "openai_api_key": api_key,
+        "uploaded_file_bytes": file_bytes,
+        "uploaded_file_name": file_name,
+        # Reuse precomputed extraction/analysis from /chat path when available
+        # to avoid duplicate preprocessing latency.
+        "file_type": pre_file_type,
+        "file_images": pre_file_images or [],
+        "image_analysis": pre_image_analysis,
+        "extraction_error": pre_extraction_error,
+        "attachment_text": pre_attachment_text,
+        "search_params": None,
+        "candidate_pool": [],
+        "refined_pool": [],
+        "stage3_candidates": [],
+        "stage3_shortlist": [],
+        "stage3_lane_audits": [],
+        "stage3_repair_requests": [],
+        "final_collection": [],
+        "feedback": "",
+        "iterations": 0,
+        "brief_quality": None,
+        "brief_gaps": [],
+        "brief_warnings": [],
+        "can_search": None,
+        "pdf_search_detail": None,
+    }
+
+    final_state = searchbybrief_workflow.invoke(state)
+    search_params = final_state.get("search_params")
+    if hasattr(search_params, "model_dump"):
+        search_params = search_params.model_dump()
+
+    lanes = (search_params or {}).get("search_lanes", []) if isinstance(search_params, dict) else []
+    lane_names = [lane.get("lane_name") for lane in lanes if isinstance(lane, dict) and lane.get("lane_name")]
+    lane_queries = [
+        {
+            "lane_name": lane.get("lane_name"),
+            "embedding_query": lane.get("embedding_query"),
+        }
+        for lane in lanes
+        if isinstance(lane, dict)
+    ]
+
+    final_collection = final_state.get("final_collection") or final_state.get("stage3_shortlist") or []
+    search_results = []
+    for item in final_collection:
+        asset_id = str(item.get("asset_id", ""))
+        thumbnail_url = item.get("thumbnail_url") or ""
+        score = item.get("stage3_score")
+        if not isinstance(score, (int, float)):
+            score = float(item.get("stage2_score") or 0.0)
+        origin_lane = item.get("origin_lane_name") or "lane"
+        description = (
+            f"{origin_lane} · stage3={score:.3f}"
+            if isinstance(score, float)
+            else f"{origin_lane} asset"
+        )
+        search_results.append(
+            {
+                "hadron_id": asset_id,
+                "ext_id": _safe_int(asset_id),
+                "description": description,
+                "image_url": thumbnail_url,
+                "thumbnail_url": thumbnail_url,
+                "date_added": None,
+                "license_count": 0,
+                "categories": [],
+                "keywords": [],
+                "score": score if isinstance(score, float) else 0.0,
+                "is_generated": False,
+            }
+        )
+
+    workflow_steps = [
+        {
+            "agent": "SearchByBrief Planner",
+            "action": "Generate search lanes",
+            "reasoning": f"Built {len(lane_names)} lane(s) from the brief and attachment context.",
+            "output": {
+                "lane_names": lane_names,
+                "lane_queries": lane_queries,
+            },
+        },
+        {
+            "agent": "SearchByBrief Retriever",
+            "action": "Retrieve lane candidates",
+            "reasoning": "Retrieved candidates per lane using configured retriever mode.",
+            "output": {"candidate_pool_count": len(final_state.get("candidate_pool") or [])},
+        },
+        {
+            "agent": "SearchByBrief Curator",
+            "action": "Visual scoring, filtering, dedup, and final selection",
+            "reasoning": "Scored lane candidates and produced final collection.",
+            "output": {
+                "feedback": final_state.get("feedback"),
+                "final_collection_count": len(final_collection),
+                "shortlist_count": len(final_state.get("stage3_shortlist") or []),
+            },
+        },
+    ]
+
+    response = (
+        f"SearchByBrief completed with {len(search_results)} curated result(s) "
+        f"across {len(lane_names)} lane(s)."
+    )
+    pdf_search_detail = final_state.get("pdf_search_detail") if file_bytes else None
+    brief_warnings = final_state.get("brief_warnings") or []
+    if brief_warnings:
+        response = (
+            f"{response}\n\n"
+            "Warning: I ran the search, but the uploaded brief has gaps please see below;\n\n"
+            f"Warning Gaps: {'; '.join(brief_warnings)};"
+        )
+    return {
+        "response": response,
+        "search_results": search_results,
+        "workflow_steps": workflow_steps,
+        "search_mode": "relevance",
+        "rerank_applied": False,
+        "rerank_decisions": [],
+        "rerank_explanation": None,
+        "filter_metadata": None,
+        "pdf_search_detail": pdf_search_detail,
+    }
+
+
 @router.post("/chat", response_model=ChatResponse)
 async def chat(
     message: str = Form(...),
     conversation_id: Optional[str] = Form(None),
     openai_api_key: Optional[str] = Form(None),
-    file: Optional[UploadFile] = File(None)
+    file: Optional[UploadFile] = File(None),
+    workflow_mode: Optional[str] = Form("agent_squad"),
 ):
     """
     Main chat endpoint
@@ -52,6 +207,7 @@ async def chat(
         image_analysis = None
         file_type = None
         file_name = None
+        file_bytes: Optional[bytes] = None
 
         if file:
             logger.info(f"Processing uploaded file: {file.filename}")
@@ -107,7 +263,18 @@ async def chat(
 
         # Analyze extracted images once the request/session API key is available
         if file_images:
-            image_analysis = analyze_images(file_images, api_key=api_key)
+            file_hash = hashlib.sha256(file_bytes).hexdigest() if file_bytes else None
+            if file_hash and file_hash in _image_analysis_cache:
+                image_analysis = _image_analysis_cache[file_hash]
+                logger.info("Image analysis cache hit for uploaded file")
+            else:
+                image_analysis = analyze_images(file_images, api_key=api_key)
+                if file_hash:
+                    if len(_image_analysis_cache) >= IMAGE_ANALYSIS_CACHE_MAX:
+                        # FIFO-ish eviction: remove oldest inserted key.
+                        oldest_key = next(iter(_image_analysis_cache))
+                        _image_analysis_cache.pop(oldest_key, None)
+                    _image_analysis_cache[file_hash] = image_analysis
             logger.info(f"Image analysis: {image_analysis.get('summary', '')}")
             print(f"[DEBUG] Image analysis search_terms: {image_analysis.get('search_terms', [])}")  # Debug
         elif file is not None:
@@ -147,22 +314,36 @@ async def chat(
                 )
                 logger.info(f"Updated stored file content for conversation {conversation_id[:8]}...")
         
-        # Run agent squad
-        logger.info(f"Running agent squad for conversation {conversation_id[:8]}...")
-        agent_squad = AgentSquad(openai_api_key=api_key)
-        
-        agent_result = agent_squad.run(
-            user_query=message,
-            file_content=file_content,
-            file_images=file_images,
-            image_analysis=image_analysis,
-            file_type=file_type,
-            conversation_history=conversation_history
-        )
+        selected_mode = (workflow_mode or "agent_squad").strip().lower()
+        if selected_mode in {"searchbybrief", "search_by_brief", "brief"}:
+            logger.info(f"Running SearchByBrief workflow for conversation {conversation_id[:8]}...")
+            agent_result = _run_searchbybrief_workflow(
+                user_message=message,
+                file_bytes=file_bytes,
+                file_name=file_name,
+                api_key=api_key,
+                pre_attachment_text=file_content,
+                pre_file_type=file_type,
+                pre_file_images=file_images,
+                pre_image_analysis=image_analysis,
+                pre_extraction_error=None,
+            )
+        else:
+            # Run default AgentSquad workflow
+            logger.info(f"Running agent squad for conversation {conversation_id[:8]}...")
+            agent_squad = AgentSquad(openai_api_key=api_key)
+            agent_result = agent_squad.run(
+                user_query=message,
+                file_content=file_content,
+                file_images=file_images,
+                image_analysis=image_analysis,
+                file_type=file_type,
+                conversation_history=conversation_history
+            )
         
         # Format results (unfiltered)
         results = []
-        for photo in agent_result.get('search_results', [])[:10]:
+        for photo in agent_result.get('search_results', [])[:MAX_RESULTS_RETURNED]:
             results.append(PhotoResult(
                 hadron_id=photo.get('hadron_id'),
                 ext_id=photo.get('ext_id'),

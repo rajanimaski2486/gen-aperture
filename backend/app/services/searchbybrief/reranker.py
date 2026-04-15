@@ -1,5 +1,5 @@
 """
-Stage 3: Rerank Candidate Images
+Stage 2: Rerank Candidate Images
 """
 
 import mlx_vlm

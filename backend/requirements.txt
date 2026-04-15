@@ -11,6 +11,9 @@ langchain==0.3.12
 langchain-openai==0.2.12
 langgraph==0.2.62
 openai==1.58.1
+clip @ git+https://github.com/openai/CLIP.git@3b473b0e682c091a9e53623eebc1ca1657385717
+torch==2.7.0
+torchvision==0.22.0
 
 # File processing
 pypdf==5.1.0
@@ -24,3 +27,6 @@ pydantic-settings==2.6.1
 aiofiles==24.1.0
 python-jose==3.3.0
 httpx>=0.27.0
+requests>=2.32.0
+setuptools==80.10.2
+wheel==0.46.3
