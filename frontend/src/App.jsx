@@ -750,7 +750,7 @@ function App() {
 
   const buildImageVariantUrl = (extId, size = '600w') => {
     if (!extId) return '';
-    return `https://image.shutterstock.com/image-photo/image-${size}-${extId}.jpg`;
+    return `http://localhost:9200/assets/image-${size}-${extId}.jpg`;
   };
 
   const getImageVariants = (result) => {

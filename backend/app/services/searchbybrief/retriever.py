@@ -298,7 +298,7 @@ def _build_search_intent_graphql_query(search_text: str, limit: int) -> str:
     return (
         "query SearchIntent { "
         f"recommendations(anchors:{{text:{escaped}}}, "
-        "filters:{channels:[SHUTTERSTOCK], mediaType: IMAGE}, "
+        "filters:{channels:[LOCAL], mediaType: IMAGE}, "
         f"limit: {limit}, strategy: INTENT) "
         "{ response { results { media { ... on CreativeImage { classicId } } "
         "scores { candidateScore rankingScore } } } } }"

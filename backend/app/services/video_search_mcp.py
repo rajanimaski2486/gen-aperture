@@ -1,7 +1,7 @@
 """
 Video Search MCP (Model Context Protocol) for Gen-Aperture.
 
-Wraps the Shutterstock Video Search Service API.
+Wraps the Video Search Service API.
 Exposes two tools:
   1. search_relevant - Get OpenSearch query for relevance-ranked video results
   2. search_popular  - Get OpenSearch query for popular/trending video results
@@ -21,7 +21,7 @@ from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
-VIDEO_SEARCH_SERVICE_BASE_URL = "http://search.shuttercorp.net/shutterstock/video/search"
+VIDEO_SEARCH_SERVICE_BASE_URL = "http://localhost:8083/video/search"
 
 
 class VideoSearchServiceMCPTool:
@@ -35,7 +35,7 @@ class VideoSearchServiceMCPTool:
 
 class VideoSearchMCP:
     """
-    MCP provider that wraps the Shutterstock Video Search Service.
+    MCP provider that wraps the Video Search Service.
 
     Tools:
         search_relevant: Fetches the production-grade OpenSearch query for

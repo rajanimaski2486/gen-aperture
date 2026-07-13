@@ -1051,7 +1051,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                     "expanded_semantic_query": expanded_semantic_query,
                     "sort_order": search_mode,
                     "search_service_url": (
-                        f"http://search.shuttercorp.net/v2/shutterstock/image/search"
+                        f"http://localhost:8083/v2/image/search"
                         f"?q={expanded_semantic_query}&sort_order={search_mode}"
                         f"&debug_modes=request&source=enterprise"
                     ),
@@ -1406,7 +1406,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                     "semantic_query": semantic_query,
                     "sort_order": search_mode,
                     "search_service_url": (
-                        f"http://search.shuttercorp.net/v2/shutterstock/image/search"
+                        f"http://localhost:8083/v2/image/search"
                         f"?q={semantic_query}&sort_order={search_mode}"
                         f"&debug_modes=request&source=enterprise"
                     ),
@@ -1985,7 +1985,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         - Hybrid:   query → hybrid → queries[n] → function_score → query → bool
 
         This is the primary bool clause where production filters (is_active,
-        is_shutterstock, etc.) already live.  We inject our additional filters
+        is_local, etc.) already live.  We inject our additional filters
         and must_not clauses here so the hybrid search pipeline is not broken.
 
         Returns None if no suitable bool is found.

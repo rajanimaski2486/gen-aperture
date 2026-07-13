@@ -41,7 +41,7 @@
               },
               {
                 "term": {
-                  "is_shutterstock": {
+                  "is_local": {
                     "value": true
                   }
                 }
@@ -389,7 +389,7 @@
                   },
                   {
                     "term": {
-                      "is_shutterstock": {
+                      "is_local": {
                         "value": true
                       }
                     }

@@ -53,8 +53,8 @@ class CategoryFilter:
                 if not value or value in ("DELETED", "NOT-CATEGORIZED"):
                     continue
 
-                # Store canonical display name (prefer shutterstock namespace)
-                if "shutterstock" in namespace or gid not in self._gid_to_value:
+                # Store canonical display name (prefer local namespace)
+                if "local" in namespace or gid not in self._gid_to_value:
                     self._gid_to_value[gid] = value
 
                 # Index the full value string (e.g. "Animals/Wildlife")

@@ -300,7 +300,7 @@ Refined search executed
 **Image URL Construction:**
 ```python
 def build_image_url(ext_id: int) -> str:
-    return f"https://image.shutterstock.com/image-photo/image-250nw-{ext_id}.jpg"
+    return f"http://localhost:9200/assets/image-250nw-{ext_id}.jpg"
 ```
 
 **Search Strategy:**
@@ -340,7 +340,7 @@ def build_image_url(ext_id: int) -> str:
   "description": "green grass at seashore zoom hd 1080i",
   "date_added": "2006-11-11T00:00:00Z",
   "impressions": 0,
-  "image_url": "https://image.shutterstock.com/image-photo/image-250nw-2081391682.jpg"
+  "image_url": "http://localhost:9200/assets/image-250nw-2081391682.jpg"
 }
 ```
 
@@ -652,7 +652,7 @@ Frontend → POST /api/chat
 
 ### Internal-Only Deployment
 - No public internet exposure
-- Deployed within ShutterCorp internal network
+- Deployed within internal network
 - OpenSearch accessible without authentication (internal trust)
 
 ### Data Retention
@@ -687,7 +687,7 @@ Frontend → POST /api/chat
 
 ### Internal-Only Deployment
 - No public internet exposure
-- Deployed within ShutterCorp internal network
+- Deployed within internal network
 - OpenSearch accessible without authentication (internal trust)
 
 ### Data Retention
@@ -707,7 +707,7 @@ Frontend → POST /api/chat
 
 ### Backstage FastAPI Template
 
-**Repository:** `https://github.shuttercorp.net/backstage/templates/tree/main/add-gha-app-fastapi/`
+**Repository:** `http://github.localhost/backstage/templates/tree/main/add-gha-app-fastapi/`
 
 **Project Structure:**
 ```
@@ -953,11 +953,11 @@ npm run dev  # Runs on http://localhost:5173, proxies API to :8000
 ## Design Review Answers & Final Specifications
 
 ### 1. Image URL Construction ✅
-**Format:** `https://image.shutterstock.com/image-photo/image-250nw-{ext_id}.jpg`
+**Format:** `http://localhost:9200/assets/image-250nw-{ext_id}.jpg`
 
 ```python
 def build_image_url(ext_id: int) -> str:
-    return f"https://image.shutterstock.com/image-photo/image-250nw-{ext_id}.jpg"
+    return f"http://localhost:9200/assets/image-250nw-{ext_id}.jpg"
 ```
 
 ### 2. Search Result Fields ✅
@@ -1112,7 +1112,7 @@ aiofiles==24.1.0
 ## Contact & Support
 
 **Project Owner:** Search Platform Team  
-**Deployment Platform:** https://backstage.shuttercorp.net  
+**Deployment Platform:** http://backstage.localhost  
 **OpenSearch Cluster:** `localhost:9200`  
 **Monitoring:** (TBD - add observability dashboard link post-deployment)
 

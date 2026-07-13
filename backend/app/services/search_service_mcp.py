@@ -1,7 +1,7 @@
 """
 Search Service MCP (Model Context Protocol) Server for Gen-Aperture.
 
-Acts as an MCP tool provider that wraps the Shutterstock Search Service API.
+Acts as an MCP tool provider that wraps the Search Service API.
 Exposes two tools:
   1. search_relevant - Get OpenSearch query for relevance-ranked results
   2. search_popular  - Get OpenSearch query for popularity-ranked results
@@ -23,7 +23,7 @@ from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
-SEARCH_SERVICE_BASE_URL = "http://search.shuttercorp.net/v2/shutterstock/image/search"
+SEARCH_SERVICE_BASE_URL = "http://localhost:8083/v2/image/search"
 
 
 class SearchServiceMCPTool:

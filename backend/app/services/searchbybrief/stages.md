@@ -4,7 +4,7 @@
 
 ## Stage 0: Intent Extraction ✓ IMPLEMENTED
 
-**Model:** GPT-4.1 via Bifrost (https://bifrost.shuttercorp.net/openai)
+**Model:** GPT-4.1 via Bifrost (http://bifrost.localhost/openai)
 **Input:** request brief (+ optional attachment text from uploaded PDF/DOCX, or curator feedback on loop iterations)
 
 **Plan:**

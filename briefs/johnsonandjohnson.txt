@@ -7,7 +7,7 @@ This document outlines the Visual & Verbal Guidelines for Johnson & Johnson, des
   * **Logo:** The Logo Signature is the primary logo and is preferred in J\&J Red on a White background. The Logo Initials are a secondary identifier for internal use only or external use with permission when space is limited. The company name in text should appear in the same font, color, and size as surrounding text, set in initial caps, and is only abbreviated as "J\&J" for internal use.
   * **Color:** The core color palette features White as dominant (no less than 50% in a single view). The primary and secondary colors include Red, Blue, Magenta, Extra Light Gray, and Black. Accent colors are only for information graphics and data visualization.
   * **Typography:** The primary typeface is J\&J Circular for all public applications. Arial is the acceptable substitute for internal desktop communications and Microsoft Office® products. Text hierarchy is important, generally using J\&J Circular Black for headlines and J\&J Circular Book for body copy.
-  * **Photography:** Photography must adhere to a documentary style and be authentic, emotional, and compelling. Stock photos should only be purchased from Getty Images or Shutterstock.
+  * **Photography:** Photography must adhere to a documentary style and be authentic, emotional, and compelling. Stock photos should only be purchased from Getty Images or local providers.
   * **Accessibility:** Communications must meet the WCAG 2.1 AA standard, including for color contrast. The goal is to move toward AAA accessibility standards.
 
 

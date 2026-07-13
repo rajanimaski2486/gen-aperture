@@ -381,7 +381,7 @@ def reranker_node(state: AgentState):
                 "asset_id": asset_id,
                 "origin_lane_name": origin_lane_name,
                 "thumbnail_url": (
-                    f"https://image.shutterstock.com/image-photo/"
+                    f"http://localhost:9200/assets/"
                     f"words-words-words-words-260nw-{asset_id}.jpg"
                 ),
                 # Neutral placeholder score while reranker is bypassed.

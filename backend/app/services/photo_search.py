@@ -282,22 +282,22 @@ class PhotoSearchService:
         if not ext_id:
             return ''
         if media_type == 'video':
-            return f"https://ak.picdn.net/shutterstock/videos/{ext_id}/thumb/1.jpg"
-        return f"https://image.shutterstock.com/image-photo/image-250nw-{ext_id}.jpg"
+            return f"http://localhost:9200/assets/videos/{ext_id}/thumb/1.jpg"
+        return f"http://localhost:9200/assets/image-250nw-{ext_id}.jpg"
 
     def _build_thumbnail_url(self, ext_id: str, media_type: str = 'image') -> str:
         """Build thumbnail URL from ext_id."""
         if not ext_id:
             return ''
         if media_type == 'video':
-            return f"https://ak.picdn.net/shutterstock/videos/{ext_id}/thumb/1.jpg"
-        return f"https://image.shutterstock.com/image-photo/image-150nw-{ext_id}.jpg"
+            return f"http://localhost:9200/assets/videos/{ext_id}/thumb/1.jpg"
+        return f"http://localhost:9200/assets/image-150nw-{ext_id}.jpg"
 
     def _build_video_url(self, ext_id: str, media_type: str = 'image') -> str:
         """Build MP4 preview URL for video assets."""
         if not ext_id or media_type != 'video':
             return ''
-        return f"https://ak.picdn.net/shutterstock/videos/{ext_id}/preview/_.mp4"
+        return f"http://localhost:9200/assets/videos/{ext_id}/preview/_.mp4"
 
 
 # Singleton instance

@@ -97,7 +97,7 @@ class Settings(BaseSettings):
 
     # Bifrost AI gateway (internal OpenAI-compatible proxy)
     bifrost_api_key: str | None = None
-    bifrost_base_url: str = "https://bifrost.shuttercorp.net/openai"
+    bifrost_base_url: str = "http://bifrost.localhost/openai"
     bifrost_model: str = "gpt-4.1"
 
     # File upload

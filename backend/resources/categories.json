@@ -4,14 +4,14 @@
   "en": [
     {
       "gid": 0,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 0,
       "type": ["image"],
       "value": "DELETED"
     },
     {
       "gid": 1,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 1,
       "type": ["image", "video"],
       "value": "Animals/Wildlife"
@@ -25,35 +25,35 @@
     },
     {
       "gid": 2,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 2,
       "type": ["image", "video"],
       "value": "Buildings/Landmarks"
     },
     {
       "gid": 3,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 3,
       "type": ["image", "video"],
       "value": "Backgrounds/Textures"
     },
     {
       "gid": 4,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 4,
       "type": ["image", "video"],
       "value": "Business/Finance"
     },
     {
       "gid": 5,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 5,
       "type": ["image", "video"],
       "value": "Education"
     },
     {
       "gid": 6,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 6,
       "type": ["image", "video"],
       "value": "Food and Drink"
@@ -67,7 +67,7 @@
     },
     {
       "gid": 7,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 7,
       "type": ["image", "video"],
       "value": "Healthcare/Medical"
@@ -81,21 +81,21 @@
     },
     {
       "gid": 8,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 8,
       "type": ["image", "video"],
       "value": "Holidays"
     },
     {
       "gid": 9,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 9,
       "type": ["image", "video"],
       "value": "Objects"
     },
     {
       "gid": 10,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 10,
       "type": ["image", "video"],
       "value": "Industrial"
@@ -109,7 +109,7 @@
     },
     {
       "gid": 11,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 11,
       "type": ["image", "video"],
       "value": "Art"
@@ -123,21 +123,21 @@
     },
     {
       "gid": 12,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 12,
       "type": ["image", "video"],
       "value": "Nature"
     },
     {
       "gid": 13,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 13,
       "type": ["image", "video"],
       "value": "People"
     },
     {
       "gid": 14,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 14,
       "type": ["image", "video"],
       "value": "Religion"
@@ -151,7 +151,7 @@
     },
     {
       "gid": 15,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 15,
       "type": ["image", "video"],
       "value": "Science"
@@ -165,21 +165,21 @@
     },
     {
       "gid": 16,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 16,
       "type": ["image", "video"],
       "value": "Technology"
     },
     {
       "gid": 17,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 17,
       "type": ["image", "video"],
       "value": "Signs/Symbols"
     },
     {
       "gid": 18,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 18,
       "type": ["image", "video"],
       "value": "Sports/Recreation"
@@ -193,14 +193,14 @@
     },
     {
       "gid": 19,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 0,
       "type": ["image"],
       "value": "Transportation"
     },
     {
       "gid": 19,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 19,
       "type": ["video"],
       "value": "Transportation"
@@ -214,56 +214,56 @@
     },
     {
       "gid": 20,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 20,
       "type": ["image", "video"],
       "value": "NOT-CATEGORIZED"
     },
     {
       "gid": 21,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 21,
       "type": ["image"],
       "value": "Interiors"
     },
     {
       "gid": 22,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 22,
       "type": ["image"],
       "value": "Miscellaneous"
     },
     {
       "gid": 23,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 23,
       "type": ["image"],
       "value": "Illustrations/Clip-Art"
     },
     {
       "gid": 24,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 24,
       "type": ["image"],
       "value": "Vintage"
     },
     {
       "gid": 25,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 25,
       "type": ["image"],
       "value": "Parks/Outdoor"
     },
     {
       "gid": 26,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 26,
       "type": ["image"],
       "value": "Abstract"
     },
     {
       "gid": 27,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 27,
       "type": ["image"],
       "value": "Beauty/Fashion"
@@ -277,28 +277,28 @@
     },
     {
       "gid": 28,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 28,
       "type": ["image"],
       "value": "Editorial"
     },
     {
       "gid": 28,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 21,
       "type": ["video"],
       "value": "Editorial"
     },
     {
       "gid": 29,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 29,
       "type": ["image"],
       "value": "Vectors"
     },
     {
       "gid": 30,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 30,
       "type": ["image"],
       "value": "Model Released Only"
@@ -312,7 +312,7 @@
     },
     {
       "gid": 31,
-      "namespace": ["shutterstock"],
+      "namespace": ["local"],
       "legacy_id": 31,
       "type": ["image"],
       "value": "Celebrities"

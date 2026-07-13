@@ -128,7 +128,7 @@ curl http://localhost:8000/api/conversations/recent
 - Clear node_modules: `rm -rf node_modules && npm install`
 
 **OpenSearch connection fails:**
-- Verify you're on the internal ShutterCorp network
+- Verify you're on the internal network
 - Test directly: `curl http://localhost:9200/_cluster/health`
 
 **Reranking not triggering:**

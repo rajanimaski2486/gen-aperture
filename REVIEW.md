@@ -22,7 +22,7 @@
 
 - **Image URL pattern:**
   ```
-  https://image.shutterstock.com/image-photo/image-250nw-{ext_id}.jpg
+  http://localhost:9200/assets/image-250nw-{ext_id}.jpg
   ```
 
 #### Conversation Storage
@@ -195,7 +195,7 @@ Squad Router (conditional logic)
 
 ### Security
 
-- ✅ Internal-only deployment (ShutterCorp network)
+- ✅ Internal-only deployment (Internal network)
 - ✅ No persistent API key storage
 - ✅ 30-min session timeout with auto-cleanup
 - ✅ File size limits (1MB)
@@ -206,7 +206,7 @@ Squad Router (conditional logic)
 
 **Platform:** Backstage FastAPI template  
 **Repository:** TBD - to be created  
-**Endpoint:** https://gen-aperture.shuttercorp.net (example)  
+**Endpoint:** http://localhost:8000 (example)  
 
 **Environment:**
 - `OPENSEARCH_ENDPOINT` - Hardcoded or env var
