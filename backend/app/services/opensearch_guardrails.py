@@ -104,13 +104,20 @@ def create_opensearch_client(
     timeout_seconds: float = 30.0,
 ) -> OpenSearch:
     ep = parse_opensearch_endpoint(endpoint)
-    client = OpenSearch(
-        hosts=[{"host": ep.host, "port": ep.port}],
-        http_compress=True,
-        use_ssl=(ep.scheme == "https"),
-        verify_certs=False,
-        timeout=timeout_seconds,
-    )
+    parsed = urlparse(endpoint)
+
+    client_kwargs = {
+        "hosts": [{"host": ep.host, "port": ep.port}],
+        "http_compress": True,
+        "use_ssl": (ep.scheme == "https"),
+        "verify_certs": False,
+        "timeout": timeout_seconds,
+    }
+
+    if parsed.username and parsed.password:
+        client_kwargs["http_auth"] = (parsed.username, parsed.password)
+
+    client = OpenSearch(**client_kwargs)
 
     if readonly:
         install_readonly_guardrails(client)
