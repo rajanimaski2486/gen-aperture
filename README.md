@@ -227,12 +227,4 @@ https://backstage.shuttercorp.net/create/templates/default/add-gha-app-fastapi
 - [REVIEW.md](REVIEW.md) — Design review summary
 - [PHASE1-COMPLETE.md](PHASE1-COMPLETE.md) — Phase 1 completion notes
 
-## Support
-
-Internal ShutterCorp project  
-Team: Search Platform  
-OpenSearch: `localhost:9200`
-
----
-
-**Status**: Production-ready — multi-agent search with reflection reranking ✅
+https://rajanim.github.io/agent-search-patterns/
