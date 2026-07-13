@@ -8,7 +8,7 @@ AI-powered conversational interface for searching stock photos using natural lan
 - 💬 **Natural language search** with multi-turn conversation context
 - 📄 **Document upload** (PDF/DOCX/TXT) for brief-aware searching — auto-extracts visual requirements, mood, categories, and exclusions
 - 🎯 **Reflection Reranking** — post-retrieval LLM reasoning pass that reorders, deduplicates, and filters results by true relevance (triggered by keywords like "best", "top ranked", "rerank", "reviewed")
-- 🔐 **User-provided API keys** (30-min session, never stored on server)
+- 🔐 **Server-side NVIDIA API key** via `NVIDIA_API_KEY`
 - 📊 **Conversation history** with 7-day retention
 
 ## Architecture
@@ -17,8 +17,8 @@ AI-powered conversational interface for searching stock photos using natural lan
 
 - **Frontend**: React 18 + Vite
 - **Backend**: FastAPI (Python 3.11+)
-- **Agents**: LangGraph with OpenAI GPT-4o-mini
-- **Storage**: OpenSearch (conversations + photo index `web-index-v9`)
+- **Agents**: LangGraph with NVIDIA NIM OpenAI-compatible chat completions
+- **Storage**: OpenSearch (conversations + photo index `icc_images_ext`)
 
 ## Agent Pipeline
 
@@ -30,8 +30,8 @@ Squad Router          — detects intent (relevance vs. popular) and routes
 Project Manager       — (brief uploads only) extracts visual requirements,
                          queries, categories, exclusions from PDF/DOCX/TXT
   ↓
-Search Specialist     — calls Search Service MCP, builds + executes
-                         OpenSearch hybrid (neural + lexical) query
+Search Specialist     — builds + executes a direct OpenSearch hybrid
+                         lexical + kNN query against icc_images_ext
   ↓
 Reflection Reranker   — (trigger-phrase only) 2-pass LLM reflection:
                          Pass 1: scores all 20 candidates on relevance,
@@ -61,7 +61,7 @@ Synthesizer           — combines brief analysis + results into response
 - Python 3.11+
 - Node.js 18+
 - Access to internal OpenSearch cluster
-- OpenAI API key (users provide their own)
+- NVIDIA API key configured in `backend/.env`
 
 ### Development Setup
 
@@ -91,7 +91,7 @@ npm run dev
 
 Frontend runs on http://localhost:5173
 
-4. **Open browser** → http://localhost:5173 → enter your OpenAI API key → start chatting
+4. **Open browser** → http://localhost:5173 → start chatting
 
 ### Using Docker Compose
 
@@ -115,12 +115,11 @@ gen-aperture/
 │   │   ├── services/
 │   │   │   ├── agent_squad.py         # LangGraph multi-agent orchestrator
 │   │   │   ├── reranker.py            # Reflection reranker (3-pass pipeline)
-│   │   │   ├── photo_search.py        # OpenSearch photo query execution
-│   │   │   ├── search_service_mcp.py  # Search Service MCP tool integration
+│   │   │   ├── photo_search.py        # Direct OpenSearch hybrid image query execution
+│   │   │   ├── search_service_mcp.py  # Legacy/optional Search Service helper
 │   │   │   ├── query_refinement.py    # Filter extraction (orientation, recency…)
 │   │   │   ├── category_filter.py     # Category GID mapping
 │   │   │   ├── file_extractor.py      # PDF/DOCX/TXT text extraction
-│   │   │   ├── session_manager.py     # API key session handling
 │   │   │   ├── conversation_store.py  # OpenSearch conversation persistence
 │   │   │   └── opensearch_guardrails.py # Read-only safety enforcement
 │   │   └── models/
@@ -149,7 +148,6 @@ Send message and get AI response with photo results.
 ```bash
 curl -X POST http://localhost:8000/api/chat \
   -F "message=Find the best outdoor sunset photos" \
-  -F "openai_api_key=sk-..." \
   -F "file=@brief.pdf"
 ```
 
@@ -185,16 +183,26 @@ Health check
 Backend environment variables (`backend/.env`):
 ```
 OPENSEARCH_ENDPOINT=http://localhost:9200
-OPENSEARCH_PHOTO_INDEX=web-index-v9
+OPENSEARCH_USERNAME=...
+OPENSEARCH_PASSWORD=...
+OPENSEARCH_PHOTO_INDEX=icc_images_ext
+OPENSEARCH_HYBRID_SEARCH_PIPELINE=reveal-hybrid
+OPENSEARCH_VECTOR_FIELD=dense_vector
+OPENSEARCH_KNN_K=200
+OPENSEARCH_CONVERSATION_ENDPOINT=http://localhost:9200
 OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
+OPENSEARCH_CONVERSATION_MAX_RECORDS=5000
+OPENSEARCH_CONVERSATION_MAX_STORE_BYTES=5368709120
 OPENSEARCH_READONLY=true
 SESSION_TIMEOUT_MINUTES=30
 ENVIRONMENT=development
 
-# Agent LLM (optional — defaults shown)
-AGENT_MODEL=qwen-plus
-AGENT_MODEL_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-AGENT_FALLBACK_MODEL=gpt-4o-mini
+# NVIDIA LLM (required key; defaults shown)
+NVIDIA_API_KEY=...
+NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+AGENT_MODEL=meta/llama-3.3-70b-instruct
+IMAGE_ANALYSIS_MODEL=meta/llama-3.2-11b-vision-instruct
+SEARCHBYBRIEF_MODEL=meta/llama-3.3-70b-instruct
 
 # Reflection reranker thresholds (all optional — defaults shown)
 RERANK_MIN_RESULTS_TARGET=10
@@ -202,14 +210,15 @@ RERANK_RELEVANCE_THRESHOLD=5.0
 RERANK_BORDERLINE_THRESHOLD=3.5
 RERANK_DUPLICATE_SIMILARITY_THRESHOLD=0.5
 # Reflection reranker model (optional)
-RERANK_MODEL=Qwen3-VL-Reranker-8B
+RERANK_MODEL=meta/llama-3.3-70b-instruct
 ```
 
 ## Security
 
-- ⚠️ **API keys never stored on server** — users provide their own per session
-- Session timeout: 30 minutes of inactivity, key auto-deleted
+- ⚠️ `NVIDIA_API_KEY` stays server-side in `backend/.env`
 - OpenSearch cluster is read-only for the photo index
+- Conversation writes are allowed only to `gen-aperture-conversations`
+- Conversation writes are rejected at 5000 records or 5 GB index store size
 - 1MB file upload limit
 - 7-day conversation retention
 

@@ -1,9 +1,5 @@
 """
-Bifrost-backed OpenAI client and JSON-calling utilities for the searchbybrief pipeline.
-
-Bifrost is an internal OpenAI-compatible proxy, so we use the standard Chat
-Completions API (client.chat.completions.create) with a custom base_url and
-the internal virtual key in place of an OpenAI key.
+NVIDIA-backed OpenAI-compatible client utilities for the searchbybrief pipeline.
 """
 
 import json
@@ -12,7 +8,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from app.config import Settings
+from app.config import settings
 
 
 def _is_non_retryable_image_error(exc: Exception) -> bool:
@@ -23,22 +19,11 @@ def get_client(api_key_override: str | None = None) -> OpenAI:
     """
     Build an OpenAI client for this request.
 
-    Priority:
-    1) Configured Bifrost key (uses Bifrost base URL)
-    2) Explicit per-request API key override (popup key)
+    NVIDIA NIM exposes OpenAI-compatible chat completions, so the standard
+    OpenAI client is pointed at the NVIDIA base URL with NVIDIA_API_KEY.
     """
-    settings = Settings()
-    if settings.bifrost_api_key:
-        return OpenAI(
-            api_key=settings.bifrost_api_key,
-            base_url=settings.bifrost_base_url,
-        )
-    if api_key_override:
-        return OpenAI(api_key=api_key_override)
-    raise RuntimeError(
-        "SearchByBrief LLM auth is not configured. "
-        "Provide a popup API key or set BIFROST_API_KEY."
-    )
+    api_key = api_key_override or settings.require_nvidia_api_key()
+    return OpenAI(api_key=api_key, base_url=settings.llm_base_url)
 
 
 def call_llm_json(
@@ -51,7 +36,7 @@ def call_llm_json(
     api_key_override: str | None = None,
 ) -> dict[str, Any]:
     """
-    Call the LLM via Bifrost and return a parsed JSON dict.
+    Call the LLM via NVIDIA's OpenAI-compatible endpoint and return a parsed JSON dict.
 
     Strips markdown fenced code blocks if the model wraps its response.
     Retries with linear backoff on any exception.
@@ -90,7 +75,7 @@ def call_llm_vision_json(
     api_key_override: str | None = None,
 ) -> dict[str, Any]:
     """
-    Call the LLM via Bifrost with a pre-built messages list and return a parsed JSON dict.
+    Call the LLM via NVIDIA's OpenAI-compatible endpoint with a pre-built messages list and return a parsed JSON dict.
 
     Unlike call_llm_json, this function accepts the full messages list directly so
     callers can include image_url content blocks for multimodal (vision) requests.

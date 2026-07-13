@@ -8,7 +8,7 @@ class ChatRequest(BaseModel):
     """Chat request from frontend"""
     message: str = Field(..., min_length=1, max_length=2000)
     conversation_id: Optional[str] = None
-    openai_api_key: Optional[str] = Field(None, description="Required for new conversations or expired sessions")
+    openai_api_key: Optional[str] = Field(None, description="Deprecated; server uses NVIDIA_API_KEY")
 
 
 class PhotoResult(BaseModel):

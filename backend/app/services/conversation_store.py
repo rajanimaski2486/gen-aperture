@@ -4,25 +4,39 @@ from datetime import datetime
 from typing import Optional, List, Dict
 import uuid
 import logging
+import json
 
 from app.config import settings
 from app.services.opensearch_guardrails import create_opensearch_client
 
 logger = logging.getLogger(__name__)
 
+CONVERSATION_INDEX = "gen-aperture-conversations"
+
+
+class ConversationWriteLimitExceeded(RuntimeError):
+    """Raised when conversation index write limits would be exceeded."""
+
 
 class ConversationStore:
     """Manages conversation storage in OpenSearch"""
     
     def __init__(self):
-        # The conversation cluster (mmr-test) is a dedicated writable cluster —
-        # it is intentionally NOT in the readonly_hosts list.
+        self.index = settings.opensearch_conversation_index
+        if self.index != CONVERSATION_INDEX:
+            raise ValueError(
+                f"Conversation writes are allowed only to {CONVERSATION_INDEX!r}; "
+                f"configured index was {self.index!r}"
+            )
+
         self.client = create_opensearch_client(
             endpoint=settings.opensearch_conversation_endpoint,
             readonly=False,
             timeout_seconds=10.0,
+            username=settings.opensearch_username,
+            password=settings.opensearch_password,
+            allowed_write_index=self.index,
         )
-        self.index = settings.opensearch_conversation_index
         self.readonly = False
 
         # In-memory fallback used only when the conversation cluster is unreachable.
@@ -131,6 +145,67 @@ class ConversationStore:
                 
         except Exception as e:
             logger.warning(f"ISM policy creation failed: {e}")
+
+    def _json_size_bytes(self, value: Dict) -> int:
+        return len(json.dumps(value, default=str, ensure_ascii=False).encode("utf-8"))
+
+    def _index_usage(self) -> tuple[int, int]:
+        if not self.client.indices.exists(index=self.index):
+            raise ConversationWriteLimitExceeded(
+                f"Conversation index {self.index!r} does not exist; refusing implicit index creation"
+            )
+
+        count_response = self.client.count(index=self.index)
+        count = int(count_response.get("count", 0))
+
+        stats = self.client.indices.stats(index=self.index, metric="store")
+        index_stats = stats.get("indices", {}).get(self.index, {})
+        store = index_stats.get("total", {}).get("store", {})
+        size_bytes = store.get("size_in_bytes")
+        if size_bytes is None:
+            size_bytes = (
+                stats.get("_all", {})
+                .get("total", {})
+                .get("store", {})
+                .get("size_in_bytes", 0)
+            )
+        return count, int(size_bytes or 0)
+
+    def _assert_write_allowed(self, *, new_record: bool = False, projected_bytes: int = 0) -> None:
+        try:
+            count, size_bytes = self._index_usage()
+        except ConversationWriteLimitExceeded:
+            raise
+        except Exception as exc:
+            raise ConversationWriteLimitExceeded(
+                f"Could not verify conversation index limits: {exc}"
+            ) from exc
+
+        max_records = settings.opensearch_conversation_max_records
+        max_store_bytes = settings.opensearch_conversation_max_store_bytes
+
+        if new_record and count >= max_records:
+            raise ConversationWriteLimitExceeded(
+                f"Conversation index {self.index!r} has {count} records; "
+                f"maximum is {max_records}"
+            )
+        if not new_record and count > max_records:
+            raise ConversationWriteLimitExceeded(
+                f"Conversation index {self.index!r} has {count} records; "
+                f"maximum is {max_records}"
+            )
+
+        if size_bytes >= max_store_bytes:
+            raise ConversationWriteLimitExceeded(
+                f"Conversation index {self.index!r} is {size_bytes} bytes; "
+                f"maximum is {max_store_bytes} bytes"
+            )
+
+        if projected_bytes and size_bytes + projected_bytes > max_store_bytes:
+            raise ConversationWriteLimitExceeded(
+                f"Conversation write would exceed {max_store_bytes} bytes "
+                f"for index {self.index!r}"
+            )
     
     async def create_conversation(
         self,
@@ -158,6 +233,11 @@ class ConversationStore:
             return conversation_id
 
         try:
+            await self.ensure_index_exists()
+            self._assert_write_allowed(
+                new_record=True,
+                projected_bytes=self._json_size_bytes(doc),
+            )
             self.client.index(index=self.index, id=conversation_id, body=doc)
             logger.info(f"Created conversation {conversation_id[:8]}...")
             return conversation_id
@@ -168,6 +248,7 @@ class ConversationStore:
     async def set_title(self, conversation_id: str, title: str) -> None:
         """Set the permanent title for a conversation (generated from first prompt)"""
         try:
+            self._assert_write_allowed(projected_bytes=self._json_size_bytes({"title": title}))
             self.client.update(
                 index=self.index,
                 id=conversation_id,
@@ -186,6 +267,11 @@ class ConversationStore:
         """Update the file content stored at the conversation level (e.g. when a new
         file is uploaded mid-conversation, overwriting the previous one)."""
         try:
+            self._assert_write_allowed(
+                projected_bytes=self._json_size_bytes(
+                    {"file_name": file_name, "file_content": file_content}
+                )
+            )
             self.client.update(
                 index=self.index,
                 id=conversation_id,
@@ -233,6 +319,7 @@ class ConversationStore:
             conversation['last_user_query'] = user_message
             
             # Update document
+            self._assert_write_allowed(projected_bytes=self._json_size_bytes(conversation))
             self.client.update(
                 index=self.index,
                 id=conversation_id,

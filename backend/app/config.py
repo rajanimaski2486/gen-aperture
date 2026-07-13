@@ -1,4 +1,5 @@
 """Application configuration"""
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 from typing import Optional
 
@@ -8,11 +9,20 @@ class Settings(BaseSettings):
     
     # OpenSearch — photo search (read-only production cluster)
     opensearch_endpoint: str = "http://localhost:9200"
-    opensearch_photo_index: str = "web-index-v9"
+    opensearch_photo_index: str = "icc_images_ext"
+    opensearch_username: Optional[str] = None
+    opensearch_password: Optional[str] = None
 
-    # OpenSearch — conversation storage (separate writable cluster)
-    opensearch_conversation_endpoint: str = "http://localhost:9200"
+    # OpenSearch — conversation storage. Defaults to opensearch_endpoint so the
+    # same domain can be used with narrow write guardrails.
+    opensearch_conversation_endpoint: Optional[str] = None
     opensearch_conversation_index: str = "gen-aperture-conversations"
+    opensearch_conversation_max_records: int = 5000
+    opensearch_conversation_max_store_bytes: int = 5 * 1024 * 1024 * 1024
+    opensearch_hybrid_search_pipeline: str = "reveal-hybrid"
+    opensearch_vector_field: str = "dense_vector"
+    opensearch_knn_k: int = 200
+    opensearch_text_embedding_pca_model_path: Optional[str] = None
 
     # OpenSearch guardrails
     # If set, forces read-only mode on/off regardless of endpoint host.
@@ -29,10 +39,14 @@ class Settings(BaseSettings):
     # Environment
     environment: str = "development"
 
-    # Main agent LLM — primary model then fallback
-    agent_model: str = "qwen-plus"             # Primary model (Qwen via OpenAI-compatible API)
-    agent_model_base_url: Optional[str] = None  # Override base URL (e.g. DashScope, Together AI)
-    agent_fallback_model: str = "gpt-4o-mini"   # Fallback if primary fails
+    # NVIDIA NIM LLMs. NVIDIA exposes OpenAI-compatible chat completions, so the
+    # existing OpenAI SDK/LangChain client can be pointed at the NVIDIA base URL.
+    nvidia_api_key: Optional[str] = None
+    nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
+    agent_model: str = "meta/llama-3.3-70b-instruct"
+    agent_model_base_url: Optional[str] = None
+    agent_fallback_model: Optional[str] = None
+    image_analysis_model: str = "meta/llama-3.2-11b-vision-instruct"
 
     # Reflection Reranker
     # Minimum number of results the reranker should try to return
@@ -77,7 +91,7 @@ class Settings(BaseSettings):
     searchbybrief_planner_max_tokens_v1: int = 2500
     searchbybrief_planner_max_tokens_v2: int = 900
     # SearchByBrief Stage 3 curator
-    # Number of parallel Bifrost visual-scoring calls.
+    # Number of parallel visual-scoring calls.
     searchbybrief_curator_concurrency: int = 6
     # Token caps for Stage 3 vision calls (lower values reduce latency).
     searchbybrief_curator_visual_max_tokens: int = 420
@@ -93,12 +107,15 @@ class Settings(BaseSettings):
     searchbybrief_curator_diversity_penalty: float = 0.4
 
     # Model used by the reflection reranker LLM passes
-    rerank_model: str = "Qwen3-VL-Reranker-8B"
+    rerank_model: str = "meta/llama-3.3-70b-instruct"
 
-    # Bifrost AI gateway (internal OpenAI-compatible proxy)
+    # SearchByBrief planner/curator model.
+    searchbybrief_model: str = "meta/llama-3.3-70b-instruct"
+
+    # Legacy Bifrost names retained for older env files.
     bifrost_api_key: str | None = None
-    bifrost_base_url: str = "http://bifrost.localhost/openai"
-    bifrost_model: str = "gpt-4.1"
+    bifrost_base_url: str = "https://integrate.api.nvidia.com/v1"
+    bifrost_model: str = "meta/llama-3.3-70b-instruct"
 
     # File upload
     max_file_size_bytes: int = 6 * 1024 * 1024  # 6MB
@@ -107,6 +124,22 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        extra = "ignore"
+
+    @model_validator(mode="after")
+    def apply_dynamic_defaults(self) -> "Settings":
+        if not self.opensearch_conversation_endpoint:
+            self.opensearch_conversation_endpoint = self.opensearch_endpoint
+        return self
+
+    @property
+    def llm_base_url(self) -> str:
+        return self.agent_model_base_url or self.nvidia_base_url
+
+    def require_nvidia_api_key(self) -> str:
+        if not self.nvidia_api_key:
+            raise RuntimeError("NVIDIA_API_KEY is not configured")
+        return self.nvidia_api_key
 
 
 # Global settings instance

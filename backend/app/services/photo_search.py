@@ -1,8 +1,9 @@
 """
 OpenSearch photo search service.
-Searches the web-index-v9 index for stock photos matching user queries.
+Searches the configured image index for stock photos matching user queries.
 """
 import logging
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 from app.config import settings
 from app.services.opensearch_guardrails import create_opensearch_client, is_readonly_endpoint
@@ -25,8 +26,12 @@ class PhotoSearchService:
             endpoint=settings.opensearch_endpoint,
             readonly=readonly,
             timeout_seconds=30.0,
+            username=settings.opensearch_username,
+            password=settings.opensearch_password,
         )
         self.photo_index = settings.opensearch_photo_index
+        self._text_embedder = None
+        self._text_embedder_pca_path: Optional[str] = None
     
     def search_photos(
         self,
@@ -51,49 +56,12 @@ class PhotoSearchService:
                 - took_ms: Search time in milliseconds
         """
         try:
-            # Build OpenSearch query
-            search_body = self._build_search_query(query, filters, size, min_score)
-            
-            logger.info(f"Searching photos with query: {query}, filters: {filters}")
-            
-            # Execute search
-            response = self.client.search(
-                index=self.photo_index,
-                body=search_body,
-                params={"search_pipeline": "hybrid-rrf-60"}
+            return self.execute_direct_hybrid_search(
+                semantic_query=query,
+                lexical_query=query,
+                refinement_filters=self._legacy_filters_to_clauses(filters),
+                size=size,
             )
-            
-            # Parse results
-            hits = response.get('hits', {}).get('hits', [])
-            total = response.get('hits', {}).get('total', {}).get('value', 0)
-            took_ms = response.get('took', 0)
-            
-            # Format results
-            results = []
-            for hit in hits:
-                source = hit.get('_source', {})
-                media_type = source.get('media_type', 'image')
-                results.append({
-                    'hadron_id': source.get('hadron_id'),
-                    'ext_id': source.get('ext_id'),
-                    'description': source.get('description_en', 'No description available'),
-                    'image_url': self._build_image_url(source.get('ext_id'), media_type),
-                    'thumbnail_url': self._build_thumbnail_url(source.get('ext_id'), media_type),
-                    'date_added': source.get('date_added'),
-                    'license_count': source.get('total_paid_license_count_all_time', 0),
-                    'categories': source.get('categories', []),
-                    'keywords': source.get('keywords', []),
-                    'orientation': source.get('orientation'),
-                    'score': hit.get('_score', 0.0)
-                })
-            
-            logger.info(f"Found {total} photos in {took_ms}ms, returning {len(results)} results")
-            
-            return {
-                'results': results,
-                'total': total,
-                'took_ms': took_ms
-            }
             
         except Exception as e:
             logger.error(f"Photo search failed: {str(e)}", exc_info=True)
@@ -103,6 +71,144 @@ class PhotoSearchService:
                 'took_ms': 0,
                 'error': str(e)
             }
+
+    def execute_direct_hybrid_search(
+        self,
+        semantic_query: str,
+        lexical_query: Optional[str] = None,
+        category_gids: Optional[List[int]] = None,
+        exclusion_terms: Optional[List[str]] = None,
+        refinement_filters: Optional[List[Dict[str, Any]]] = None,
+        show_generated: bool = False,
+        is_not_generated: bool = False,
+        size: int = 50,
+    ) -> Dict[str, Any]:
+        """
+        Execute an app-generated hybrid lexical + kNN query against icc_images_ext.
+        """
+        try:
+            vector = self._embed_query_text(semantic_query)
+            query_body = self.build_direct_hybrid_query(
+                semantic_query=semantic_query,
+                lexical_query=lexical_query or semantic_query,
+                vector=vector,
+                category_gids=category_gids or [],
+                exclusion_terms=exclusion_terms or [],
+                refinement_filters=refinement_filters or [],
+                show_generated=show_generated,
+                is_not_generated=is_not_generated,
+                size=size,
+            )
+
+            params = {}
+            if settings.opensearch_hybrid_search_pipeline:
+                params["search_pipeline"] = settings.opensearch_hybrid_search_pipeline
+
+            logger.info(
+                "Executing direct hybrid OpenSearch query on index=%s semantic=%r lexical=%r",
+                self.photo_index,
+                semantic_query,
+                lexical_query or semantic_query,
+            )
+            response = self.client.search(
+                index=self.photo_index,
+                body=query_body,
+                params=params,
+            )
+            result = self._format_search_response(response)
+            result["opensearch_query"] = query_body
+            result["opensearch_pipeline"] = settings.opensearch_hybrid_search_pipeline
+            result["opensearch_index"] = self.photo_index
+            return result
+        except Exception as e:
+            logger.error("Direct hybrid query failed: %s", e, exc_info=True)
+            return {
+                "results": [],
+                "total": 0,
+                "took_ms": 0,
+                "error": str(e),
+            }
+
+    def build_direct_hybrid_query(
+        self,
+        semantic_query: str,
+        lexical_query: str,
+        vector: List[float],
+        category_gids: Optional[List[int]] = None,
+        exclusion_terms: Optional[List[str]] = None,
+        refinement_filters: Optional[List[Dict[str, Any]]] = None,
+        show_generated: bool = False,
+        is_not_generated: bool = False,
+        size: int = 50,
+    ) -> Dict[str, Any]:
+        """
+        Build the OpenSearch hybrid query for icc_images_ext.
+
+        `icc_images_ext` exposes a 256-dim `dense_vector` kNN field plus text
+        fields: title, description, and tags.
+        """
+        lexical_bool: Dict[str, Any] = {
+            "must": [
+                {
+                    "multi_match": {
+                        "query": lexical_query or semantic_query,
+                        "fields": [
+                            "title^4",
+                            "description^3",
+                            "tags^2",
+                            "photographer",
+                        ],
+                        "type": "best_fields",
+                        "operator": "or",
+                        "fuzziness": "AUTO",
+                    }
+                }
+            ]
+        }
+
+        must_not = self._build_text_exclusions(exclusion_terms or [])
+        if must_not:
+            lexical_bool["must_not"] = must_not
+
+        filters = self._supported_filter_clauses(
+            category_gids=category_gids or [],
+            refinement_filters=refinement_filters or [],
+            show_generated=show_generated,
+            is_not_generated=is_not_generated,
+        )
+        if filters:
+            lexical_bool["filter"] = filters
+
+        return {
+            "size": size,
+            "_source": [
+                "image_id",
+                "title",
+                "description",
+                "tags",
+                "thumbnail_url",
+                "medium_url",
+                "pexels_url",
+                "photographer",
+                "width",
+                "height",
+            ],
+            "query": {
+                "hybrid": {
+                    "queries": [
+                        {
+                            "knn": {
+                                settings.opensearch_vector_field: {
+                                    "vector": vector,
+                                    "k": max(int(settings.opensearch_knn_k), size),
+                                }
+                            }
+                        },
+                        {"bool": lexical_bool},
+                    ]
+                }
+            },
+        }
     
     def execute_raw_query(
         self,
@@ -131,51 +237,14 @@ class PhotoSearchService:
                 params={"search_pipeline": search_pipeline},
             )
 
-            # Parse results
-            hits = response.get('hits', {}).get('hits', [])
-            total = response.get('hits', {}).get('total', {}).get('value', 0)
-            took_ms = response.get('took', 0)
-            
-            # Format results
-            results = []
-            for hit in hits:
-                source = hit.get('_source', {})
-                # Also check docvalue_fields in the hit (fields key)
-                fields = hit.get('fields', {})
-                
-                # ext_id can be in _source or in fields
-                ext_id = source.get('ext_id') or (fields.get('ext_id', [None])[0] if fields.get('ext_id') else None)
-                hadron_id = source.get('hadron_id') or (fields.get('hadron_id', [None])[0] if fields.get('hadron_id') else None)
-                media_type = source.get('media_type', 'image')
-                is_generated_raw = source.get('is_generated')
-                if is_generated_raw is None and fields.get('is_generated'):
-                    is_generated_raw = fields['is_generated'][0]
-                is_generated = bool(is_generated_raw) if is_generated_raw is not None else False
-                
-                results.append({
-                    'hadron_id': hadron_id,
-                    'ext_id': ext_id,
-                    'description': source.get('description_en', 'No description available'),
-                    'image_url': self._build_image_url(ext_id, media_type),
-                    'thumbnail_url': self._build_thumbnail_url(ext_id, media_type),
-                    'video_url': self._build_video_url(ext_id, media_type),
-                    'media_type': media_type,
-                    'date_added': source.get('date_added'),
-                    'license_count': source.get('total_paid_license_count_all_time', 0),
-                    'categories': source.get('categories') or source.get('global_category_ids', []),
-                    'keywords': source.get('keywords') or source.get('keywords_en', []),
-                    'orientation': source.get('orientation'),
-                    'score': hit.get('_score', 0.0),
-                    'is_generated': is_generated,
-                })
-            
-            logger.info(f"Raw query: Found {total} photos in {took_ms}ms, returning {len(results)} results")
-            
-            return {
-                'results': results,
-                'total': total,
-                'took_ms': took_ms
-            }
+            result = self._format_search_response(response)
+            logger.info(
+                "Raw query: Found %s photos in %sms, returning %s results",
+                result["total"],
+                result["took_ms"],
+                len(result["results"]),
+            )
+            return result
             
         except Exception as e:
             logger.error(f"Raw query execution failed: {str(e)}", exc_info=True)
@@ -185,6 +254,34 @@ class PhotoSearchService:
                 'took_ms': 0,
                 'error': str(e)
             }
+
+    def _legacy_filters_to_clauses(
+        self,
+        filters: Optional[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        if not filters:
+            return []
+        clauses: List[Dict[str, Any]] = []
+        if "orientation" in filters:
+            clauses.append({"term": {"orientation": filters["orientation"]}})
+        if "min_license_count" in filters:
+            clauses.append(
+                {
+                    "range": {
+                        "total_paid_license_count_all_time": {
+                            "gte": filters["min_license_count"]
+                        }
+                    }
+                }
+            )
+        if "date_from" in filters or "date_to" in filters:
+            date_range = {}
+            if "date_from" in filters:
+                date_range["gte"] = filters["date_from"]
+            if "date_to" in filters:
+                date_range["lte"] = filters["date_to"]
+            clauses.append({"range": {"date_added": date_range}})
+        return clauses
 
     def _build_search_query(
         self,
@@ -276,6 +373,150 @@ class PhotoSearchService:
         }
         
         return search_body
+
+    def _embed_query_text(self, query: str) -> List[float]:
+        embedder = self._get_text_embedder()
+        vectors = embedder.embed_texts(
+            [query],
+            pca=True,
+            normalize=settings.searchbybrief_retriever_normalize_embeddings,
+            truncate=settings.searchbybrief_retriever_truncate_text,
+        )
+        if not vectors:
+            raise RuntimeError("No embedding generated for query")
+        return vectors[0]
+
+    def _get_text_embedder(self):
+        pca_path = self._resolve_pca_model_path()
+        if self._text_embedder is not None and self._text_embedder_pca_path == pca_path:
+            return self._text_embedder
+
+        from app.services.searchbybrief.retriever import LocalClipTextEmbedder
+
+        self._text_embedder = LocalClipTextEmbedder(
+            model_name=settings.searchbybrief_retriever_clip_model,
+            device=settings.searchbybrief_retriever_clip_device,
+            download_root=settings.searchbybrief_retriever_clip_download_root,
+            pca_model_path=pca_path,
+        )
+        self._text_embedder_pca_path = pca_path
+        return self._text_embedder
+
+    def _resolve_pca_model_path(self) -> str:
+        configured = settings.opensearch_text_embedding_pca_model_path
+        if configured:
+            p = Path(configured).expanduser()
+        else:
+            p = Path(__file__).resolve().parents[3] / "ipca_10m.npz"
+        if not p.exists():
+            raise FileNotFoundError(f"PCA model not found: {p}")
+        return str(p)
+
+    def _supported_filter_clauses(
+        self,
+        category_gids: List[int],
+        refinement_filters: List[Dict[str, Any]],
+        show_generated: bool,
+        is_not_generated: bool,
+    ) -> List[Dict[str, Any]]:
+        # icc_images_ext currently has no category/orientation/date/generated
+        # fields. Keep the method explicit so unsupported filters are ignored
+        # rather than producing zero-result queries against unmapped fields.
+        return []
+
+    def _build_text_exclusions(self, exclusion_terms: List[str]) -> List[Dict[str, Any]]:
+        clauses: List[Dict[str, Any]] = []
+        for term in exclusion_terms:
+            text = str(term).strip()
+            if not text:
+                continue
+            clauses.append(
+                {
+                    "multi_match": {
+                        "query": text,
+                        "fields": ["title", "description", "tags"],
+                        "type": "best_fields",
+                    }
+                }
+            )
+        return clauses
+
+    def _format_search_response(self, response: Dict[str, Any]) -> Dict[str, Any]:
+        hits = response.get("hits", {}).get("hits", [])
+        total_raw = response.get("hits", {}).get("total", {})
+        total = total_raw.get("value", 0) if isinstance(total_raw, dict) else int(total_raw or 0)
+        took_ms = response.get("took", 0)
+
+        results = [self._format_hit(hit) for hit in hits]
+        logger.info(
+            "OpenSearch: Found %s photos in %sms, returning %s results",
+            total,
+            took_ms,
+            len(results),
+        )
+        return {
+            "results": results,
+            "total": total,
+            "took_ms": took_ms,
+        }
+
+    def _format_hit(self, hit: Dict[str, Any]) -> Dict[str, Any]:
+        source = hit.get("_source", {})
+        fields = hit.get("fields", {})
+
+        image_id = (
+            source.get("image_id")
+            or source.get("ext_id")
+            or (fields.get("image_id", [None])[0] if fields.get("image_id") else None)
+            or (fields.get("ext_id", [None])[0] if fields.get("ext_id") else None)
+        )
+        ext_id = self._safe_int(image_id)
+        tags = source.get("tags") or source.get("keywords") or source.get("keywords_en") or []
+        if isinstance(tags, str):
+            tags = [part.strip() for part in tags.split(",") if part.strip()]
+
+        media_type = source.get("media_type", "image")
+        image_url = (
+            source.get("medium_url")
+            or source.get("image_url")
+            or source.get("pexels_url")
+            or source.get("thumbnail_url")
+            or self._build_image_url(ext_id, media_type)
+        )
+        thumbnail_url = (
+            source.get("thumbnail_url")
+            or source.get("medium_url")
+            or source.get("image_url")
+            or self._build_thumbnail_url(ext_id, media_type)
+        )
+
+        return {
+            "hadron_id": str(image_id) if image_id is not None else None,
+            "ext_id": ext_id,
+            "description": source.get("description") or source.get("description_en") or source.get("title") or "No description available",
+            "image_url": image_url,
+            "thumbnail_url": thumbnail_url,
+            "video_url": source.get("video_url") or self._build_video_url(ext_id, media_type),
+            "media_type": media_type,
+            "date_added": source.get("date_added"),
+            "license_count": source.get("total_paid_license_count_all_time", 0),
+            "categories": source.get("categories") or source.get("global_category_ids", []),
+            "keywords": tags,
+            "orientation": source.get("orientation"),
+            "score": hit.get("_score", 0.0),
+            "is_generated": bool(source.get("is_generated", False)),
+            "photographer": source.get("photographer"),
+            "pexels_url": source.get("pexels_url"),
+            "width": source.get("width"),
+            "height": source.get("height"),
+        }
+
+    @staticmethod
+    def _safe_int(value: Any) -> Optional[int]:
+        try:
+            return int(str(value))
+        except Exception:
+            return None
     
     def _build_image_url(self, ext_id: str, media_type: str = 'image') -> str:
         """Build full-size image/preview URL from ext_id."""

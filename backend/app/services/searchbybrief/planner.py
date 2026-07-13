@@ -374,13 +374,13 @@ def run_intent_node(
         brief_text: The raw brief text from the user.
         attachment_text: Optional extra context (e.g. curator feedback from a
             previous iteration, or text extracted from an uploaded document).
-        model: Override the default Bifrost model for this call.
+        model: Override the default SearchByBrief model for this call.
 
     Returns:
         Validated IntentResult parsed from the LLM response.
     """
     if model is None:
-        model = settings.bifrost_model
+        model = settings.searchbybrief_model
 
     planner_version = (settings.searchbybrief_planner_version or "v1").strip().lower()
     if planner_version == "v2":

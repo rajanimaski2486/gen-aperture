@@ -5,7 +5,7 @@
 ✅ **Backend (FastAPI)**
 - Multi-agent LangGraph orchestration (Squad Router, Project Manager, Search Specialist, Synthesizer)
 - Reflection Reranker — post-retrieval 3-pass LLM scoring, critique, and filtering
-- Hybrid neural + lexical OpenSearch queries via Search Service MCP
+- Direct hybrid lexical + kNN OpenSearch queries against `icc_images_ext`
 - Session manager (API key handling, 30-min timeout)
 - OpenSearch conversation store with 7-day retention
 - PDF/DOCX/TXT file extraction for brief analysis
@@ -65,12 +65,11 @@ Access at: http://localhost:5173
 ## Test the Application
 
 1. Open http://localhost:5173
-2. Enter your OpenAI API key when the modal appears
-3. **Basic search:** type `Find outdoor nature photos` — results appear in a 5-column grid
-4. **Reflection reranking:** type `Show me the best ocean sunset photos` — the loading bubble shows `🔄 Applying reflection reranking…`, results display with a `🎯 Reranked` badge, and a collapsible Reflection Reranking Log appears below the workflow panel
-5. **Brief upload:** attach a PDF/DOCX brief, type a short query — the Project Manager extracts requirements before searching
-6. **Filter phrases:** try `horizontal images of mountains from the last year` — orientation and recency filters are applied automatically
-7. Click `🤖 Agent Workflow` to inspect each agent's reasoning, input/output, and OpenSearch payloads
+2. **Basic search:** type `Find outdoor nature photos` — results appear in a 5-column grid
+3. **Reflection reranking:** type `Show me the best ocean sunset photos` — the loading bubble shows `🔄 Applying reflection reranking…`, results display with a `🎯 Reranked` badge, and a collapsible Reflection Reranking Log appears below the workflow panel
+4. **Brief upload:** attach a PDF/DOCX brief, type a short query — the Project Manager extracts requirements before searching
+5. **Filter phrases:** try `horizontal images of mountains from the last year` — orientation and recency filters are applied automatically
+6. Click `🤖 Agent Workflow` to inspect each agent's reasoning, input/output, and OpenSearch payloads
 
 ### Reflection Reranking trigger phrases
 
@@ -99,15 +98,13 @@ Expected response:
 **Standard search:**
 ```bash
 curl -X POST http://localhost:8000/api/chat \
-  -F "message=Find outdoor adventure photos" \
-  -F "openai_api_key=sk-..."
+  -F "message=Find outdoor adventure photos"
 ```
 
 **Trigger reranking:**
 ```bash
 curl -X POST http://localhost:8000/api/chat \
-  -F "message=Show me the best mountain landscape photos" \
-  -F "openai_api_key=sk-..."
+  -F "message=Show me the best mountain landscape photos"
 ```
 
 **Get recent conversations:**
@@ -134,14 +131,14 @@ curl http://localhost:8000/api/conversations/recent
 **Reranking not triggering:**
 - Ensure your query contains a trigger phrase (see table above)
 - Check backend logs for `Reranker (text-only)` or `Reranker (brief)` log lines
-- Verify `OPENAI_API_KEY` is valid — reranker uses the same key as the agents
+- Verify `NVIDIA_API_KEY` is configured — reranker uses the same server-side key as the agents
 
 ## Development Tips
 
 - Backend hot reload: `uvicorn ... --reload` picks up `.py` file changes automatically
 - Frontend hot reload: Vite updates the browser instantly on `.jsx`/`.css` changes
 - Reranker thresholds are all configurable in `backend/.env` (see README for variable names)
-- Reranker model is configurable via `RERANK_MODEL` (default: `Qwen3-VL-Reranker-8B`)
+- Reranker model is configurable via `RERANK_MODEL` (default: `meta/llama-3.3-70b-instruct`)
 - View OpenSearch payloads live in the Agent Workflow panel in the UI
 
 ## File Structure
@@ -163,7 +160,6 @@ gen-aperture/
 │   │   │   ├── query_refinement.py
 │   │   │   ├── category_filter.py
 │   │   │   ├── file_extractor.py
-│   │   │   ├── session_manager.py
 │   │   │   ├── conversation_store.py
 │   │   │   └── opensearch_guardrails.py
 │   │   └── models/schemas.py          ← includes RerankerDecision schema
