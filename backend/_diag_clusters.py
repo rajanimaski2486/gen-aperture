@@ -2,8 +2,8 @@
 import json
 import httpx
 
-DEV = "http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org"
-PROD = "http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+DEV = "http://localhost:9200"
+PROD = "http://localhost:9200"
 INDEX = "web-index-v9"
 
 def check(label, end, pipeline, extra_body=None):
@@ -44,7 +44,7 @@ if r_pipe2.status_code == 200:
     pipes = list(r_pipe2.json().keys())
     print(f"  available pipelines: {pipes}")
 
-print("\n=== Prod cluster (nelson-v1-prod) ===")
+print("\n=== Prod cluster (localhost) ===")
 check("pipeline=hybrid_10_90, is_generated=true", PROD, "hybrid_10_90",
       {"query": {"bool": {"filter": [
           {"term": {"is_active": {"value": True}}},

@@ -19,7 +19,7 @@ COPY backend/static ./app/static 2>/dev/null || echo "No static files yet"
 
 # Environment variables
 ENV PYTHONUNBUFFERED=1
-ENV OPENSEARCH_ENDPOINT="http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+ENV OPENSEARCH_ENDPOINT="http://localhost:9200"
 ENV ENVIRONMENT="production"
 
 EXPOSE 8000

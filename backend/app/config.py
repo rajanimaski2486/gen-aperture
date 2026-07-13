@@ -7,11 +7,11 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # OpenSearch — photo search (read-only production cluster)
-    opensearch_endpoint: str = "http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+    opensearch_endpoint: str = "http://localhost:9200"
     opensearch_photo_index: str = "web-index-v9"
 
     # OpenSearch — conversation storage (separate writable cluster)
-    opensearch_conversation_endpoint: str = "http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+    opensearch_conversation_endpoint: str = "http://localhost:9200"
     opensearch_conversation_index: str = "gen-aperture-conversations"
 
     # OpenSearch guardrails
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # opensearch_readonly_hosts.
     opensearch_readonly: Optional[bool] = None
     opensearch_readonly_hosts: list[str] = [
-        "nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org",
+        "localhost",
     ]
     
     # Session
@@ -51,7 +51,7 @@ class Settings(BaseSettings):
     # - "text-intent": Search Intent API GraphQL recommendations endpoint
     searchbybrief_retriever_mode: str = "text-intent"
     searchbybrief_retriever_endpoint: str = (
-        "http://creative-image-similarity-search.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+        "http://localhost:8081/graphql"
     )
     searchbybrief_retriever_collection_type: str = "APPROVED_V1"
     searchbybrief_retriever_top_k_per_lane: int = 500
@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     searchbybrief_retriever_truncate_text: bool = False
     searchbybrief_retriever_timeout_seconds: int = 60
     searchbybrief_search_intent_endpoint: str = (
-        "http://search-intent-api.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+        "http://localhost:8082/graphql"
     )
     searchbybrief_search_intent_client_name: str = (
         "gen-aperture/search-results-page/retriever"

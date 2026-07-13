@@ -275,7 +275,7 @@ Refined search executed
 ### 4. OpenSearch Integration
 
 #### Photo Index (Read-Only)
-**Endpoint:** `http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org`  
+**Endpoint:** `http://localhost:9200`  
 **Index:** `web-index-v9`  
 **Access:** Direct HTTP (no credentials, internal network)
 
@@ -783,7 +783,7 @@ COPY backend/static ./app/static
 
 # Environment variables (overridden in deployment)
 ENV OPENAI_API_KEY=""
-ENV OPENSEARCH_ENDPOINT="http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+ENV OPENSEARCH_ENDPOINT="http://localhost:9200"
 ENV ENVIRONMENT="production"
 
 EXPOSE 8000
@@ -840,7 +840,7 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 export OPENAI_API_KEY="sk-..."
-export OPENSEARCH_ENDPOINT="http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+export OPENSEARCH_ENDPOINT="http://localhost:9200"
 uvicorn app.main:app --reload
 
 # Terminal 2: Frontend
@@ -1113,7 +1113,7 @@ aiofiles==24.1.0
 
 **Project Owner:** Search Platform Team  
 **Deployment Platform:** https://backstage.shuttercorp.net  
-**OpenSearch Cluster:** `mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org`  
+**OpenSearch Cluster:** `localhost:9200`  
 **Monitoring:** (TBD - add observability dashboard link post-deployment)
 
 ---

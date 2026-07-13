@@ -2,7 +2,7 @@
 import json
 import httpx
 
-END = "http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org"
+END = "http://localhost:9200"
 PIPELINE = "hybrid_10_90"
 INDEX = "web-index-v9"
 URL = f"{END}/{INDEX}/_search?search_pipeline={PIPELINE}"

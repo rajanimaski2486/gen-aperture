@@ -245,12 +245,12 @@ class SearchServiceMCP:
 
     def _adapt_query_for_local_cluster(self, query_body: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Adapt a production Search Service query for execution on the Nelson cluster.
+        Adapt a production Search Service query for execution on the local cluster.
 
         The image search service injects a `media_type: image` filter in the
         production query.  We replace any existing media_type term with an
         explicit `{"term": {"media_type": "image"}}` to ensure only photo assets
-        are returned from Nelson (which indexes both images and videos).
+        are returned from the local cluster (which indexes both images and videos).
         """
         self._set_media_type_filter(query_body, "image")
         return query_body

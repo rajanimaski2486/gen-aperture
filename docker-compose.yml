@@ -8,7 +8,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - OPENSEARCH_ENDPOINT=http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org
+      - OPENSEARCH_ENDPOINT=http://localhost:9200
       - OPENSEARCH_PHOTO_INDEX=web-index-v9
       - OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
       - SESSION_TIMEOUT_MINUTES=30

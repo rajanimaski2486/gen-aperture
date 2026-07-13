@@ -4,7 +4,7 @@
 IMPORTANT: This script uses the application's guarded OpenSearch client so that
 the production read-only guardrails (opensearch_guardrails.py) are active.
 Raw HTTP libraries (httpx, requests) that bypass those guardrails must NOT be
-used against nelson-v1-prod or any other read-only cluster endpoint.
+used against localhost or any other read-only cluster endpoint.
 """
 import json
 import sys
@@ -17,7 +17,7 @@ from app.config import settings
 from app.services.opensearch_guardrails import create_opensearch_client, is_readonly_endpoint
 
 # Build a guarded client — guardrails are applied automatically because
-# nelson-v1-prod is listed in settings.opensearch_readonly_hosts.
+# localhost is listed in settings.opensearch_readonly_hosts.
 _readonly = is_readonly_endpoint(
     endpoint=settings.opensearch_endpoint,
     forced_readonly=settings.opensearch_readonly,

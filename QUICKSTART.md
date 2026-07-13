@@ -129,7 +129,7 @@ curl http://localhost:8000/api/conversations/recent
 
 **OpenSearch connection fails:**
 - Verify you're on the internal ShutterCorp network
-- Test directly: `curl http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org/_cluster/health`
+- Test directly: `curl http://localhost:9200/_cluster/health`
 
 **Reranking not triggering:**
 - Ensure your query contains a trigger phrase (see table above)

@@ -25,7 +25,7 @@ from app.services.photo_search import photo_search_service
 from app.services.search_service_mcp import search_service_mcp
 
 DEFAULT_SEARCH_ENDPOINT = (
-    "http://creative-image-similarity-search.sstk-ai-eng-prod.ct.shuttercloud.org/graphql"
+    "http://localhost:8081/graphql"
 )
 
 

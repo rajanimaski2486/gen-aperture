@@ -77,7 +77,7 @@ _WRITE_BLOCK_RE = _re.compile(
 
 _WRITE_BLOCK_RESPONSE = (
     "I'm sorry, but I can't do that. The production OpenSearch domain "
-    "(`nelson-v1-prod`) is **read-only** — write operations (create, update, "
+    "is **read-only** — write operations (create, update, "
     "delete, ingest, re-index, etc.) are not permitted and are blocked at the "
     "infrastructure level.\n\n"
     "If you believe a data change is genuinely required, please raise it with "

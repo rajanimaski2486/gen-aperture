@@ -184,7 +184,7 @@ Health check
 
 Backend environment variables (`backend/.env`):
 ```
-OPENSEARCH_ENDPOINT=http://nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org
+OPENSEARCH_ENDPOINT=http://localhost:9200
 OPENSEARCH_PHOTO_INDEX=web-index-v9
 OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
 OPENSEARCH_READONLY=true
@@ -231,7 +231,7 @@ https://backstage.shuttercorp.net/create/templates/default/add-gha-app-fastapi
 
 Internal ShutterCorp project  
 Team: Search Platform  
-OpenSearch: `nelson-v1-prod.sstk-search-prod.ct.shuttercloud.org`
+OpenSearch: `localhost:9200`
 
 ---
 

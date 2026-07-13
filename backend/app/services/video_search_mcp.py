@@ -7,7 +7,7 @@ Exposes two tools:
   2. search_popular  - Get OpenSearch query for popular/trending video results
 
 Each tool calls the Video Search Service, extracts the `debug.request` (the raw
-OpenSearch query DSL), adapts it for execution on the Nelson read-only domain,
+OpenSearch query DSL), adapts it for execution on the local read-only domain,
 and returns it for execution by PhotoSearchService.execute_raw_query().
 
 The video search service returns queries that include a media_type: video filter —
@@ -146,8 +146,8 @@ class VideoSearchMCP:
         # Save original for UI display
         original_query = copy.deepcopy(debug_request)
 
-        # Adapt for Nelson cluster execution
-        debug_request = self._adapt_query_for_nelson(debug_request)
+        # Adapt for local cluster execution
+        debug_request = self._adapt_query_for_local_cluster(debug_request)
 
         # Enhance _source fields for display
         debug_request["_source"] = [
@@ -208,13 +208,13 @@ class VideoSearchMCP:
             },
         }
 
-    def _adapt_query_for_nelson(self, query_body: Dict[str, Any]) -> Dict[str, Any]:
+    def _adapt_query_for_local_cluster(self, query_body: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Adapt a video search service query for execution on the Nelson cluster.
+        Adapt a video search service query for execution on the local cluster.
 
         Unlike the image MCP adapter, we do NOT strip the media_type filter —
         the video search service already sets media_type: video and we want to
-        keep it so Nelson returns only video assets.
+        keep it so the local cluster returns only video assets.
 
         We do ensure a media_type: video filter is present in the outermost
         bool.filter so results are scoped correctly even if the service omitted it.

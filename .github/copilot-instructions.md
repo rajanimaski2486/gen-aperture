@@ -64,7 +64,7 @@ Direct OpenSearch client integration (no MCP server needed for MVP). Future: Can
 
 - **OpenAI API**: GPT-4o-mini for all agent reasoning (**user-provided keys**, 30-min sessions)
 - **AWS OpenSearch Domain**: Pre-existing, read-only access via direct HTTP
-  - Endpoint: `http://mmr-test-v1-prod.sstk-search-prod.ct.shuttercloud.org`
+  - Endpoint: `http://localhost:9200`
   - Photo index: `web-index-v9`
   - Conversation index: `gen-aperture-conversations` (auto-created)
 - **LangGraph**: Multi-agent orchestration framework (not AWS AgentCore)
