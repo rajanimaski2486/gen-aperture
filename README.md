@@ -213,12 +213,6 @@ RERANK_MODEL=Qwen3-VL-Reranker-8B
 - 1MB file upload limit
 - 7-day conversation retention
 
-## Deployment
-
-Uses Backstage FastAPI template:
-```
-https://backstage.shuttercorp.net/create/templates/default/add-gha-app-fastapi
-```
 
 ## Documentation
 
