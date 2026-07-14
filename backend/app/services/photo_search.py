@@ -476,17 +476,21 @@ class PhotoSearchService:
             tags = [part.strip() for part in tags.split(",") if part.strip()]
 
         media_type = source.get("media_type", "image")
-        image_url = (
+        source_page_url = source.get("pexels_url") or source.get("image_url")
+        display_image_url = (
             source.get("medium_url")
+            or source.get("thumbnail_url")
             or source.get("image_url")
-            or source.get("pexels_url")
+            or source_page_url
+        )
+        image_url = (
+            source_page_url
+            or source.get("medium_url")
             or source.get("thumbnail_url")
             or self._build_image_url(ext_id, media_type)
         )
         thumbnail_url = (
-            source.get("thumbnail_url")
-            or source.get("medium_url")
-            or source.get("image_url")
+            display_image_url
             or self._build_thumbnail_url(ext_id, media_type)
         )
 

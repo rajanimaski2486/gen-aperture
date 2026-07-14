@@ -129,8 +129,8 @@ Unsupported filters from the older `web-index-v9` schema are intentionally ignor
 | --- | --- |
 | `image_id` | `hadron_id`, `ext_id` when numeric |
 | `description` or `title` | `description` |
-| `medium_url`, `pexels_url`, `thumbnail_url` | `image_url` fallback chain |
-| `thumbnail_url`, `medium_url` | `thumbnail_url` fallback chain |
+| `pexels_url` | `image_url` source/detail page |
+| `medium_url`, `thumbnail_url` | `thumbnail_url` renderable card image |
 | `tags` | `keywords` |
 | `photographer` | `photographer` |
 | `width`, `height` | `width`, `height` |

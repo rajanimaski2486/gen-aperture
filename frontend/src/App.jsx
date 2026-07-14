@@ -698,11 +698,21 @@ function App() {
 
   const getImageVariants = (result) => {
     const extId = result?.ext_id;
+    const returnedDisplayUrl = result?.thumbnail_url || '';
+    const returnedDestinationUrl = result?.image_url || returnedDisplayUrl;
+    if (returnedDisplayUrl || result?.image_url) {
+      return {
+        src: returnedDisplayUrl || result?.image_url || '',
+        srcSet: '',
+        previewUrl: returnedDestinationUrl || '',
+      };
+    }
+
     if (!extId) {
       return {
-        src: result?.image_url || result?.thumbnail_url || '',
+        src: '',
         srcSet: '',
-        previewUrl: result?.image_url || result?.thumbnail_url || '',
+        previewUrl: '',
       };
     }
 
