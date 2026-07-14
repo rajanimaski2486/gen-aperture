@@ -115,7 +115,9 @@ class RerankerConfig:
     max_candidates_for_critique: int = 25
 
     # Model used for both LLM passes
-    model: str = "Qwen3-VL-Reranker-8B"
+    model: str = "meta/llama-3.3-70b-instruct"
+    api_key: str | None = None
+    base_url: str | None = None
 
     @classmethod
     def from_settings(cls, settings: Any) -> "RerankerConfig":
@@ -126,6 +128,8 @@ class RerankerConfig:
             borderline_threshold=settings.rerank_borderline_threshold,
             duplicate_similarity_threshold=settings.rerank_duplicate_similarity_threshold,
             model=settings.rerank_model,
+            api_key=settings.nvidia_api_key,
+            base_url=settings.llm_base_url,
         )
 
 
@@ -328,7 +332,10 @@ class ReflectionReranker:
         criteria_text = _format_criteria(search_criteria)
 
         try:
-            client = AsyncOpenAI()  # uses OPENAI_API_KEY from environment
+            client = AsyncOpenAI(
+                api_key=self.config.api_key,
+                base_url=self.config.base_url,
+            )
 
             # ── Pass 1: Scoring ───────────────────────────────────────────────
             logger.info("Reranker Pass 1 (scoring): evaluating %d candidates", total)

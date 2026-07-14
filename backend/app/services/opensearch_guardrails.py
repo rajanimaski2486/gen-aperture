@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Callable, Optional
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 from opensearchpy import OpenSearch
 
@@ -61,6 +61,11 @@ def _normalize_path(url: str) -> str:
     return path
 
 
+def _path_segments(url: str) -> list[str]:
+    path = _normalize_path(url)
+    return [unquote(segment) for segment in path.strip("/").split("/") if segment]
+
+
 def _readonly_request_allowed(method: str, url: str) -> bool:
     method_upper = (method or "").upper()
     path = _normalize_path(url)
@@ -98,10 +103,67 @@ def install_readonly_guardrails(client: OpenSearch) -> None:
     transport.perform_request = guarded_perform_request  # type: ignore[assignment]
 
 
+def _conversation_request_allowed(method: str, url: str, allowed_index: str) -> bool:
+    method_upper = (method or "").upper()
+    segments = _path_segments(url)
+
+    if method_upper in {"GET", "HEAD"}:
+        return True
+
+    # Search and count APIs are read operations that may use POST.
+    if method_upper == "POST" and segments:
+        if segments[-1] in {"_search", "_count"}:
+            return True
+        if segments[0] == "_search" and len(segments) >= 2 and segments[1] == "scroll":
+            return True
+
+    if not segments or segments[0] != allowed_index:
+        return False
+
+    # Allow creating the one conversation index. The caller checks existence
+    # before issuing this request; the guardrail keeps the index allow-list
+    # narrow even if another caller reaches this client.
+    if method_upper == "PUT" and len(segments) == 1:
+        return True
+
+    # Allow document-level conversation mutations only within the configured
+    # index. Whole-index deletes, mappings/settings changes, aliases, bulk
+    # writes, and cluster/plugin writes remain blocked.
+    if len(segments) >= 2:
+        operation = segments[1]
+        if operation in {"_doc", "_create"} and method_upper in {"PUT", "POST", "DELETE"}:
+            return True
+        if operation == "_update" and method_upper == "POST":
+            return True
+
+    return False
+
+
+def install_conversation_write_guardrails(client: OpenSearch, allowed_index: str) -> None:
+    """Allow writes only to the configured conversation index."""
+
+    transport = client.transport
+    original_perform_request: Callable = transport.perform_request
+
+    def guarded_perform_request(method, url, params=None, body=None, headers=None):  # type: ignore[no-untyped-def]
+        if not _conversation_request_allowed(method, url, allowed_index):
+            path = _normalize_path(url)
+            raise PermissionError(
+                "OpenSearch guardrails: blocked write outside allowed "
+                f"conversation index={allowed_index} method={str(method).upper()} path={path}"
+            )
+        return original_perform_request(method, url, params=params, body=body, headers=headers)
+
+    transport.perform_request = guarded_perform_request  # type: ignore[assignment]
+
+
 def create_opensearch_client(
     endpoint: str,
     readonly: bool,
     timeout_seconds: float = 30.0,
+    username: Optional[str] = None,
+    password: Optional[str] = None,
+    allowed_write_index: Optional[str] = None,
 ) -> OpenSearch:
     ep = parse_opensearch_endpoint(endpoint)
     parsed = urlparse(endpoint)
@@ -115,11 +177,15 @@ def create_opensearch_client(
     }
 
     if parsed.username and parsed.password:
-        client_kwargs["http_auth"] = (parsed.username, parsed.password)
+        client_kwargs["http_auth"] = (unquote(parsed.username), unquote(parsed.password))
+    elif username and password:
+        client_kwargs["http_auth"] = (username, password)
 
     client = OpenSearch(**client_kwargs)
 
     if readonly:
         install_readonly_guardrails(client)
+    elif allowed_write_index:
+        install_conversation_write_guardrails(client, allowed_write_index)
 
     return client

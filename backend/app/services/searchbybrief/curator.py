@@ -31,7 +31,7 @@ Outputs written to state
 
 Dependency notes
 ----------------
-  - Calls call_llm_vision_json from .llm (multimodal Bifrost client)
+  - Calls call_llm_vision_json from .llm (multimodal NVIDIA-compatible client)
   - Uses CandidateRecord / RepairRequest contracts from .schemas
   - Does NOT import from stage_3.py
 """
@@ -56,7 +56,7 @@ from .schemas import RepairRequest
 # Vision model
 # ---------------------------------------------------------------------------
 
-VISION_MODEL = "gpt-4o-mini"
+VISION_MODEL = settings.image_analysis_model
 
 # Loop back to the planner if the shortlist median stage3_score is below this.
 # A few weak lanes are acceptable; the median captures the overall collection quality.
@@ -962,7 +962,7 @@ def curator_node(state: dict[str, Any]) -> dict[str, Any]:
         search_params = search_params.model_dump()
 
     candidates = state.get("refined_pool", [])
-    api_key_override = state.get("openai_api_key")
+    api_key_override = state.get("llm_api_key")
     max_scoring_candidates = int(
         getattr(
             settings,
@@ -1062,7 +1062,7 @@ def score_candidates_node(state: dict[str, Any]) -> dict[str, Any]:
     """
     search_params = state["search_params"]
     candidates = state.get("refined_pool", [])
-    api_key_override = state.get("openai_api_key")
+    api_key_override = state.get("llm_api_key")
     max_scoring_candidates = int(
         getattr(
             settings,
@@ -1131,7 +1131,7 @@ def audit_lanes_node(state: dict[str, Any]) -> dict[str, Any]:
         search_params = search_params.model_dump()
 
     candidates = state.get("stage3_shortlist") or state.get("stage3_candidates") or []
-    api_key_override = state.get("openai_api_key")
+    api_key_override = state.get("llm_api_key")
 
     audits, repair_requests = _audit_top_candidates_by_lane(
         candidates=candidates,

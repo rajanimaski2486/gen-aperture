@@ -19,9 +19,11 @@ from typing import Any, Dict, List
 from openai import OpenAI
 from PIL import Image
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
-_IMAGE_ANALYSIS_MODEL = "gpt-4o-mini"
+_IMAGE_ANALYSIS_MODEL = "meta/llama-3.2-11b-vision-instruct"
 _IMAGE_ANALYSIS_MAX_IMAGES = 3
 _IMAGE_ANALYSIS_MAX_DIM = 1024
 _IMAGE_ANALYSIS_JPEG_QUALITY = 75
@@ -198,7 +200,7 @@ def _fallback_image_analysis(images: List[Dict[str, Any]]) -> Dict[str, Any]:
 def analyze_images(
     images: List[Dict[str, Any]],
     api_key: str | None = None,
-    model: str = _IMAGE_ANALYSIS_MODEL,
+    model: str | None = None,
 ) -> Dict[str, Any]:
     """
     Analyze extracted images and return subject-aware search cues.
@@ -235,9 +237,11 @@ def analyze_images(
             "analysis_source": "none",
         }
 
-    if not api_key:
-        logger.warning("Image analysis: no API key supplied, using palette fallback")
+    llm_api_key = api_key or settings.nvidia_api_key
+    if not llm_api_key:
+        logger.warning("Image analysis: NVIDIA_API_KEY not configured, using palette fallback")
         return _fallback_image_analysis(images)
+    model = model or settings.image_analysis_model or _IMAGE_ANALYSIS_MODEL
 
     ranked_images = sorted(
         images,
@@ -298,7 +302,7 @@ Rules:
     user_content.extend(image_blocks)
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(api_key=llm_api_key, base_url=settings.llm_base_url)
         response = client.chat.completions.create(
             model=model,
             response_format={"type": "json_object"},

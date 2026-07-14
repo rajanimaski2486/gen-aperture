@@ -4,7 +4,7 @@
 
 ## Stage 0: Intent Extraction ✓ IMPLEMENTED
 
-**Model:** GPT-4.1 via Bifrost (http://bifrost.localhost/openai)
+**Model:** NVIDIA NIM via OpenAI-compatible chat completions
 **Input:** request brief (+ optional attachment text from uploaded PDF/DOCX, or curator feedback on loop iterations)
 
 **Plan:**
@@ -72,7 +72,7 @@ The output from this will be a calibrated relevance score (0.0 to 1.0). Discard 
 
 ## Stage 3: Agentic Curation
 
-**Model:** Qwen 3.5 VL (Full / 397B-A17B)
+**Model:** NVIDIA vision-language model configured by `IMAGE_ANALYSIS_MODEL`
 **Target:** Final 100 images
 
 **Notes:**
@@ -80,5 +80,4 @@ This is the main "thinking loop"
 - Diversity check: the agent will ensure that the top 100 images are not copies of the same photo. Automatic pruning if necessary.
 - Attribute verification: ensure that the users request has been fulfilled.
 - Refinement: If the collection of images is missing a specific attribute (e.g., "none of these are in an outdoor setting"), a "repairer" action will be taken back to Stage-1 with a new specific query.
-
 

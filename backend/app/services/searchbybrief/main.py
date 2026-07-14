@@ -17,7 +17,7 @@ except Exception:
 class AgentState(TypedDict):
     # the original customer request
     user_request: str
-    openai_api_key: Optional[str]
+    llm_api_key: Optional[str]
 
     # Optional raw file payload provided by the caller (e.g. API layer).
     # If present, brief_preprocess_node extracts text + image signals.
@@ -122,7 +122,7 @@ def brief_preprocess_node(state: AgentState):
     extracted_text = extraction.get("text") or ""
     images = extraction.get("images") or []
     image_analysis = (
-        analyze_images(images, api_key=state.get("openai_api_key"))
+        analyze_images(images, api_key=state.get("llm_api_key"))
         if images
         else None
     )
@@ -320,7 +320,7 @@ def planner_node(state: AgentState):
     search_params = run_intent_node(
         brief_text=brief_text,
         attachment_text=attachment_text,
-        api_key_override=state.get("openai_api_key"),
+        api_key_override=state.get("llm_api_key"),
     )
     brief_quality, brief_gaps, brief_warnings, can_search = _assess_brief_readiness(
         state=state,

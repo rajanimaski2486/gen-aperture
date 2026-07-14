@@ -6,8 +6,11 @@ import logging
 import hashlib
 
 from app.models.schemas import ChatResponse, PhotoResult, AgentWorkflowStep, ErrorResponse, RerankerDecision
-from app.services.session_manager import session_manager
-from app.services.conversation_store import get_conversation_store
+from app.config import settings
+from app.services.conversation_store import (
+    ConversationWriteLimitExceeded,
+    get_conversation_store,
+)
 from app.services.file_extractor import file_extractor
 from app.services.image_analyzer import analyze_images
 from app.services.agent_squad import AgentSquad
@@ -68,7 +71,7 @@ def _run_searchbybrief_workflow(
     """
     state = {
         "user_request": user_message,
-        "openai_api_key": api_key,
+        "llm_api_key": api_key,
         "uploaded_file_bytes": file_bytes,
         "uploaded_file_name": file_name,
         # Reuse precomputed extraction/analysis from /chat path when available
@@ -213,9 +216,9 @@ async def chat(
     
     - **message**: User's query
     - **conversation_id**: UUID of existing conversation or None for new
-    - **openai_api_key**: Required for new conversation or if session expired
+    - **openai_api_key**: Deprecated; LLM calls use server-side NVIDIA_API_KEY
     - **file**: Optional PDF/DOCX/TXT file (max 6MB)
-    - **model**: Optional model ID (qwen-plus, gpt-4o-mini, etc.)
+    - **model**: Optional NVIDIA model ID (defaults to app config)
     """
     start_time = time.time()
     
@@ -248,37 +251,21 @@ async def chat(
             print(f"[DEBUG] file_images count: {len(file_images)}")  # Debug
             print(f"[DEBUG] file_images pages: {[img.get('page') for img in file_images]}")  # Debug
 
-        # ── Step 2: Create new conversation OR validate existing session ──
+        # ── Step 2: Create new conversation and load server-side LLM credentials ──
+        try:
+            api_key = settings.require_nvidia_api_key()
+        except RuntimeError as exc:
+            raise HTTPException(status_code=500, detail=str(exc))
+
         is_new_conversation = False
         if not conversation_id:
-            if not openai_api_key:
-                raise HTTPException(
-                    status_code=401,
-                    detail="OpenAI API key required for new conversation"
-                )
-
             # Create new conversation, storing file content at the document level
             conversation_id = await conversation_store.create_conversation(
                 file_name=file_name,
                 file_content=file_content,
             )
-            session_manager.create_session(conversation_id, openai_api_key)
-            api_key = openai_api_key
             is_new_conversation = True
             logger.info(f"New conversation created: {conversation_id[:8]}...")
-        else:
-            # Check if API key is valid for existing conversation
-            api_key = session_manager.get_api_key(conversation_id)
-            if not api_key:
-                # Session expired or not found
-                if openai_api_key:
-                    session_manager.create_session(conversation_id, openai_api_key)
-                    api_key = openai_api_key
-                else:
-                    raise HTTPException(
-                        status_code=401,
-                        detail="Session expired. Please provide OpenAI API key."
-                    )
 
         # Analyze extracted images once the request/session API key is available
         if file_images:
@@ -355,7 +342,7 @@ async def chat(
         else:
             # Run default AgentSquad workflow
             logger.info(f"Running agent squad for conversation {conversation_id[:8]}...")
-            agent_squad = AgentSquad(openai_api_key=api_key, model=model)
+            agent_squad = AgentSquad(llm_api_key=api_key, model=model)
             agent_result = agent_squad.run(
                 user_query=message,
                 file_content=file_content,
@@ -408,7 +395,7 @@ async def chat(
         if agent_result.get('error') == 'authentication_error':
             raise HTTPException(
                 status_code=401,
-                detail="Invalid OpenAI API key. Please check your API key and try again."
+                detail="Invalid NVIDIA API key. Please check NVIDIA_API_KEY and try again."
             )
         
         # Store message in conversation
@@ -446,6 +433,8 @@ async def chat(
             rerank_explanation=agent_result.get('rerank_explanation'),
         )
         
+    except ConversationWriteLimitExceeded as e:
+        raise HTTPException(status_code=507, detail=str(e))
     except HTTPException:
         raise
     except Exception as e:

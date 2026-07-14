@@ -10,8 +10,6 @@ const MAX_RESULTS_DISPLAYED = 24;
 // ---------------------------------------------------------------------------
 // Demo Mode configuration
 // ---------------------------------------------------------------------------
-const DEMO_API_KEY = 'REDACTED_OPENAI_KEY';
-
 const DEMO_STEPS = [
   {
     label: '📋 Upload Brief',
@@ -389,17 +387,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   // True when the outgoing message contains a rerank trigger phrase
   const [isReranking, setIsReranking] = useState(false);
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [apiKey, setApiKey] = useState("");
-  const [tempApiKey, setTempApiKey] = useState("");
   const [error, setError] = useState(null);
   const [workflowMode, setWorkflowMode] = useState('agent_squad');
   // Model selection
-  const [selectedModel, setSelectedModel] = useState('qwen-plus');
+  const [selectedModel, setSelectedModel] = useState('meta/llama-3.3-70b-instruct');
   const [showModelSelector, setShowModelSelector] = useState(false);
   const availableModels = [
-    { id: 'qwen-plus', name: 'Qwen Plus', description: 'Fast & efficient reasoning' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: 'High-quality responses' },
+    { id: 'meta/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', description: 'NVIDIA hosted reasoning model' },
+    { id: 'meta/llama-3.1-70b-instruct', name: 'Llama 3.1 70B', description: 'NVIDIA hosted fallback option' },
   ];
   // Tracks the index of the video card currently being hovered (for hover-play)
   const [hoveredCard, setHoveredCard] = useState(null);
@@ -408,20 +403,17 @@ function App() {
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [demoStep, setDemoStep] = useState(0);
 
-  // Check for API key on mount
+  // Initialize app state on mount
   useEffect(() => {
     const initializeApp = async () => {
-      const storedApiKey = sessionStorage.getItem("openai_api_key");
-      if (!storedApiKey) {
-        setShowApiKeyModal(true);
-      } else {
-        setApiKey(storedApiKey);
-      }
+      sessionStorage.removeItem("openai_api_key");
 
       // Load stored model preference
       const storedModel = sessionStorage.getItem('selected_model');
-      if (storedModel) {
+      if (storedModel && availableModels.some((model) => model.id === storedModel)) {
         setSelectedModel(storedModel);
+      } else {
+        sessionStorage.setItem('selected_model', selectedModel);
       }
 
       await loadRecentConversations();
@@ -500,25 +492,6 @@ function App() {
     }
   };
 
-  const handleApiKeySubmit = () => {
-    if (tempApiKey.trim()) {
-      sessionStorage.setItem("openai_api_key", tempApiKey);
-      setApiKey(tempApiKey);
-      setShowApiKeyModal(false);
-      setTempApiKey("");
-    }
-  };
-
-  // Focus input when modal opens
-  useEffect(() => {
-    if (showApiKeyModal) {
-      setTimeout(() => {
-        const input = document.querySelector(".modal-input");
-        if (input) input.focus();
-      }, 100);
-    }
-  }, [showApiKeyModal]);
-
   // Close model selector when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -545,12 +518,8 @@ function App() {
   // Demo Mode handlers
   // ---------------------------------------------------------------------------
   const handleStartDemo = () => {
-    sessionStorage.setItem('openai_api_key', DEMO_API_KEY);
-    setApiKey(DEMO_API_KEY);
-    // Demo key is OpenAI — force gpt-4o-mini (qwen-plus uses a different API endpoint)
-    setSelectedModel('gpt-4o-mini');
-    sessionStorage.setItem('selected_model', 'gpt-4o-mini');
-    setShowApiKeyModal(false);
+    setSelectedModel('meta/llama-3.3-70b-instruct');
+    sessionStorage.setItem('selected_model', 'meta/llama-3.3-70b-instruct');
     setConversationId(null);
     sessionStorage.removeItem(ACTIVE_CONVERSATION_KEY);
     setMessages([]);
@@ -625,10 +594,6 @@ function App() {
     const fileToSend = directFile !== undefined ? directFile : selectedFile;
 
     if (!userMessage && !fileToSend) return;
-    if (!apiKey && !conversationId) {
-      setShowApiKeyModal(true);
-      return;
-    }
 
     if (directMessage === undefined) setInputMessage('');
 
@@ -652,7 +617,6 @@ function App() {
       const response = await chatAPI.sendMessage(
         userMessage,
         conversationId,
-        apiKey, // Always send API key to extend session
         fileToSend,
         selectedModel,
         workflowMode,
@@ -694,13 +658,6 @@ function App() {
         console.error('Failed to refresh conversations:', err);
       });
 
-      // Handle expired API key
-      if (!response.api_key_valid) {
-        sessionStorage.removeItem("openai_api_key");
-        setApiKey("");
-        setShowApiKeyModal(true);
-        showError("Session expired. Please enter your API key again.");
-      }
     } catch (err) {
       console.error("Chat error:", err);
       console.error("Error status:", err.response?.status);
@@ -710,24 +667,10 @@ function App() {
       setMessages((prev) => prev.slice(0, -1));
 
       if (err.response?.status === 401) {
-        console.log(
-          "Authentication error detected - clearing key and showing modal",
-        );
-        // Clear invalid API key
-        sessionStorage.removeItem("openai_api_key");
-        setApiKey("");
-        setTempApiKey("");
-
         const errorMsg =
           err.response?.data?.detail ||
-          "Invalid API key. Please enter a valid OpenAI API key.";
+          "Authentication failed. Check the server NVIDIA_API_KEY setting.";
         showError(errorMsg);
-
-        // Force modal to show after state updates
-        setTimeout(() => {
-          setShowApiKeyModal(true);
-          console.log("Modal should be visible now");
-        }, 0);
       } else {
         showError(err.response?.data?.detail || "Failed to send message");
       }
@@ -755,11 +698,21 @@ function App() {
 
   const getImageVariants = (result) => {
     const extId = result?.ext_id;
+    const returnedDisplayUrl = result?.thumbnail_url || '';
+    const returnedDestinationUrl = result?.image_url || returnedDisplayUrl;
+    if (returnedDisplayUrl || result?.image_url) {
+      return {
+        src: returnedDisplayUrl || result?.image_url || '',
+        srcSet: '',
+        previewUrl: returnedDestinationUrl || '',
+      };
+    }
+
     if (!extId) {
       return {
-        src: result?.image_url || result?.thumbnail_url || '',
+        src: '',
         srcSet: '',
-        previewUrl: result?.image_url || result?.thumbnail_url || '',
+        previewUrl: '',
       };
     }
 
@@ -1157,37 +1110,6 @@ function App() {
           )}
         </div>
       </div>
-
-      {/* API Key Modal */}
-      {showApiKeyModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h2>OpenAI API Key Required</h2>
-            <p>
-              Please enter your OpenAI API key to use Gen-Aperture. Your key
-              will be stored in your browser session (30 minutes) and never
-              saved on our servers.
-            </p>
-            <input
-              type="password"
-              className="modal-input"
-              placeholder="sk-..."
-              value={tempApiKey}
-              onChange={(e) => setTempApiKey(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleApiKeySubmit()}
-            />
-            <div className="modal-actions">
-              <button
-                className="modal-btn primary"
-                onClick={handleApiKeySubmit}
-                disabled={!tempApiKey.trim()}
-              >
-                Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Error Toast */}
       {error && <div className="toast">{error}</div>}
