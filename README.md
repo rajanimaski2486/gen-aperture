@@ -36,25 +36,33 @@ Explicit video and mixed video searches still use the video search service path.
 
 ## Agent Pipeline
 
-```
-User message
-  ↓
-Squad Router          — detects intent (relevance vs. popular) and routes
-  ↓
-Project Manager       — (brief uploads only) extracts visual requirements,
-                         queries, categories, exclusions from PDF/DOCX/TXT
-  ↓
-Search Specialist     — builds + executes a direct OpenSearch hybrid
-                         lexical + kNN query against icc_images_ext
-  ↓
-Reflection Reranker   — (trigger-phrase only) 2-pass LLM reflection:
-                         Pass 1: scores all 20 candidates on relevance,
-                                 criteria match, specificity, completeness
-                         Pass 2: critiques ranking, identifies duplicates,
-                                 flags borderline; Pass 3 (Python) builds
-                                 final ordered list of ≥10 results
-  ↓
-Synthesizer           — combines brief analysis + results into response
+```mermaid
+flowchart TD
+    user["User message<br/>optional PDF/DOCX/TXT brief"]
+    router["Squad Router<br/>Detect search mode and route"]
+    pm["Project Manager<br/>Extract brief requirements:<br/>visuals, queries, categories, exclusions"]
+    search["Search Specialist<br/>Build direct search plan"]
+    imageSearch[("OpenSearch: icc_images_ext<br/>Hybrid query:<br/>kNN dense_vector + lexical multi_match")]
+    videoSearch["Video Search Service path<br/>Only for video or mixed-media queries"]
+    candidates["Candidate results<br/>normalized to frontend result shape"]
+    rerankDecision{"Rerank trigger phrase?"}
+    reranker["Reflection Reranker<br/>Score, critique, dedupe,<br/>build final ordered list"]
+    synth["Synthesizer<br/>Combine brief analysis + results"]
+    response["Assistant response<br/>image cards + workflow trace"]
+
+    user --> router
+    router -->|"brief uploaded"| pm
+    router -->|"text only"| search
+    pm --> search
+    search -->|"image or mixed image branch"| imageSearch
+    search -->|"video or mixed video branch"| videoSearch
+    imageSearch --> candidates
+    videoSearch --> candidates
+    candidates --> rerankDecision
+    rerankDecision -->|"yes"| reranker
+    rerankDecision -->|"no"| synth
+    reranker --> synth
+    synth --> response
 ```
 
 ### Reflection Reranker — trigger phrases
