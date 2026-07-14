@@ -18,7 +18,21 @@ AI-powered conversational interface for searching stock photos using natural lan
 - **Frontend**: React 18 + Vite
 - **Backend**: FastAPI (Python 3.11+)
 - **Agents**: LangGraph with NVIDIA NIM OpenAI-compatible chat completions
-- **Storage**: OpenSearch (conversations + photo index `icc_images_ext`)
+- **Search and storage**: One Aiven OpenSearch domain, using `icc_images_ext` for read-only image search and `gen-aperture-conversations` for guarded conversation writes
+
+### OpenSearch Search Flow
+
+Image and document-assisted image search no longer asks Search Service for a base payload. The backend generates the OpenSearch body directly in `PhotoSearchService`:
+
+1. Build a local text embedding for the semantic query.
+2. Project the embedding to the 256-dimension vector used by `icc_images_ext`.
+3. Query `icc_images_ext` with an OpenSearch `hybrid` query:
+   - kNN over `dense_vector`
+   - lexical `multi_match` over `title`, `description`, `tags`, and `photographer`
+4. Run the query through the `reveal-hybrid` search pipeline.
+5. Map `icc_images_ext` fields (`image_id`, URLs, `tags`, `photographer`, dimensions) into the existing frontend result shape.
+
+Explicit video and mixed video searches still use the video search service path.
 
 ## Agent Pipeline
 
@@ -189,6 +203,7 @@ OPENSEARCH_PHOTO_INDEX=icc_images_ext
 OPENSEARCH_HYBRID_SEARCH_PIPELINE=reveal-hybrid
 OPENSEARCH_VECTOR_FIELD=dense_vector
 OPENSEARCH_KNN_K=200
+OPENSEARCH_TEXT_EMBEDDING_PCA_MODEL_PATH=./ipca_10m.npz
 OPENSEARCH_CONVERSATION_ENDPOINT=http://localhost:9200
 OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
 OPENSEARCH_CONVERSATION_MAX_RECORDS=5000
@@ -203,6 +218,8 @@ NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
 AGENT_MODEL=meta/llama-3.3-70b-instruct
 IMAGE_ANALYSIS_MODEL=meta/llama-3.2-11b-vision-instruct
 SEARCHBYBRIEF_MODEL=meta/llama-3.3-70b-instruct
+SEARCHBYBRIEF_RETRIEVER_CLIP_MODEL=ViT-B/32
+SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT=/tmp/clip
 
 # Reflection reranker thresholds (all optional — defaults shown)
 RERANK_MIN_RESULTS_TARGET=10
@@ -219,8 +236,9 @@ RERANK_MODEL=meta/llama-3.3-70b-instruct
 - OpenSearch cluster is read-only for the photo index
 - Conversation writes are allowed only to `gen-aperture-conversations`
 - Conversation writes are rejected at 5000 records or 5 GB index store size
-- 1MB file upload limit
+- 6MB file upload limit
 - 7-day conversation retention
+- The OpenSearch workflow panel redacts credentials from displayed endpoint URLs
 
 
 ## Documentation

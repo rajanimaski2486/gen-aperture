@@ -65,7 +65,8 @@ Replace the image Search Service payload dependency with app-generated OpenSearc
 ## Risks / Open Questions
 
 - Direct vector generation depends on local CLIP/torch and the PCA weights being available.
-- Live OpenSearch query execution was not run because CLIP model weights are not cached locally and running it could download model assets.
+- Live OpenSearch query execution was run locally with a stubbed 256-dim vector to avoid downloading CLIP model assets.
+- Full end-to-end embedding generation still depends on CLIP model weights being available locally or approved for download.
 - Video search still uses the existing video service path.
 
 ## Status

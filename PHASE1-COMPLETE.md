@@ -1,210 +1,83 @@
-# 🎉 Phase 1 Complete - Foundation Built!
+# Gen-Aperture Current Implementation Status
 
-## What We've Built
+This file originally tracked the Phase 1 foundation. The app has since moved beyond that milestone. The current implementation includes NVIDIA-backed agents, direct OpenSearch image search, document-assisted search, reflection reranking, and guarded conversation writes.
 
-I've created a complete **Phase 1 foundation** for Gen-Aperture with:
+## Current Backend
 
-### ✅ Backend (FastAPI)
-- **Main application** (`app/main.py`) - FastAPI server with CORS, static serving
-- **Configuration** (`app/config.py`) - Environment-based settings
-- **Session Manager** (`app/services/session_manager.py`) - API key handling with 30-min timeout
-- **Conversation Store** (`app/services/conversation_store.py`) - OpenSearch integration
-- **Chat Router** (`app/routers/chat.py`) - POST /api/chat endpoint (echo mode for now)
-- **Conversations Router** (`app/routers/conversations.py`) - GET recent/specific conversations
-- **Data Models** (`app/models/schemas.py`) - Pydantic schemas
+- FastAPI application in `backend/app/main.py`
+- Chat endpoint in `backend/app/routers/chat.py`
+- Conversation endpoints in `backend/app/routers/conversations.py`
+- LangGraph orchestration in `backend/app/services/agent_squad.py`
+- Direct OpenSearch image search in `backend/app/services/photo_search.py`
+- Conversation persistence in `backend/app/services/conversation_store.py`
+- OpenSearch read/write guardrails in `backend/app/services/opensearch_guardrails.py`
+- Reflection reranker in `backend/app/services/reranker.py`
+- Document extraction and image analysis for uploaded briefs
 
-### ✅ Frontend (React + Vite)
-- **Main App** (`src/App.jsx`) - Full chat interface with:
-  - Message display (user + assistant)
-  - Input area with file upload
-  - Sidebar showing last 5 conversations
-  - "New Chat" button
-  - API key modal (prompted on first use)
-  - Error toast notifications
-  - Loading states
-- **API Client** (`src/services/api.js`) - Axios-based API integration
-- **Styling** (`src/index.css`) - Clean, professional UI
+## Current Frontend
 
-### ✅ Infrastructure
-- **Docker** - Production-ready Dockerfile
-- **Docker Compose** - Local development setup
-- **Setup Script** - Automated environment setup
-- **Documentation** - README, DESIGN, QUICKSTART
+- React/Vite chat UI in `frontend/src/App.jsx`
+- Sidebar conversation history
+- File upload for PDF/DOCX/TXT briefs
+- NVIDIA model selector
+- Image result grid
+- Agent workflow trace with OpenSearch payload viewer
+- Reflection reranking decision panel
 
----
+## Current Search Path
 
-## 🚀 Start Using It Now
+Image search now runs directly against `icc_images_ext`:
 
-### Quick Start:
+1. AgentSquad produces semantic and lexical search text.
+2. `PhotoSearchService` embeds the semantic query.
+3. The embedding is projected to the 256-dimension `dense_vector` space.
+4. The backend sends an OpenSearch `hybrid` query to `icc_images_ext`.
+5. The query combines kNN and lexical `multi_match` clauses.
+6. The `reveal-hybrid` pipeline fuses scores.
+7. Results are mapped into the existing frontend API shape.
 
-```bash
-# Option 1: Setup script
-./setup.sh
+Search Service is no longer used for the image OpenSearch payload. Video search remains on the existing video service path.
 
-# Then in Terminal 1:
-cd backend && source venv/bin/activate && uvicorn app.main:app --reload
+## Current Security and Guardrails
 
-# Terminal 2:
-cd frontend && npm run dev
-```
+- LLM calls use server-side `NVIDIA_API_KEY`; the frontend does not collect OpenAI keys.
+- The photo OpenSearch client is read-only.
+- Conversation writes are allowed only to `gen-aperture-conversations`.
+- Conversation writes are rejected above 5000 records or 5 GB store size.
+- Uploaded files are limited to 6 MB and accepted only for supported document types.
 
-Open http://localhost:5173 → Enter any API key → Start chatting!
+## Run Locally
 
----
-
-## 📋 Current Functionality
-
-### What Works:
-1. ✅ **Chat interface** - Send messages, see responses
-2. ✅ **API key management** - Modal prompts, session storage (30 min)
-3. ✅ **File upload** - Validates size (1MB), type (PDF/DOCX/TXT), shows preview
-4. ✅ **Conversations** - Creates in OpenSearch, lists in sidebar
-5. ✅ **Session handling** - Expires after 30 min inactivity
-6. ✅ **Error handling** - Toast notifications for errors
-7. ✅ **Health check** - `/health` endpoint verifies OpenSearch
-
-### Current Behavior (Phase 1):
-- Messages are echoed back (no AI yet)
-- Conversations saved to OpenSearch
-- File uploaded but not extracted yet
-- No photo search yet
-
----
-
-## 🎯 What's Next (Phase 2)
-
-Ready to implement:
-
-### Week 2 Tasks:
-1. **File extraction** - Add pypdf/python-docx processing
-2. **LangGraph agents**:
-   - Create workflow graph
-   - Project Manager agent (analyzes documents)
-   - Search Specialist agent (queries OpenSearch)
-3. **OpenSearch photo search**:
-   - Query `web-index-v9`
-   - Format results with image URLs
-4. **Integration**:
-   - Connect agents to chat endpoint
-   - Pass conversation history to agents
-   - Return formatted photo results
-
-I can help build Phase 2 next, or you can:
-- Test Phase 1 first
-- Make UI tweaks
-- Deploy Phase 1 to see it working
-
----
-
-## 📁 Files Created (28 total)
-
-```
-Backend (13 files):
-✓ backend/requirements.txt
-✓ backend/.env
-✓ backend/.env.example
-✓ backend/app/__init__.py
-✓ backend/app/main.py
-✓ backend/app/config.py
-✓ backend/app/models/__init__.py
-✓ backend/app/models/schemas.py
-✓ backend/app/services/__init__.py
-✓ backend/app/services/session_manager.py
-✓ backend/app/services/conversation_store.py
-✓ backend/app/routers/__init__.py
-✓ backend/app/routers/chat.py
-✓ backend/app/routers/conversations.py
-
-Frontend (7 files):
-✓ frontend/package.json
-✓ frontend/vite.config.js
-✓ frontend/index.html
-✓ frontend/src/main.jsx
-✓ frontend/src/App.jsx
-✓ frontend/src/index.css
-✓ frontend/src/services/api.js
-
-Infrastructure (5 files):
-✓ Dockerfile
-✓ docker-compose.yml
-✓ .gitignore
-✓ setup.sh
-✓ README.md
-
-Documentation (3 files):
-✓ DESIGN.md (v2.0 - complete spec)
-✓ QUICKSTART.md
-✓ .github/copilot-instructions.md
-```
-
----
-
-## ✨ Key Features Implemented
-
-### Backend:
-- ⚡ Async FastAPI with automatic OpenAPI docs (`/docs`)
-- 🔐 Session-based API key management (no persistent storage)
-- 📊 OpenSearch conversation persistence
-- 🏥 Health check endpoint
-- 📝 Comprehensive logging
-- 🔄 Auto-create conversation index on startup
-
-### Frontend:
-- 💬 Real-time chat interface
-- 🎨 Clean, professional UI
-- 📁 File upload with validation & preview
-- 📂 Sidebar with conversation history
-- 🔑 API key modal with session storage
-- 🚨 Error handling with toast notifications
-- ⏳ Loading states for better UX
-
-### Security:
-- 🛡️ API keys only in browser session (30 min)
-- 🚫 Never stored in backend
-- 📏 File size limits (1MB)
-- ✅ MIME type validation
-- 🔒 CORS configured for development
-
----
-
-## 🧪 Test It
+Backend:
 
 ```bash
-# Backend health
+cd backend
+source venv/bin/activate
+uvicorn app.main:app --reload
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm run dev
+```
+
+Health check:
+
+```bash
 curl http://localhost:8000/health
-
-# Send a message
-curl -X POST http://localhost:8000/api/chat \
-  -F "message=Find outdoor photos" \
-  -F "openai_api_key=sk-test123"
-
-# Get conversations
-curl http://localhost:8000/api/conversations/recent
 ```
 
----
+End-to-end chat requires `NVIDIA_API_KEY`, OpenSearch credentials, `ipca_10m.npz`, and available CLIP model weights.
 
-## 💡 Pro Tips
+## Current Validation Commands
 
-1. **Check logs** - Backend terminal shows all OpenSearch operations
-2. **Browser DevTools** - Network tab shows API calls
-3. **API docs** - Visit http://localhost:8000/docs for interactive API
-4. **Hot reload** - Both backend and frontend auto-reload on changes
-5. **OpenSearch** - Conversations index auto-created on first run
+```bash
+PYTHONPATH=backend backend/venv/bin/python -m py_compile backend/app/config.py backend/app/services/photo_search.py backend/app/services/agent_squad.py backend/app/routers/chat.py
+PYTHONPATH=backend backend/venv/bin/python -m unittest discover -s backend/tests
+npm --prefix frontend run build
+git diff --check
+```
 
----
-
-## 🤝 Ready for Phase 2?
-
-Let me know when you want to continue! I'll implement:
-- File extraction
-- LangGraph agents
-- Photo search
-- Image result display
-
-Or if you want to test Phase 1 first, just run the setup script! 🚀
-
----
-
-**Status**: ✅ Phase 1 Complete - Fully Functional Foundation  
-**Next**: Phase 2 - Agent Integration & Photo Search
+See [README.md](README.md), [QUICKSTART.md](QUICKSTART.md), and [design.md](design.md) for the current user and architecture docs.

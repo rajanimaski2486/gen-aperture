@@ -6,17 +6,17 @@
 - Multi-agent LangGraph orchestration (Squad Router, Project Manager, Search Specialist, Synthesizer)
 - Reflection Reranker — post-retrieval 3-pass LLM scoring, critique, and filtering
 - Direct hybrid lexical + kNN OpenSearch queries against `icc_images_ext`
-- Session manager (API key handling, 30-min timeout)
+- Server-side NVIDIA NIM configuration via `NVIDIA_API_KEY`
 - OpenSearch conversation store with 7-day retention
 - PDF/DOCX/TXT file extraction for brief analysis
 - Category mapping, query refinement, and exclusion filtering
-- OpenSearch guardrails (read-only enforcement on production clusters)
+- OpenSearch guardrails (read-only image search plus constrained conversation writes)
 
 ✅ **Frontend (React + Vite)**
 - Chat interface with multi-turn conversation context
 - Sidebar with last 5 conversation history entries
-- File upload (PDF/DOCX/TXT, 1MB limit)
-- API key modal with session storage
+- File upload (PDF/DOCX/TXT, 6MB limit)
+- Server-selected NVIDIA model control
 - 5-column image result grid with description, license count, score
 - 🤖 Agent Workflow panel — expandable step-by-step trace with OpenSearch payload viewer
 - 🎯 Reflection Reranking Log panel — collapsible decision table showing rank, score, keep/discard verdict, reason, and confidence for every candidate
@@ -71,6 +71,8 @@ Access at: http://localhost:5173
 5. **Filter phrases:** try `horizontal images of mountains from the last year` — orientation and recency filters are applied automatically
 6. Click `🤖 Agent Workflow` to inspect each agent's reasoning, input/output, and OpenSearch payloads
 
+Direct image search requires the configured CLIP text model and the PCA model used to project embeddings for `icc_images_ext`. By default the app looks for `ipca_10m.npz` at the repo root and CLIP weights under `SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT` (`/tmp/clip` by default).
+
 ### Reflection Reranking trigger phrases
 
 ```
@@ -122,11 +124,11 @@ curl http://localhost:8000/api/conversations/recent
 **Frontend won't start:**
 - Check Node version: `node --version` (need 18+)
 - Check if port 5173 is available: `lsof -i :5173`
-- Clear node_modules: `rm -rf node_modules && npm install`
+- If dependencies are missing, install from the checked-in lockfile with `npm install`
 
 **OpenSearch connection fails:**
 - Verify you're on the internal network
-- Test directly: `curl http://localhost:9200/_cluster/health`
+- Test the configured endpoint and credentials with the backend health endpoint first: `curl http://localhost:8000/health`
 
 **Reranking not triggering:**
 - Ensure your query contains a trigger phrase (see table above)
@@ -148,15 +150,15 @@ gen-aperture/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py
-│   │   ├── config.py                  ← includes reranker thresholds
+│   │   ├── config.py                  ← NVIDIA, OpenSearch, reranker settings
 │   │   ├── routers/
 │   │   │   ├── chat.py
 │   │   │   └── conversations.py
 │   │   ├── services/
 │   │   │   ├── agent_squad.py         ← LangGraph multi-agent pipeline
 │   │   │   ├── reranker.py            ← Reflection reranker service
-│   │   │   ├── photo_search.py
-│   │   │   ├── search_service_mcp.py
+│   │   │   ├── photo_search.py        ← direct `icc_images_ext` hybrid query builder
+│   │   │   ├── search_service_mcp.py  ← legacy/optional text relevance helper
 │   │   │   ├── query_refinement.py
 │   │   │   ├── category_filter.py
 │   │   │   ├── file_extractor.py
