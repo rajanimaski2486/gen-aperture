@@ -13,7 +13,11 @@ from app.services.photo_search import photo_search_service
 from app.services.video_search_mcp import video_search_mcp
 from app.services.category_filter import category_filter as _category_filter
 from app.services.query_refinement import extract_refinement_filters, describe_filters
-from app.services.query_intent import detect_text_query_intent
+from app.services.query_intent import (
+    build_contextual_query_fallback,
+    compact_prior_user_context,
+    detect_text_query_intent,
+)
 from app.services.reranker import ReflectionReranker, RerankerConfig, should_rerank, _run_async_from_sync
 from app.config import settings
 import dataclasses
@@ -888,16 +892,25 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
 
         # --- Step 1: Resolve follow-ups if needed ---
         conversation_history = state.get("conversation_history", [])
+        prior_user_context = compact_prior_user_context(conversation_history)
         if conversation_history:
-            raw_query = self._resolve_followup_query(state["user_query"], conversation_history)
-            query_source = "contextual_followup"
+            raw_query, query_source = self._resolve_followup_query_with_source(
+                state["user_query"],
+                conversation_history,
+            )
             logger.info(f"Search Specialist: Resolved follow-up to: {raw_query}")
         else:
             raw_query = state["user_query"]
             query_source = "user_direct"
 
         # --- Step 2: Full LLM intent analysis ---
-        intent_result = detect_text_query_intent(raw_query, self.llm, _category_filter)
+        intent_result = detect_text_query_intent(
+            raw_query,
+            self.llm,
+            _category_filter,
+            conversation_history=conversation_history,
+            latest_user_query=state["user_query"],
+        )
 
         entity_terms = intent_result.entity_terms
         expanded_semantic_query = intent_result.semantic_query
@@ -948,7 +961,13 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 f"Named entities: {intent_result.named_entities}. "
                 f"Media type: {intent_result.media_type}. Is generated: {intent_result.is_generated}."
             ),
-            "input": {"raw_query": raw_query, "query_source": query_source},
+            "input": {
+                "user_query": state["user_query"],
+                "intent_query": raw_query,
+                "query_source": query_source,
+                "prior_user_context": prior_user_context,
+                "prior_message_count": len(conversation_history),
+            },
             "output": {
                 "intent": intent_result.intent,
                 "entity_terms": entity_terms,
@@ -2261,6 +2280,21 @@ Respond in this EXACT JSON format:
         Use LLM to resolve a follow-up message into a standalone search query
         by considering the conversation history.
         """
+        resolved, _source = self._resolve_followup_query_with_source(
+            user_query,
+            conversation_history,
+        )
+        return resolved
+
+    def _resolve_followup_query_with_source(
+        self,
+        user_query: str,
+        conversation_history: List[Dict[str, str]],
+    ) -> tuple[str, str]:
+        """
+        Resolve a follow-up message and report whether the result came from the
+        LLM resolver or the deterministic context fallback.
+        """
         system_prompt = """You are a search query resolver for a stock photo search engine.
 
 You will be given a conversation history and the user's latest message. The latest message may be a follow-up
@@ -2297,10 +2331,17 @@ Rules:
             response = self.llm.invoke(messages)
             resolved = response.content.strip().strip('"\'')
             logger.info(f"Resolved follow-up '{user_query}' -> '{resolved}'")
-            return resolved
+            return resolved, "contextual_followup"
         except Exception as e:
-            logger.warning(f"Follow-up resolution failed ({e}), using original query")
-            return user_query
+            fallback_query = build_contextual_query_fallback(user_query, conversation_history)
+            logger.warning(
+                "Follow-up resolution failed (%s), using contextual fallback: %s",
+                e,
+                fallback_query,
+            )
+            if fallback_query != user_query:
+                return fallback_query, "contextual_fallback"
+            return user_query, "user_direct"
 
     def run(self, user_query: str, file_content: str | None = None, file_images: List[Dict[str, Any]] | None = None, image_analysis: Dict[str, Any] | None = None, file_type: str | None = None, conversation_history: List[Dict[str, str]] | None = None) -> Dict[str, Any]:
         """

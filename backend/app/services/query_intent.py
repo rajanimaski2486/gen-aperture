@@ -37,6 +37,17 @@ _EXCLUSION_RE = re.compile(
     r"\b(?:no|without|exclude|minus|not)\s+([^,.]+?)(?=\s+(?:and|with|but|or)\b|[,.]|$)",
     re.IGNORECASE,
 )
+_FOLLOWUP_RE = re.compile(
+    r"""
+    ^\s*(?:more|another|similar|same|instead|but|with|without|add|remove|make|now|also|only|best|top|rerank|matching)\b
+    |\b(?:show\s+me\s+more|more\s+like|like\s+that|like\s+those|these|those|this|that|them|it)\b
+    """,
+    re.IGNORECASE | re.VERBOSE,
+)
+_RERANK_ONLY_RE = re.compile(
+    r"\b(?:best|top|rerank|ranked|reviewed|matching|match|results?|picks?)\b",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -57,6 +68,50 @@ class QueryIntentResult:
     refinement_filters: List[Dict[str, Any]] = field(default_factory=list)
     intent: str = ""
     mood_style: List[str] = field(default_factory=list)
+
+
+def compact_prior_user_context(
+    conversation_history: Optional[List[Dict[str, str]]],
+    *,
+    limit: int = 3,
+) -> List[str]:
+    """Return recent non-empty prior user messages for query-context prompts."""
+    if not conversation_history:
+        return []
+
+    prior_messages: List[str] = []
+    for item in conversation_history:
+        if item.get("role") != "user":
+            continue
+        content = " ".join(str(item.get("content") or "").split())
+        if content:
+            prior_messages.append(content)
+    return prior_messages[-limit:]
+
+
+def build_contextual_query_fallback(
+    user_query: str,
+    conversation_history: Optional[List[Dict[str, str]]],
+) -> str:
+    """
+    Deterministically preserve prior context when LLM follow-up resolution fails.
+
+    Standalone messages are left alone. Short follow-ups/refinements are combined
+    with the most recent prior user search so intent extraction does not analyze
+    only an anaphoric phrase such as "more like that" or "without people".
+    """
+    latest = " ".join((user_query or "").split())
+    prior_context = compact_prior_user_context(conversation_history, limit=1)
+    if not latest or not prior_context:
+        return latest
+
+    if not _FOLLOWUP_RE.search(latest):
+        return latest
+
+    previous = prior_context[-1]
+    if _RERANK_ONLY_RE.search(latest) and len(latest.split()) <= 6:
+        return previous
+    return f"{previous} {latest}"
 
 
 def _fallback_query_intent(raw_query: str, *, intent: str) -> QueryIntentResult:
@@ -112,14 +167,19 @@ def detect_text_query_intent(
     raw_query: str,
     llm: Any,
     category_filter: Any,
+    *,
+    conversation_history: Optional[List[Dict[str, str]]] = None,
+    latest_user_query: Optional[str] = None,
 ) -> QueryIntentResult:
     """
     Perform a full LLM-based intent analysis on a text-only search query.
 
     Args:
-        raw_query:       The user's raw (or follow-up-resolved) search query.
-        llm:             A LangChain ChatOpenAI instance for LLM calls.
-        category_filter: The global CategoryFilter singleton for GID resolution.
+        raw_query:             The raw or follow-up-resolved search query to analyze.
+        llm:                   A LangChain ChatOpenAI instance for LLM calls.
+        category_filter:       The global CategoryFilter singleton for GID resolution.
+        conversation_history:  Optional prior chat messages for context-aware analysis.
+        latest_user_query:     Original latest message when raw_query is resolved.
 
     Returns:
         A populated ``QueryIntentResult``.
@@ -217,10 +277,21 @@ Respond in this EXACT JSON format:
   "mood_style": ["mood/style terms if applicable"]
 }}"""
 
+    prior_user_context = compact_prior_user_context(conversation_history)
+    if prior_user_context:
+        human_prompt = (
+            "Conversation context (oldest to newest prior user searches):\n"
+            + "\n".join(f"- {message}" for message in prior_user_context)
+            + f"\n\nLatest user message: {latest_user_query or raw_query}"
+            + f"\nContext-aware search query to analyze: {raw_query}"
+        )
+    else:
+        human_prompt = f"User query: {raw_query}"
+
     try:
         response = llm.invoke([
             SystemMessage(content=system_prompt),
-            HumanMessage(content=f"User query: {raw_query}"),
+            HumanMessage(content=human_prompt),
         ])
 
         import json
