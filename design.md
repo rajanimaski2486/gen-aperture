@@ -1,6 +1,8 @@
 # Gen-Aperture Current Architecture
 
-This document describes the current runtime architecture for Gen-Aperture after the NVIDIA LLM and direct OpenSearch hybrid-search changes.
+This document describes the current runtime architecture for Gen-Aperture after the NVIDIA LLM, direct OpenSearch hybrid-search, bounded reranker, and UI progress changes.
+
+Editable diagram: [docs/gen-aperture-architecture.excalidraw.json](docs/gen-aperture-architecture.excalidraw.json)
 
 ## Executive Summary
 
@@ -41,11 +43,11 @@ User message / optional brief
   -> FastAPI /api/chat
   -> Load or create conversation
   -> Extract uploaded document text and images, if present
-  -> Squad Router
+  -> Squad Router with deterministic search-mode/media-pipeline detection
   -> Project Manager, for uploaded briefs
   -> Search Specialist
   -> Direct OpenSearch hybrid image search against icc_images_ext
-  -> Optional Reflection Reranker
+  -> Optional Reflection Reranker with timeout fallback
   -> Synthesizer response
   -> Guarded conversation write
 ```
@@ -62,6 +64,7 @@ The generated query uses:
 - `OPENSEARCH_HYBRID_SEARCH_PIPELINE=reveal-hybrid`
 - `OPENSEARCH_VECTOR_FIELD=dense_vector`
 - `OPENSEARCH_KNN_K=200`
+- `OPENSEARCH_KNN_MIN_SCORE=0.58`
 
 The app builds a query shaped like:
 
@@ -87,7 +90,7 @@ The app builds a query shaped like:
           "knn": {
             "dense_vector": {
               "vector": [0.0],
-              "k": 200
+              "min_score": 0.58
             }
           }
         },
@@ -119,6 +122,8 @@ The app builds a query shaped like:
 
 At runtime the vector is a real 256-dimension embedding. The backend creates it by embedding the semantic query with the configured CLIP text model and projecting it with the PCA model. By default, the PCA file is `ipca_10m.npz` at the repo root.
 
+When `OPENSEARCH_KNN_MIN_SCORE` is greater than zero, vector retrieval uses radial kNN to drop distant neighbors before hybrid lexical/vector blending. Set it to `0` to use top-k retrieval with `OPENSEARCH_KNN_K`.
+
 Unsupported filters from the older `web-index-v9` schema are intentionally ignored for `icc_images_ext` because that index does not expose category, orientation, date, generated, or license-count fields.
 
 ## Result Mapping
@@ -134,6 +139,18 @@ Unsupported filters from the older `web-index-v9` schema are intentionally ignor
 | `tags` | `keywords` |
 | `photographer` | `photographer` |
 | `width`, `height` | `width`, `height` |
+
+## Reflection Reranking
+
+Reflection reranking is activated only by trigger phrases such as `best`, `top ranked`, `rerank`, `reflect and respond`, or `reviewed`.
+
+The reranker runs three passes:
+
+1. LLM scoring over the approved `icc_images_ext` evidence fields.
+2. LLM critique of the highest-scored candidates.
+3. Deterministic Python selection, deduplication, thresholding, and final ranking.
+
+The reranker uses `RERANK_MODEL=meta/llama-3.2-3b-instruct` by default and is capped by `RERANK_TIMEOUT_SECONDS=120`. If the cap is reached, the app returns the original search candidates and includes a short reranking note in the response. The frontend shows a client-side progress panel while a rerank-triggered single POST is pending; exact backend pass events would require a future streaming or job-status API.
 
 ## Conversation Storage
 
@@ -168,12 +185,18 @@ LLM calls use the server-side NVIDIA key:
 NVIDIA_API_KEY=...
 NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
 AGENT_MODEL=meta/llama-3.3-70b-instruct
+AGENT_LLM_TIMEOUT_SECONDS=30
+AGENT_LLM_MAX_RETRIES=0
+TEXT_QUERY_INTENT_LLM_ENABLED=false
 IMAGE_ANALYSIS_MODEL=meta/llama-3.2-11b-vision-instruct
 SEARCHBYBRIEF_MODEL=meta/llama-3.3-70b-instruct
-RERANK_MODEL=meta/llama-3.3-70b-instruct
+RERANK_MODEL=meta/llama-3.2-3b-instruct
+RERANK_TIMEOUT_SECONDS=120
 ```
 
 The request schema still accepts `openai_api_key` for backward compatibility, but it is deprecated and not used for LLM calls.
+
+Text-only `relevance` versus `popular` routing is deterministic by default. Non-reranker Agent Squad LLM calls are bounded by `AGENT_LLM_TIMEOUT_SECONDS` with `AGENT_LLM_MAX_RETRIES=0` unless overridden.
 
 ## API Surface
 

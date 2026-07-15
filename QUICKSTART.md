@@ -7,6 +7,7 @@
 - Reflection Reranker — post-retrieval 3-pass LLM scoring, critique, and filtering
 - Direct hybrid lexical + kNN OpenSearch queries against `icc_images_ext`
 - Server-side NVIDIA NIM configuration via `NVIDIA_API_KEY`
+- Agent LLM calls capped by `AGENT_LLM_TIMEOUT_SECONDS` and reranker calls capped by `RERANK_TIMEOUT_SECONDS`
 - OpenSearch conversation store with 7-day retention
 - PDF/DOCX/TXT file extraction for brief analysis
 - Category mapping, query refinement, and exclusion filtering
@@ -20,7 +21,7 @@
 - 5-column image result grid with description, license count, score
 - 🤖 Agent Workflow panel — expandable step-by-step trace with OpenSearch payload viewer
 - 🎯 Reflection Reranking Log panel — collapsible decision table showing rank, score, keep/discard verdict, reason, and confidence for every candidate
-- Reranking loading indicator when trigger phrase is detected
+- Staged reranking progress indicator while a trigger-phrase request is pending
 - Error handling & toast notifications
 
 ✅ **Infrastructure**
@@ -66,9 +67,9 @@ Access at: http://localhost:5173
 
 1. Open http://localhost:5173
 2. **Basic search:** type `Find outdoor nature photos` — results appear in a 5-column grid
-3. **Reflection reranking:** type `Show me the best ocean sunset photos` — the loading bubble shows `🔄 Applying reflection reranking…`, results display with a `🎯 Reranked` badge, and a collapsible Reflection Reranking Log appears below the workflow panel
+3. **Reflection reranking:** type `Show me the best ocean sunset photos` — the loading bubble shows staged reflection-reranking progress with elapsed time, results display with a `🎯 Reranked` badge, and a collapsible Reflection Reranking Log appears below the workflow panel
 4. **Brief upload:** attach a PDF/DOCX brief, type a short query — the Project Manager extracts requirements before searching
-5. **Filter phrases:** try `horizontal images of mountains from the last year` — orientation and recency filters are applied automatically
+5. **Exclusion phrases:** try `mountain photos without people` — text exclusions are applied against `title`, `description`, and `tags`; older orientation/recency filters are ignored by the current `icc_images_ext` index
 6. Click `🤖 Agent Workflow` to inspect each agent's reasoning, input/output, and OpenSearch payloads
 
 Direct image search requires the configured CLIP text model and the PCA model used to project embeddings for `icc_images_ext`. By default the app looks for `ipca_10m.npz` at the repo root and CLIP weights under `SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT` (`/tmp/clip` by default).
@@ -140,7 +141,7 @@ curl http://localhost:8000/api/conversations/recent
 - Backend hot reload: `uvicorn ... --reload` picks up `.py` file changes automatically
 - Frontend hot reload: Vite updates the browser instantly on `.jsx`/`.css` changes
 - Reranker thresholds are all configurable in `backend/.env` (see README for variable names)
-- Reranker model is configurable via `RERANK_MODEL` (default: `meta/llama-3.3-70b-instruct`)
+- Reranker model is configurable via `RERANK_MODEL` (default: `meta/llama-3.2-3b-instruct`) and capped by `RERANK_TIMEOUT_SECONDS` (default: `120`)
 - View OpenSearch payloads live in the Agent Workflow panel in the UI
 
 ## File Structure
