@@ -25,12 +25,17 @@ Ensure text-only follow-up messages in an existing chat window use previous conv
 - Add context helpers in `query_intent.py` for compact prior-user-message formatting and deterministic contextual fallback construction.
 - Extend `detect_text_query_intent` to accept optional conversation history and an already resolved query while preserving the default fast path.
 - Update `AgentSquad._search_text_only` to pass conversation history into Query Intent Analysis and record context metadata in workflow step input.
+- Send compact same-window chat history from the frontend with `/api/chat` so immediate follow-ups are not blocked by stale conversation-store reads.
 - Add unit tests around context-aware intent inputs without making real network calls.
 
 ## Files / areas affected
 - `backend/app/services/query_intent.py`
 - `backend/app/services/agent_squad.py`
+- `backend/app/routers/chat.py`
 - `backend/tests/test_agent_squad_latency.py`
+- `backend/tests/test_chat_context_history.py`
+- `frontend/src/App.jsx`
+- `frontend/src/services/api.js`
 - `docs/plans/chat-context-query-intent.md`
 
 ## Verification plan
@@ -52,4 +57,4 @@ Ensure text-only follow-up messages in an existing chat window use previous conv
 - Very long histories should stay compact; use only recent user messages for intent context.
 
 ## Status
-- Implemented and locally verified with focused context tests, backend test discovery, and compile checks.
+- Implemented and locally verified with focused context tests, backend test discovery, compile checks, and frontend production build.

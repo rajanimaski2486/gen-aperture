@@ -4,6 +4,7 @@ from typing import Optional
 import time
 import logging
 import hashlib
+import json
 
 from app.models.schemas import ChatResponse, PhotoResult, AgentWorkflowStep, ErrorResponse, RerankerDecision
 from app.config import settings
@@ -32,6 +33,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 MAX_RESULTS_RETURNED = 30
 IMAGE_ANALYSIS_CACHE_MAX = 64
+MAX_CLIENT_HISTORY_MESSAGES = 20
+MAX_CLIENT_HISTORY_CONTENT_CHARS = 2000
 
 conversation_store = get_conversation_store()
 _image_analysis_cache: dict[str, dict] = {}
@@ -53,6 +56,52 @@ def _safe_int(value):
         return int(str(value))
     except Exception:
         return None
+
+
+def _normalize_client_conversation_history(raw_history: Optional[str]) -> list[dict[str, str]]:
+    """Parse compact chat-window history sent by the frontend for immediate context."""
+    if not raw_history:
+        return []
+
+    try:
+        parsed = json.loads(raw_history)
+    except Exception:
+        logger.warning("Ignoring malformed client conversation history")
+        return []
+
+    if not isinstance(parsed, list):
+        return []
+
+    normalized: list[dict[str, str]] = []
+    for item in parsed:
+        if not isinstance(item, dict):
+            continue
+        role = item.get("role")
+        if role not in {"user", "assistant"}:
+            continue
+        content = " ".join(str(item.get("content") or "").split())
+        if not content:
+            continue
+        normalized.append({
+            "role": role,
+            "content": content[:MAX_CLIENT_HISTORY_CONTENT_CHARS],
+        })
+
+    return normalized[-MAX_CLIENT_HISTORY_MESSAGES:]
+
+
+def _select_conversation_history_for_agent(
+    server_history: list[dict[str, str]],
+    client_history: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    """
+    Prefer same-window client history when present.
+
+    OpenSearch writes can be read-after-write stale when the user sends a quick
+    follow-up. The UI already has the completed previous turn, so it is the best
+    source for immediate multi-turn context.
+    """
+    return client_history or server_history
 
 
 def _run_searchbybrief_workflow(
@@ -207,6 +256,7 @@ async def chat(
     message: str = Form(...),
     conversation_id: Optional[str] = Form(None),
     openai_api_key: Optional[str] = Form(None),
+    conversation_history: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
     workflow_mode: Optional[str] = Form("agent_squad"),
     model: Optional[str] = Form(None),
@@ -217,6 +267,7 @@ async def chat(
     - **message**: User's query
     - **conversation_id**: UUID of existing conversation or None for new
     - **openai_api_key**: Deprecated; LLM calls use server-side NVIDIA_API_KEY
+    - **conversation_history**: Optional compact prior chat-window messages for immediate context
     - **file**: Optional PDF/DOCX/TXT file (max 6MB)
     - **model**: Optional NVIDIA model ID (defaults to app config)
     """
@@ -287,18 +338,19 @@ async def chat(
             print(f"[DEBUG] No images found in PDF — file_images is empty")  # Debug
 
         # ── Step 3: Load conversation history AND stored file context ──
-        conversation_history = []
+        server_conversation_history = []
+        client_conversation_history = _normalize_client_conversation_history(conversation_history)
         existing_conv = await conversation_store.get_conversation(conversation_id)
 
         if existing_conv:
             # Load message history for multi-turn context
             if existing_conv.get('messages'):
                 for msg in existing_conv['messages']:
-                    conversation_history.append({
+                    server_conversation_history.append({
                         'role': 'user',
                         'content': msg.get('user_message', '')
                     })
-                    conversation_history.append({
+                    server_conversation_history.append({
                         'role': 'assistant',
                         'content': msg.get('agent_response', '')
                     })
@@ -319,6 +371,18 @@ async def chat(
                     file_content=file_content,
                 )
                 logger.info(f"Updated stored file content for conversation {conversation_id[:8]}...")
+
+        agent_conversation_history = _select_conversation_history_for_agent(
+            server_conversation_history,
+            client_conversation_history,
+        )
+        logger.info(
+            "Conversation context for agent: source=%s server_messages=%d client_messages=%d selected_messages=%d",
+            "client" if client_conversation_history else "server",
+            len(server_conversation_history),
+            len(client_conversation_history),
+            len(agent_conversation_history),
+        )
         
         selected_mode = (workflow_mode or "agent_squad").strip().lower()
         if selected_mode in {"searchbybrief", "search_by_brief", "brief"}:
@@ -349,7 +413,7 @@ async def chat(
                 file_images=file_images,
                 image_analysis=image_analysis,
                 file_type=file_type,
-                conversation_history=conversation_history
+                conversation_history=agent_conversation_history
             )
         
         # Format results (unfiltered)

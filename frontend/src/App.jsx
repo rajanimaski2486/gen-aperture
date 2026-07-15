@@ -708,6 +708,14 @@ function App() {
     setIsReranking(rerankTriggered);
     setRerankProgress(rerankTriggered ? getRerankProgress(0) : null);
 
+    const priorConversationHistory = messages
+      .filter((msg) => (msg.role === 'user' || msg.role === 'assistant') && msg.content)
+      .map((msg) => ({
+        role: msg.role,
+        content: String(msg.content),
+      }))
+      .slice(-20);
+
     // Add user message to UI
     const newUserMessage = {
       role: "user",
@@ -726,6 +734,7 @@ function App() {
         fileToSend,
         selectedModel,
         workflowMode,
+        priorConversationHistory,
       );
   const generationMs = Date.now() - requestStart;
 
