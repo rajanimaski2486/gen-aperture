@@ -13,9 +13,11 @@ Performs a comprehensive LLM-based analysis to extract:
   - Refinement filters (orientation, recency, popularity)
 """
 import logging
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
+from app.config import settings
 from app.services.query_refinement import extract_refinement_filters
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,15 @@ _STOP_WORDS = frozenset({
     "trending", "best", "top", "of", "the", "a",
     "an", "in", "from", "some", "please",
 })
+
+_VIDEO_RE = re.compile(r"\b(videos?|footage|clips?|reels?)\b", re.IGNORECASE)
+_IMAGE_RE = re.compile(r"\b(images?|photos?|pictures?|pics?)\b", re.IGNORECASE)
+_GENERATED_RE = re.compile(r"\b(ai[-\s]?generated|generated(?:\s+(?:images?|photos?|content|results?|pictures?))?)\b", re.IGNORECASE)
+_NOT_GENERATED_RE = re.compile(r"\b(real photos?|authentic|no ai|not generated|non[-\s]?generated)\b", re.IGNORECASE)
+_EXCLUSION_RE = re.compile(
+    r"\b(?:no|without|exclude|minus|not)\s+([^,.]+?)(?=\s+(?:and|with|but|or)\b|[,.]|$)",
+    re.IGNORECASE,
+)
 
 
 @dataclass
@@ -48,6 +59,55 @@ class QueryIntentResult:
     mood_style: List[str] = field(default_factory=list)
 
 
+def _fallback_query_intent(raw_query: str, *, intent: str) -> QueryIntentResult:
+    """Fast local query intent extraction used by default and as LLM fallback."""
+    raw_query = (raw_query or "").strip()
+    tokens = re.findall(r"[a-z0-9]+", raw_query.lower())
+    terms = [t for t in tokens if t not in _STOP_WORDS][:6]
+    if not terms and raw_query:
+        terms = raw_query.split()[:6]
+
+    boolean_query = " AND ".join(terms) if terms else raw_query
+    semantic_query = " ".join(terms[:8]) if terms else raw_query
+
+    has_video = bool(_VIDEO_RE.search(raw_query))
+    has_image = bool(_IMAGE_RE.search(raw_query))
+    if has_video and has_image:
+        media_type: Optional[str] = "both"
+    elif has_video:
+        media_type = "video"
+    elif has_image:
+        media_type = "image"
+    else:
+        media_type = None
+
+    is_generated: Optional[bool] = None
+    if _GENERATED_RE.search(raw_query):
+        is_generated = True
+    elif _NOT_GENERATED_RE.search(raw_query):
+        is_generated = False
+
+    exclusion_terms: List[str] = []
+    for match in _EXCLUSION_RE.finditer(raw_query):
+        phrase = " ".join(
+            t for t in re.findall(r"[a-z0-9]+", match.group(1).lower())
+            if t not in _STOP_WORDS
+        )
+        if phrase:
+            exclusion_terms.append(phrase)
+
+    return QueryIntentResult(
+        entity_terms=terms,
+        boolean_query=boolean_query,
+        semantic_query=semantic_query or raw_query,
+        media_type=media_type,
+        is_generated=is_generated,
+        exclusion_terms=exclusion_terms,
+        refinement_filters=extract_refinement_filters(None, extra_text=raw_query),
+        intent=intent,
+    )
+
+
 def detect_text_query_intent(
     raw_query: str,
     llm: Any,
@@ -65,6 +125,9 @@ def detect_text_query_intent(
         A populated ``QueryIntentResult``.
     """
     from langchain_core.messages import HumanMessage, SystemMessage
+
+    if not settings.text_query_intent_llm_enabled:
+        return _fallback_query_intent(raw_query, intent="Direct search (fast path)")
 
     # Build compact category reference for the prompt
     category_list = "\n".join(
@@ -286,13 +349,4 @@ Respond in this EXACT JSON format:
 
     except Exception as e:
         logger.warning("Query intent detection failed (%s), using fallback", e)
-        fallback_terms = [
-            t for t in raw_query.lower().split() if t not in _STOP_WORDS
-        ][:6]
-        fallback_boolean = " AND ".join(fallback_terms) if fallback_terms else raw_query
-        return QueryIntentResult(
-            entity_terms=fallback_terms or raw_query.split()[:6],
-            boolean_query=fallback_boolean,
-            semantic_query=raw_query,
-            intent="Direct search (fallback)",
-        )
+        return _fallback_query_intent(raw_query, intent="Direct search (fallback)")

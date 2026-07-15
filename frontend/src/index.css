@@ -658,24 +658,6 @@ body {
   gap: 0.5rem;
 }
 
-.search-mode-badge {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0.15rem 0.6rem;
-  border-radius: 12px;
-  letter-spacing: 0.02em;
-}
-
-.search-mode-badge.relevance {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.search-mode-badge.popular {
-  background: #fef3c7;
-  color: #b45309;
-}
-
 /* Filter toggle button (Filters ON / Filters OFF) */
 .filter-toggle-btn {
   display: inline-flex;
@@ -705,27 +687,6 @@ body {
   background: #eef2ff;
   border-color: #6366f1;
   color: #4f46e5;
-}
-
-/* Metadata banner shown below the header when filters are active */
-.filter-metadata-banner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem 1rem;
-  font-size: 0.72rem;
-  color: #4f46e5;
-  background: #eef2ff;
-  border: 1px solid #c7d2fe;
-  border-radius: 6px;
-  padding: 0.35rem 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.filter-metadata-banner span {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
 }
 
 .filter-result-count {
@@ -1434,12 +1395,77 @@ body {
    Reflection Reranker UI
    ═══════════════════════════════════════════════════════════════ */
 
-/* Loading indicator text shown below the spinner */
-.rerank-loading-text {
-  font-size: 0.8rem;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.65);
-  margin: 0.4rem 0 0;
+.rerank-progress-panel {
+  margin-top: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  border-radius: 8px;
+  background: rgba(15, 118, 110, 0.16);
+  color: rgba(255, 255, 255, 0.88);
+  min-width: min(340px, 72vw);
+}
+
+.rerank-progress-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.9rem;
+}
+
+.rerank-progress-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #99f6e4;
+}
+
+.rerank-progress-title {
+  margin-top: 0.18rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.rerank-progress-time {
+  flex: 0 0 auto;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.35);
+  color: #d1fae5;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rerank-progress-detail {
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.rerank-progress-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.7rem;
+}
+
+.rerank-progress-step {
+  height: 0.24rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.rerank-progress-step.complete {
+  background: #5eead4;
+  opacity: 0.78;
+}
+
+.rerank-progress-step.active {
+  background: #facc15;
+  opacity: 1;
 }
 
 /* Teal pill badge shown in the results header */

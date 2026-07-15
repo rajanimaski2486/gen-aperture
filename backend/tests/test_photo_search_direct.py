@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 
 from app.config import settings
 from app.services.photo_search import PhotoSearchService
@@ -59,7 +60,9 @@ class DirectPhotoSearchTests(unittest.TestCase):
         queries = body["query"]["hybrid"]["queries"]
         self.assertIn("knn", queries[0])
         self.assertIn(settings.opensearch_vector_field, queries[0]["knn"])
-        self.assertEqual(queries[0]["knn"][settings.opensearch_vector_field]["k"], settings.opensearch_knn_k)
+        vector_query = queries[0]["knn"][settings.opensearch_vector_field]
+        self.assertEqual(vector_query["min_score"], settings.opensearch_knn_min_score)
+        self.assertNotIn("k", vector_query)
 
         lexical = queries[1]["bool"]
         multi_match = lexical["must"][0]["multi_match"]
@@ -95,6 +98,21 @@ class DirectPhotoSearchTests(unittest.TestCase):
         self.assertEqual(photo["keywords"], ["mountain", "sunrise"])
         self.assertEqual(photo["photographer"], "Ada")
         self.assertIn("opensearch_query", result)
+
+    def test_build_direct_hybrid_query_can_fallback_to_top_k(self):
+        service = make_service()
+
+        with patch.object(settings, "opensearch_knn_min_score", 0.0):
+            body = service.build_direct_hybrid_query(
+                semantic_query="sunrise mountains",
+                lexical_query="sunrise mountains",
+                vector=[0.01] * 256,
+                size=25,
+            )
+
+        vector_query = body["query"]["hybrid"]["queries"][0]["knn"][settings.opensearch_vector_field]
+        self.assertEqual(vector_query["k"], settings.opensearch_knn_k)
+        self.assertNotIn("min_score", vector_query)
 
 
 if __name__ == "__main__":

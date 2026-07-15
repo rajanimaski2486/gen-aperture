@@ -115,7 +115,8 @@ class RerankerConfig:
     max_candidates_for_critique: int = 25
 
     # Model used for both LLM passes
-    model: str = "meta/llama-3.3-70b-instruct"
+    model: str = "meta/llama-3.2-3b-instruct"
+    timeout_seconds: float = 120.0
     api_key: str | None = None
     base_url: str | None = None
 
@@ -128,6 +129,7 @@ class RerankerConfig:
             borderline_threshold=settings.rerank_borderline_threshold,
             duplicate_similarity_threshold=settings.rerank_duplicate_similarity_threshold,
             model=settings.rerank_model,
+            timeout_seconds=settings.rerank_timeout_seconds,
             api_key=settings.nvidia_api_key,
             base_url=settings.llm_base_url,
         )
@@ -192,17 +194,23 @@ def _normalize_scores(scores: list[float]) -> list[float]:
     return [(s - lo) / (hi - lo) for s in scores]
 
 
-def _compute_keyword_jaccard(a: list[str], b: list[str]) -> float:
-    """
-    Return the Jaccard similarity between two keyword lists.
+def _tokenize_rerank_text(value: str) -> set[str]:
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", value.lower())
+        if len(token) > 2
+    }
 
-    Used as a lightweight, Python-only duplicate-detection fallback when the
-    LLM critique does not explicitly identify duplicate groups.
 
-    Jaccard(A, B) = |A ∩ B| / |A ∪ B|
+def _compute_text_jaccard(a: str, b: str) -> float:
     """
-    set_a = {kw.lower().strip() for kw in a}
-    set_b = {kw.lower().strip() for kw in b}
+    Return Jaccard similarity between approved reranker text fields.
+
+    This is a lightweight Python-only duplicate fallback. It intentionally uses
+    only title, description, and tags from `icc_images_ext`.
+    """
+    set_a = _tokenize_rerank_text(a)
+    set_b = _tokenize_rerank_text(b)
     if not set_a and not set_b:
         return 0.0
     intersection = len(set_a & set_b)
@@ -210,24 +218,79 @@ def _compute_keyword_jaccard(a: list[str], b: list[str]) -> float:
     return intersection / union if union > 0 else 0.0
 
 
-def _build_candidate_summary(candidates: list[dict[str, Any]], *, max_keywords: int = 30) -> str:
+def _safe_int(value: Any) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _infer_orientation(width: Any, height: Any) -> str | None:
+    width_i = _safe_int(width)
+    height_i = _safe_int(height)
+    if not width_i or not height_i:
+        return None
+    if abs(width_i - height_i) / max(width_i, height_i) <= 0.05:
+        return "square"
+    return "horizontal" if width_i > height_i else "vertical"
+
+
+def _candidate_tags(candidate: dict[str, Any], *, max_tags: int = 30) -> list[str]:
+    raw_tags = candidate.get("tags")
+    if raw_tags is None:
+        # `PhotoSearchService` maps `icc_images_ext.tags` into the legacy
+        # `keywords` slot for API compatibility. Treat it as tags for reranking.
+        raw_tags = candidate.get("keywords", [])
+
+    if isinstance(raw_tags, str):
+        tags = [part.strip() for part in raw_tags.split(",") if part.strip()]
+    elif isinstance(raw_tags, list):
+        tags = [str(part).strip() for part in raw_tags if str(part).strip()]
+    else:
+        tags = []
+    return tags[:max_tags]
+
+
+def _candidate_title(candidate: dict[str, Any]) -> str:
+    return str(candidate.get("title") or "").strip()
+
+
+def _candidate_description(candidate: dict[str, Any]) -> str:
+    return str(candidate.get("description") or "").strip()
+
+
+def _candidate_dedup_text(candidate: dict[str, Any]) -> str:
+    tags = " ".join(_candidate_tags(candidate))
+    return " ".join(
+        part for part in (
+            _candidate_title(candidate),
+            _candidate_description(candidate),
+            tags,
+        )
+        if part
+    )
+
+
+def _build_candidate_summary(candidates: list[dict[str, Any]], *, max_tags: int = 30) -> str:
     """
     Build a compact JSON-like text summary of the candidates for the LLM prompts.
 
-    Includes all fields the LLM needs to make an accurate relevance judgement:
-    hadron_id, description, keywords (up to max_keywords), category_ids,
-    license_count, and the raw retrieval score.
+    Uses only fields available and useful in `icc_images_ext`: identity, title,
+    description, tags, dimensions/inferred orientation, and retrieval score.
     """
     rows = []
     for i, c in enumerate(candidates, 1):
-        kws = c.get("keywords", [])
+        width = _safe_int(c.get("width"))
+        height = _safe_int(c.get("height"))
         rows.append({
             "index": i,
             "hadron_id": c.get("hadron_id") or f"__noid_{id(c)}",
-            "description": (c.get("description") or "")[:300],
-            "keywords": kws[:max_keywords],
-            "category_ids": c.get("global_category_ids") or c.get("category_ids") or [],
-            "license_count": c.get("license_count", 0),
+            "title": _candidate_title(c)[:220],
+            "description": _candidate_description(c)[:360],
+            "tags": _candidate_tags(c, max_tags=max_tags),
+            "width": width,
+            "height": height,
+            "orientation": _infer_orientation(width, height),
             "retrieval_score": round(c.get("score", 0.0), 4),
         })
     return json.dumps(rows, indent=2)
@@ -238,11 +301,11 @@ def _python_dedup(
     threshold: float,
 ) -> list[str]:
     """
-    Python-side near-duplicate detection via Jaccard keyword similarity.
+    Python-side near-duplicate detection via approved text-field similarity.
 
-    For each pair of candidates we compute the keyword Jaccard.  When it
-    exceeds ``threshold`` we keep the one with the higher retrieval score and
-    flag the other as a duplicate.  Returns the list of hadron_ids to DISCARD.
+    For each pair of candidates we compute Jaccard over title, description, and
+    tags. When it exceeds ``threshold`` we keep the one with the higher
+    retrieval score and flag the other as a duplicate.
     """
     ids = list(candidates_by_id.keys())
     discard: set[str] = set()
@@ -252,8 +315,8 @@ def _python_dedup(
                 continue
             a = candidates_by_id[ids[i]]
             b = candidates_by_id[ids[j]]
-            sim = _compute_keyword_jaccard(
-                a.get("keywords", []), b.get("keywords", [])
+            sim = _compute_text_jaccard(
+                _candidate_dedup_text(a), _candidate_dedup_text(b)
             )
             if sim >= threshold:
                 # Discard the one with the lower retrieval score
@@ -312,7 +375,7 @@ class ReflectionReranker:
         candidates       Top-k results returned by OpenSearch (raw dicts from
                          photo_search.execute_raw_query).
         search_criteria  Optional structured context extracted upstream
-                         (requirements, filters, exclusions, category_gids).
+                         (requirements, filters, exclusions).
 
         Returns a RerankerOutput.  If any unrecoverable error occurs during
         the LLM passes, ``triggered=False`` is returned so the caller can
@@ -332,25 +395,27 @@ class ReflectionReranker:
         criteria_text = _format_criteria(search_criteria)
 
         try:
-            client = AsyncOpenAI(
-                api_key=self.config.api_key,
-                base_url=self.config.base_url,
+            return await asyncio.wait_for(
+                self._rerank_pipeline(user_query, candidates, criteria_text),
+                timeout=self.config.timeout_seconds,
             )
-
-            # ── Pass 1: Scoring ───────────────────────────────────────────────
-            logger.info("Reranker Pass 1 (scoring): evaluating %d candidates", total)
-            pass1_result = await self._scoring_pass(client, user_query, criteria_text, candidates)
-
-            # ── Pass 2: Critique ──────────────────────────────────────────────
-            top_n = pass1_result[: self.config.max_candidates_for_critique]
-            logger.info("Reranker Pass 2 (critique): reviewing top %d candidates", len(top_n))
-            pass2_result = await self._critique_pass(client, user_query, criteria_text, top_n, candidates)
-
-            # ── Pass 3: Final selection (pure Python) ─────────────────────────
-            logger.info("Reranker Pass 3 (selection): building final ranked list")
-            output = self._final_selection(candidates, pass1_result, pass2_result)
-            return output
-
+        except asyncio.TimeoutError:
+            explanation = (
+                f"Reflection reranking timed out after "
+                f"{self.config.timeout_seconds:g} seconds; showing original search results."
+            )
+            logger.warning(explanation)
+            return RerankerOutput(
+                triggered=False,
+                total_candidates=total,
+                final_results=candidates,
+                decisions=[],
+                explanation=explanation,
+                pass_summaries={
+                    "error": "timeout",
+                    "timeout_seconds": self.config.timeout_seconds,
+                },
+            )
         except Exception as exc:
             # Any failure falls back gracefully — original order is preserved
             logger.warning(
@@ -364,6 +429,31 @@ class ReflectionReranker:
                 explanation=None,
                 pass_summaries={"error": str(exc)},
             )
+
+    async def _rerank_pipeline(
+        self,
+        user_query: str,
+        candidates: list[dict[str, Any]],
+        criteria_text: str,
+    ) -> RerankerOutput:
+        """Run the actual reranker passes under the public timeout wrapper."""
+        client_timeout = max(float(self.config.timeout_seconds), 1.0)
+        client = AsyncOpenAI(
+            api_key=self.config.api_key,
+            base_url=self.config.base_url,
+            timeout=client_timeout,
+            max_retries=0,
+        )
+
+        # ── Pass 1: Scoring ───────────────────────────────────────────────
+        pass1_result = await self._scoring_pass(client, user_query, criteria_text, candidates)
+
+        # ── Pass 2: Critique ──────────────────────────────────────────────
+        top_n = pass1_result[: self.config.max_candidates_for_critique]
+        pass2_result = await self._critique_pass(client, user_query, criteria_text, top_n, candidates)
+
+        # ── Pass 3: Final selection (pure Python) ─────────────────────────
+        return self._final_selection(candidates, pass1_result, pass2_result)
 
     # ── Pass 1: LLM Scoring ───────────────────────────────────────────────────
 
@@ -379,10 +469,10 @@ class ReflectionReranker:
         them into a single raw_score (0-10 scale).
 
         Scoring rubric applied inside the prompt:
-            raw_score = query_relevance * 0.40
+            raw_score = query_relevance * 0.50
                       + criteria_match  * 0.25
-                      + specificity     * 0.25
-                      + completeness    * 0.10
+                      + specificity     * 0.20
+                      + completeness    * 0.05
 
         Returns a list of scoring dicts, sorted by raw_score descending.
         Each dict has the keys: hadron_id, query_relevance, criteria_match,
@@ -393,7 +483,9 @@ class ReflectionReranker:
         system_prompt = (
             "You are an expert stock photo search quality evaluator. "
             "Score each candidate photo against the user's search query using only the "
-            "photo's description and keywords — not its retrieval rank.\n\n"
+            "approved candidate evidence fields: title, description, tags, dimensions, "
+            "inferred orientation, and retrieval_score.\n"
+            "Do not use any metadata outside that approved field list as relevance evidence.\n\n"
             "Scoring dimensions (all 0-10). Use the full 0-10 range:\n"
             "  query_relevance:\n"
             "    10 = photo is literally and specifically OF the queried subject/scene\n"
@@ -411,12 +503,13 @@ class ReflectionReranker:
             "     5 = could plausibly match several different queries\n"
             "     2 = so generic it adds no value\n"
             "  completeness:\n"
-            "    10 = rich, detailed scene with strong visual substance\n"
-            "     5 = adequate but sparse\n"
-            "     2 = empty, abstract, or visually uninformative\n\n"
+            "    10 = title/description/tags provide rich visual substance\n"
+            "     5 = adequate but sparse text evidence\n"
+            "     2 = empty, abstract, or visually uninformative text evidence\n\n"
             "Combined score formula:\n"
             "  raw_score = query_relevance*0.50 + criteria_match*0.25 + specificity*0.20 + completeness*0.05\n\n"
             "IMPORTANT: These results were already ranked as relevant by a production search engine. "
+            "Use retrieval_score only as a weak tie-breaker when candidates appear equally relevant. "
             "Give benefit of the doubt — only score below 4 when the photo is clearly "
             "off-topic or violates an explicit constraint. A photo that generally matches the "
             "subject should score 6+. Do NOT over-penalise based on incomplete descriptions.\n\n"
@@ -424,7 +517,7 @@ class ReflectionReranker:
             "whose value is an array. Each array element must have exactly these keys:\n"
             "  hadron_id, query_relevance, criteria_match, specificity, completeness, raw_score, notes\n\n"
             "The 'notes' field must explain in one sentence WHY this score was given, "
-            "referencing specific description/keyword evidence. "
+            "referencing specific title, description, tag, orientation, or dimension evidence. "
             "Do not include any text outside the JSON object."
         )
 
@@ -432,8 +525,8 @@ class ReflectionReranker:
             f"## User Search Query\n\"{user_query}\"\n\n"
             f"## Search Criteria & Constraints\n{criteria_text}\n\n"
             f"## Candidate Photos\n"
-            f"Each entry includes: hadron_id, description, keywords, category_ids, "
-            f"license_count, retrieval_score.\n\n"
+            f"Each entry includes only: hadron_id, title, description, tags, width, "
+            f"height, inferred orientation, retrieval_score.\n\n"
             f"{candidate_text}\n\n"
             "Score every candidate against the search query. "
             "Return JSON as described."
@@ -484,8 +577,9 @@ class ReflectionReranker:
           final_ranked_ids:    [hadron_id, ...]  (ordered best-first)
           challenges:          {hadron_id: "reason the ranking was challenged"}
         """
-        # Build a rich critique view: Pass-1 scores PLUS full description + keywords
-        # so the LLM can actually re-evaluate content, not just trust the scores.
+        # Build a rich critique view from the same approved `icc_images_ext`
+        # fields used in Pass 1 so the LLM can re-evaluate content, not just
+        # trust the scores.
         candidates_by_id_local: dict[str, dict[str, Any]] = {
             c.get("hadron_id") or f"__noid_{id(c)}": c
             for c in all_candidates
@@ -494,22 +588,29 @@ class ReflectionReranker:
         for s in top_scored:
             hid = s.get("hadron_id")
             c = candidates_by_id_local.get(hid or "", {})
-            kws = c.get("keywords", [])
+            width = _safe_int(c.get("width"))
+            height = _safe_int(c.get("height"))
             critique_rows.append({
                 "hadron_id": hid,
                 "pass1_raw_score": round(s.get("raw_score", 0), 2),
                 "pass1_notes": s.get("notes", ""),
-                "description": (c.get("description") or "")[:300],
-                "keywords": kws[:30],
-                "category_ids": c.get("global_category_ids") or c.get("category_ids") or [],
+                "title": _candidate_title(c)[:220],
+                "description": _candidate_description(c)[:360],
+                "tags": _candidate_tags(c),
+                "width": width,
+                "height": height,
+                "orientation": _infer_orientation(width, height),
+                "retrieval_score": round(c.get("score", 0.0), 4),
             })
         critique_summary = json.dumps(critique_rows, indent=2)
 
         system_prompt = (
             "You are a senior stock photo search quality reviewer. "
-            "You are given an initial scoring pass and the actual photo descriptions/keywords. "
+            "You are given an initial scoring pass plus approved candidate evidence: "
+            "title, description, tags, dimensions, inferred orientation, and retrieval_score. "
+            "Do not use any metadata outside that approved field list as relevance evidence. "
             "Your job is to improve result ordering and remove only clearly irrelevant photos.\n\n"
-            "For each candidate, read the description and keywords carefully, then ask:\n"
+            "For each candidate, read the title, description, tags, and orientation carefully, then ask:\n"
             "  1. Does this photo broadly match what the user searched for? "
             "A partial match or thematically related photo is fine to keep.\n"
             "  2. Only exclude when: the query requires a SPECIFIC location/landmark/season "
@@ -552,7 +653,8 @@ class ReflectionReranker:
         )
 
         raw = response.choices[0].message.content or "{}"
-        return json.loads(raw)
+        data = json.loads(raw)
+        return data
 
     # ── Pass 3: Final selection (pure Python) ─────────────────────────────────
 
@@ -796,9 +898,8 @@ def _format_criteria(search_criteria: dict[str, Any] | None) -> str:
     Expected keys (all optional):
       user_query:         the resolved search topic (injected by callers for text-only searches)
       requirements:       dict from Project Manager (brand domain, visual constraints, etc.)
-      refinement_filters: list of OpenSearch filter clauses
-      exclusion_terms:    list of keyword exclusion strings
-      category_gids:      list of category GIDs
+      refinement_filters: optional clauses; only orientation, width, and height are used
+      exclusion_terms:    terms to check against title, description, and tags
     """
     if not search_criteria:
         return "No explicit search criteria provided."
@@ -833,7 +934,10 @@ def _format_criteria(search_criteria: dict[str, Any] | None) -> str:
 
     exclusions = search_criteria.get("exclusion_terms") or []
     if exclusions:
-        lines.append(f"Exclude photos containing these keywords: {', '.join(exclusions)}")
+        lines.append(
+            "Exclude photos whose title, description, or tags contain: "
+            f"{', '.join(exclusions)}"
+        )
 
     filters = search_criteria.get("refinement_filters") or []
     if filters:
@@ -843,24 +947,29 @@ def _format_criteria(search_criteria: dict[str, Any] | None) -> str:
                 # Handle term filters: {"term": {"field": value}}
                 if "term" in f:
                     for field, val in f["term"].items():
+                        if field != "orientation":
+                            continue
                         v = val.get("value", val) if isinstance(val, dict) else val
-                        filter_descriptions.append(f"{field}={v}")
+                        filter_descriptions.append(f"orientation={v}")
                 # Handle range filters: {"range": {"field": {"gte": ...}}}
                 elif "range" in f:
                     for field, bounds in f["range"].items():
+                        if field not in {"width", "height"}:
+                            continue
                         parts = [f"{k}:{v}" for k, v in bounds.items()]
                         filter_descriptions.append(f"{field} {', '.join(parts)}")
                 else:
                     field_name = f.get("field", "")
+                    if field_name not in {"orientation", "width", "height"}:
+                        continue
                     value = f.get("value") or f.get("gte") or ""
                     if field_name:
                         filter_descriptions.append(f"{field_name}={value}")
         if filter_descriptions:
-            lines.append(f"Applied filters: {', '.join(filter_descriptions)}")
-
-    category_gids = search_criteria.get("category_gids") or []
-    if category_gids:
-        lines.append(f"Category GIDs (must match one of): {category_gids}")
+            lines.append(
+                "Constraints checkable from dimensions/inferred orientation: "
+                f"{', '.join(filter_descriptions)}"
+            )
 
     return "\n".join(lines) if lines else "No explicit search criteria provided."
 
@@ -874,11 +983,12 @@ def _format_criteria(search_criteria: dict[str, Any] | None) -> str:
 # ─────────────
 # user_query  = "best ocean sunset photos for travel brand"
 # candidates  = [
-#   {"hadron_id": "h001", "ext_id": 1001, "description": "Golden sunset over calm ocean waters",
-#    "keywords": ["sunset", "ocean", "golden", "travel", "sky"],
-#    "license_count": 320, "score": 8.5},
-#   {"hadron_id": "h002", "ext_id": 1002, "description": "Aerial view of beach at dusk",
-#    "keywords": ["beach", "aerial", "dusk", "drone"], "license_count": 180, "score": 7.2},
+#   {"hadron_id": "h001", "title": "Golden sunset over calm ocean waters",
+#    "description": "Golden sunset over calm ocean waters", "tags": ["sunset", "ocean"],
+#    "width": 4000, "height": 2600, "score": 8.5},
+#   {"hadron_id": "h002", "title": "Aerial view of beach at dusk",
+#    "description": "Aerial view of beach at dusk", "tags": ["beach", "aerial"],
+#    "width": 3000, "height": 4000, "score": 7.2},
 #   ... (up to 20 candidates)
 # ]
 # search_criteria = {

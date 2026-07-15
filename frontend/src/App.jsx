@@ -6,6 +6,63 @@ import { chatAPI, conversationsAPI } from "./services/api";
 
 const ACTIVE_CONVERSATION_KEY = "active_conversation_id";
 const MAX_RESULTS_DISPLAYED = 24;
+const RERANK_TRIGGER_PATTERN =
+  /\bbest\b|\btop[\s-]?ranked?\b|\brerank\b|\breflect\s+and\s+respond\b|\breviewed\b/i;
+
+const RERANK_PROGRESS_STAGES = [
+  {
+    key: "prepare",
+    afterMs: 0,
+    label: "Preparing candidate set",
+    detail: "Searching icc_images_ext and collecting the strongest matches.",
+  },
+  {
+    key: "score",
+    afterMs: 7000,
+    label: "Scoring relevance",
+    detail: "Comparing titles, descriptions, tags, dimensions, and orientation.",
+  },
+  {
+    key: "critique",
+    afterMs: 18000,
+    label: "Reviewing result quality",
+    detail: "Checking weak matches, duplicates, and borderline candidates.",
+  },
+  {
+    key: "select",
+    afterMs: 35000,
+    label: "Selecting final ranked set",
+    detail: "Promoting the best matches and preparing explanations.",
+  },
+  {
+    key: "waiting",
+    afterMs: 60000,
+    label: "Still working",
+    detail: "Waiting on the model response. This rerank step is capped at 2 minutes.",
+  },
+];
+
+function formatElapsedTime(totalSeconds) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes === 0) return `${seconds}s`;
+  return `${minutes}m ${seconds.toString().padStart(2, "0")}s`;
+}
+
+function getRerankProgress(elapsedMs) {
+  let activeIndex = 0;
+  for (let i = 0; i < RERANK_PROGRESS_STAGES.length; i += 1) {
+    if (elapsedMs >= RERANK_PROGRESS_STAGES[i].afterMs) {
+      activeIndex = i;
+    }
+  }
+
+  return {
+    activeIndex,
+    stage: RERANK_PROGRESS_STAGES[activeIndex],
+    elapsedSeconds: Math.floor(elapsedMs / 1000),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Demo Mode configuration
@@ -200,6 +257,38 @@ function RerankLogPanel({ decisions, explanation }) {
   );
 }
 
+function RerankProgressPanel({ progress }) {
+  if (!progress) return null;
+
+  return (
+    <div className="rerank-progress-panel" role="status" aria-live="polite">
+      <div className="rerank-progress-header">
+        <div>
+          <div className="rerank-progress-eyebrow">Reflection reranking</div>
+          <div className="rerank-progress-title">{progress.stage.label}</div>
+        </div>
+        <span className="rerank-progress-time">
+          {formatElapsedTime(progress.elapsedSeconds)}
+        </span>
+      </div>
+      <div className="rerank-progress-detail">{progress.stage.detail}</div>
+      <div className="rerank-progress-steps">
+        {RERANK_PROGRESS_STAGES.map((stage, index) => (
+          <span
+            key={stage.key}
+            className={[
+              "rerank-progress-step",
+              index < progress.activeIndex ? "complete" : "",
+              index === progress.activeIndex ? "active" : "",
+            ].filter(Boolean).join(" ")}
+            title={stage.label}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /** Agent workflow visualization panel */
 function AgentWorkflowPanel({ steps }) {
   const [expanded, setExpanded] = useState(false);
@@ -387,6 +476,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   // True when the outgoing message contains a rerank trigger phrase
   const [isReranking, setIsReranking] = useState(false);
+  const [rerankProgress, setRerankProgress] = useState(null);
   const [error, setError] = useState(null);
   const [workflowMode, setWorkflowMode] = useState('agent_squad');
   // Model selection
@@ -436,6 +526,22 @@ function App() {
 
     initializeApp();
   }, []);
+
+  useEffect(() => {
+    if (!isLoading || !isReranking) {
+      setRerankProgress(null);
+      return undefined;
+    }
+
+    const startedAt = Date.now();
+    const updateProgress = () => {
+      setRerankProgress(getRerankProgress(Date.now() - startedAt));
+    };
+
+    updateProgress();
+    const intervalId = window.setInterval(updateProgress, 1000);
+    return () => window.clearInterval(intervalId);
+  }, [isLoading, isReranking]);
 
   const loadRecentConversations = async () => {
     try {
@@ -598,9 +704,9 @@ function App() {
     if (directMessage === undefined) setInputMessage('');
 
     // Detect rerank trigger phrases to show the dedicated loading indicator
-    const rerankTrigger =
-      /\bbest\b|\btop[\s-]?ranked?\b|\brerank\b|\breflect\s+and\s+respond\b|\breviewed\b/i;
-    setIsReranking(rerankTrigger.test(userMessage));
+    const rerankTriggered = RERANK_TRIGGER_PATTERN.test(userMessage);
+    setIsReranking(rerankTriggered);
+    setRerankProgress(rerankTriggered ? getRerankProgress(0) : null);
 
     // Add user message to UI
     const newUserMessage = {
@@ -676,6 +782,8 @@ function App() {
       }
     } finally {
       setIsLoading(false);
+      setIsReranking(false);
+      setRerankProgress(null);
     }
   };
 
@@ -917,11 +1025,6 @@ function App() {
                         Showing {activeResults.length} results
                         {imageCount > 0 && <span className="result-type-pill result-type-pill--image">📸 {imageCount} images</span>}
                         {videoCount > 0 && <span className="result-type-pill result-type-pill--video">🎬 {videoCount} videos</span>}
-                        {msg.search_mode && (
-                          <span className={`search-mode-badge ${msg.search_mode}`}>
-                            {msg.search_mode === 'popular' ? '🔥 Popular' : '🎯 Relevant'}
-                          </span>
-                        )}
                         {msg.rerank_applied && (
                           <span className="rerank-badge">🎯 Reranked</span>
                         )}
@@ -929,20 +1032,6 @@ function App() {
                           <span className="generation-time-badge">⏱ {(msg.generation_ms / 1000).toFixed(1)}s</span>
                         )}
                       </div>
-
-                      {msg.filter_metadata?.filters_applied && (
-                        <div className="filter-metadata-banner">
-                          {msg.filter_metadata.category_values?.length > 0 && (
-                            <span>🏷️ {msg.filter_metadata.category_values.join(', ')}</span>
-                          )}
-                          {msg.filter_metadata.exclusion_terms?.length > 0 && (
-                            <span>🚫 Excluded: {msg.filter_metadata.exclusion_terms.join(', ')}</span>
-                          )}
-                          {msg.filter_metadata.refinement_filter_descriptions?.length > 0 && (
-                            <span>🔧 {msg.filter_metadata.refinement_filter_descriptions.join(' · ')}</span>
-                          )}
-                        </div>
-                      )}
 
                       <div className="image-grid">
                         {activeResults.slice(0, 10).map((result, resultIdx) => {
@@ -1036,9 +1125,7 @@ function App() {
               <div className="message-content">
                 <div className="loading"></div>
                 {isReranking && (
-                  <p className="rerank-loading-text">
-                    🔄 Applying reflection reranking…
-                  </p>
+                  <RerankProgressPanel progress={rerankProgress} />
                 )}
               </div>
             </div>

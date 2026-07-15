@@ -12,9 +12,22 @@ from app.services.conversation_store import get_conversation_store
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO if settings.environment == "production" else logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.WARNING,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    force=True,
 )
+for logger_name in (
+    "app",
+    "httpcore",
+    "httpx",
+    "openai",
+    "opensearch",
+    "python_multipart",
+    "urllib3",
+    "uvicorn.access",
+    "uvicorn.error",
+):
+    logging.getLogger(logger_name).setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app

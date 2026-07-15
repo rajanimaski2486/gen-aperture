@@ -118,6 +118,30 @@ _PIPELINE_MIXED_RE = _re.compile(
     r'\b(assets|content)\b', _re.IGNORECASE
 )
 
+_POPULAR_SEARCH_MODE_RE = _re.compile(
+    r"""
+    \b(?:
+        popular
+        | trending
+        | best[-\s]?selling
+        | bestselling
+        | most\s+(?:popular|downloaded|licensed)
+        | top\s+(?:downloaded|licensed|selling)
+    )\b
+    """,
+    _re.IGNORECASE | _re.VERBOSE,
+)
+
+
+def _detect_search_mode(query: str) -> str:
+    """
+    Classify search mode without an LLM.
+
+    Plain "best" is intentionally not "popular"; in this app it usually means
+    best-matching results and may trigger reflection reranking.
+    """
+    return "popular" if _POPULAR_SEARCH_MODE_RE.search(query or "") else "relevance"
+
 
 def _detect_search_pipeline(query: str) -> str:
     """
@@ -213,12 +237,16 @@ class AgentSquad:
         primary_model = model or settings.agent_model
         fallback_model = settings.agent_fallback_model
         base_url = settings.llm_base_url
+        llm_timeout = settings.agent_llm_timeout_seconds
+        llm_max_retries = settings.agent_llm_max_retries
 
         primary_llm = ChatOpenAI(
             model=primary_model,
             temperature=0.7,
             api_key=api_key,
             base_url=base_url,
+            timeout=llm_timeout,
+            max_retries=llm_max_retries,
         )
 
         fallback_llms = []
@@ -229,6 +257,8 @@ class AgentSquad:
                     temperature=0.7,
                     api_key=api_key,
                     base_url=base_url,
+                    timeout=llm_timeout,
+                    max_retries=llm_max_retries,
                 )
             )
 
@@ -371,49 +401,14 @@ class AgentSquad:
         - If file uploaded -> Project Manager Strand
         - If text only -> Search Specialist Strand (direct)
         
-        Also uses LLM to determine search intent:
+        Uses deterministic search-mode detection:
         - "relevance" -> user wants best-matching images
         - "popular"   -> user wants trending/popular/best-selling images
         """
         logger.info("Router: Analyzing input...")
-        print(f"[DEBUG ROUTER] image_analysis in state: {bool(state.get('image_analysis'))}, type: {type(state.get('image_analysis'))}")
         
         steps = state.get("workflow_steps", [])
-        
-        # --- Determine search intent via LLM ---
-        intent_prompt = """You are a search intent classifier. Given a user's query about stock photos, determine the search mode.
-
-Respond with EXACTLY one word — either "relevance" or "popular".
-
-Use "popular" if the user's query indicates they want:
-- Popular, trending, best-selling, most downloaded, or top images
-- Images that are commercially successful or frequently licensed
-- "What's hot", "trending now", "most popular" type queries
-
-Use "relevance" for everything else — when the user wants images that best match a specific subject, scene, concept, or description.
-
-If there is conversation history, consider the full context when classifying intent.
-"""
-        
-        # Build context with conversation history
-        intent_messages = [SystemMessage(content=intent_prompt)]
-        for hist_msg in state.get("conversation_history", []):
-            if hist_msg["role"] == "user":
-                intent_messages.append(HumanMessage(content=hist_msg["content"]))
-            else:
-                intent_messages.append(AIMessage(content=hist_msg["content"]))
-        intent_messages.append(HumanMessage(content=state["user_query"]))
-        
-        is_first_search = len(state.get("conversation_history", [])) == 0
-
-        try:
-            intent_response = self.llm.invoke(intent_messages)
-            raw_intent = intent_response.content.strip().lower()
-            search_mode = "popular"
-        except Exception as e:
-            default_mode = "popular"
-            logger.warning(f"Router: Intent detection failed ({e}), defaulting to {default_mode}")
-            search_mode = default_mode
+        search_mode = _detect_search_mode(state["user_query"])
         
         state["search_mode"] = search_mode
         logger.info(f"Router: Detected search intent -> {search_mode}")
@@ -1139,6 +1134,20 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                     rerank_out.total_candidates,
                     len(rerank_out.final_results),
                 )
+            elif rerank_out.explanation:
+                state["rerank_explanation"] = rerank_out.explanation
+                steps.append({
+                    "agent": "Reflection Reranker",
+                    "action": "Skipped Reranking",
+                    "model": self._reranker.config.model,
+                    "reasoning": rerank_out.explanation,
+                    "output": {
+                        "kept": len(state["search_results"]),
+                        "total_evaluated": rerank_out.total_candidates,
+                        "explanation": rerank_out.explanation,
+                        **rerank_out.pass_summaries,
+                    },
+                })
 
         state["workflow_steps"] = steps
         return state
@@ -1388,6 +1397,20 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                     rerank_out.total_candidates,
                     len(rerank_out.final_results),
                 )
+            elif rerank_out.explanation:
+                state["rerank_explanation"] = rerank_out.explanation
+                steps.append({
+                    "agent": "Reflection Reranker",
+                    "action": "Skipped Reranking",
+                    "model": self._reranker.config.model,
+                    "reasoning": rerank_out.explanation,
+                    "output": {
+                        "kept": len(state["search_results"]),
+                        "total_evaluated": rerank_out.total_candidates,
+                        "explanation": rerank_out.explanation,
+                        **rerank_out.pass_summaries,
+                    },
+                })
 
         state["workflow_steps"] = steps
         return state
@@ -1914,16 +1937,17 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         # Add search results summary
         total = state.get("total_results", 0)
         results_count = len(state.get("search_results", []))
-        search_mode = state.get("search_mode", "popular")
-        mode_label = "popularity" if search_mode == "popular" else "relevance"
         
         if total > 0:
-            response_parts.append(f"**Search Results ({mode_label}):** Found {total} matching photos, showing top {results_count}.")
+            response_parts.append(f"**Search Results:** Found {total} matching photos, showing top {results_count}.")
             
             if state.get("extracted_queries"):
                 response_parts.append(f"\n**Search queries used:** {', '.join(state['extracted_queries'])}")
         else:
             response_parts.append("No matching photos found. Try refining your search terms or adjusting filters.")
+
+        if state.get("rerank_explanation") and not state.get("rerank_applied"):
+            response_parts.append(f"**Reranking note:** {state['rerank_explanation']}")
         
         state["response"] = "\n\n".join(response_parts)
         
@@ -2343,11 +2367,6 @@ Rules:
             )
             
             # Run graph
-            print(
-                f"[DEBUG RUN] image_analysis before graph.invoke: "
-                f"{bool(initial_state.get('image_analysis'))}, "
-                f"search_terms: {(initial_state.get('image_analysis') or {}).get('search_terms', [])}"
-            )
             logger.info(f"Starting agent execution for query: {user_query[:100]}...")
             final_state = self.graph.invoke(initial_state)
             

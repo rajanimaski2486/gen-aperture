@@ -196,19 +196,20 @@ class PhotoSearchService:
             "query": {
                 "hybrid": {
                     "queries": [
-                        {
-                            "knn": {
-                                settings.opensearch_vector_field: {
-                                    "vector": vector,
-                                    "k": max(int(settings.opensearch_knn_k), size),
-                                }
-                            }
-                        },
+                        self._build_knn_clause(vector=vector, size=size),
                         {"bool": lexical_bool},
                     ]
                 }
             },
         }
+
+    def _build_knn_clause(self, vector: List[float], size: int) -> Dict[str, Any]:
+        vector_query: Dict[str, Any] = {"vector": vector}
+        if settings.opensearch_knn_min_score > 0:
+            vector_query["min_score"] = float(settings.opensearch_knn_min_score)
+        else:
+            vector_query["k"] = max(int(settings.opensearch_knn_k), size)
+        return {"knn": {settings.opensearch_vector_field: vector_query}}
     
     def execute_raw_query(
         self,
@@ -497,6 +498,7 @@ class PhotoSearchService:
         return {
             "hadron_id": str(image_id) if image_id is not None else None,
             "ext_id": ext_id,
+            "title": source.get("title"),
             "description": source.get("description") or source.get("description_en") or source.get("title") or "No description available",
             "image_url": image_url,
             "thumbnail_url": thumbnail_url,
@@ -506,6 +508,7 @@ class PhotoSearchService:
             "license_count": source.get("total_paid_license_count_all_time", 0),
             "categories": source.get("categories") or source.get("global_category_ids", []),
             "keywords": tags,
+            "tags": tags,
             "orientation": source.get("orientation"),
             "score": hit.get("_score", 0.0),
             "is_generated": bool(source.get("is_generated", False)),

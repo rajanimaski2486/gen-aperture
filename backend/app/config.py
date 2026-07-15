@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     opensearch_hybrid_search_pipeline: str = "reveal-hybrid"
     opensearch_vector_field: str = "dense_vector"
     opensearch_knn_k: int = 200
+    # When above zero, use radial kNN search so distant vector neighbors are
+    # discarded before the hybrid lexical/vector pipeline blends scores.
+    # Set to 0 to restore the previous top-k behavior.
+    opensearch_knn_min_score: float = 0.58
     opensearch_text_embedding_pca_model_path: Optional[str] = None
 
     # OpenSearch guardrails
@@ -46,6 +50,9 @@ class Settings(BaseSettings):
     agent_model: str = "meta/llama-3.3-70b-instruct"
     agent_model_base_url: Optional[str] = None
     agent_fallback_model: Optional[str] = None
+    agent_llm_timeout_seconds: float = 30.0
+    agent_llm_max_retries: int = 0
+    text_query_intent_llm_enabled: bool = False
     image_analysis_model: str = "meta/llama-3.2-11b-vision-instruct"
 
     # Reflection Reranker
@@ -106,8 +113,11 @@ class Settings(BaseSettings):
     # interleaving. Higher => more diversity, lower => stronger score dominance.
     searchbybrief_curator_diversity_penalty: float = 0.4
 
-    # Model used by the reflection reranker LLM passes
-    rerank_model: str = "meta/llama-3.3-70b-instruct"
+    # Model used by the reflection reranker LLM passes. Keep this smaller than
+    # the main agent model so post-search ranking does not dominate latency.
+    rerank_model: str = "meta/llama-3.2-3b-instruct"
+    # Hard cap for the full reflection reranking pipeline.
+    rerank_timeout_seconds: float = 120.0
 
     # SearchByBrief planner/curator model.
     searchbybrief_model: str = "meta/llama-3.3-70b-instruct"
