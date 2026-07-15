@@ -38,13 +38,16 @@ class FakeSearchClient:
 
 
 class FakeEmbeddingsClient:
-    def __init__(self, vector=None):
+    def __init__(self, vector=None, error=None):
         self.calls = []
         self._vector = vector or [0.01] * 256
+        self._error = error
         self.embeddings = self
 
     def create(self, **kwargs):
         self.calls.append(kwargs)
+        if self._error:
+            raise self._error
         return SimpleNamespace(
             data=[
                 SimpleNamespace(
@@ -54,11 +57,11 @@ class FakeEmbeddingsClient:
         )
 
 
-def make_service(embedding_vector=None):
+def make_service(embedding_vector=None, embedding_error=None):
     service = object.__new__(PhotoSearchService)
     service.photo_index = settings.opensearch_photo_index
     service.client = FakeSearchClient()
-    service._embedding_client = FakeEmbeddingsClient(embedding_vector)
+    service._embedding_client = FakeEmbeddingsClient(embedding_vector, embedding_error)
     return service
 
 
@@ -149,6 +152,26 @@ class DirectPhotoSearchTests(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "Expected 256-dimensional embedding"):
             service._embed_query_text("mountain sunrise")
+
+    def test_execute_direct_hybrid_search_falls_back_to_lexical_on_embedding_failure(self):
+        service = make_service(embedding_error=RuntimeError("OPENAI_API_KEY is not configured"))
+
+        result = service.execute_direct_hybrid_search(
+            semantic_query="red roses",
+            lexical_query="red AND roses",
+            size=10,
+        )
+
+        self.assertEqual(len(service.client.calls), 1)
+        call = service.client.calls[0]
+        self.assertEqual(call["index"], settings.opensearch_photo_index)
+        self.assertEqual(call["params"], {})
+        self.assertNotIn("hybrid", call["body"]["query"])
+        lexical = call["body"]["query"]["bool"]
+        self.assertEqual(lexical["must"][0]["multi_match"]["query"], "red AND roses")
+        self.assertEqual(result["fallback"], "lexical_only")
+        self.assertIn("Embedding unavailable", result["error"])
+        self.assertEqual(result["total"], 1)
 
 
 if __name__ == "__main__":

@@ -86,7 +86,25 @@ class PhotoSearchService:
         Execute an app-generated hybrid lexical + kNN query against icc_images_ext.
         """
         try:
-            vector = self._embed_query_text(semantic_query)
+            try:
+                vector = self._embed_query_text(semantic_query)
+            except Exception as embedding_error:
+                logger.warning(
+                    "Direct hybrid embedding generation failed; falling back to lexical search: %s",
+                    embedding_error,
+                )
+                return self._execute_lexical_fallback_search(
+                    semantic_query=semantic_query,
+                    lexical_query=lexical_query or semantic_query,
+                    category_gids=category_gids or [],
+                    exclusion_terms=exclusion_terms or [],
+                    refinement_filters=refinement_filters or [],
+                    show_generated=show_generated,
+                    is_not_generated=is_not_generated,
+                    size=size,
+                    error=str(embedding_error),
+                )
+
             query_body = self.build_direct_hybrid_query(
                 semantic_query=semantic_query,
                 lexical_query=lexical_query or semantic_query,
@@ -128,6 +146,42 @@ class PhotoSearchService:
                 "error": str(e),
             }
 
+    def _execute_lexical_fallback_search(
+        self,
+        semantic_query: str,
+        lexical_query: str,
+        category_gids: Optional[List[int]] = None,
+        exclusion_terms: Optional[List[str]] = None,
+        refinement_filters: Optional[List[Dict[str, Any]]] = None,
+        show_generated: bool = False,
+        is_not_generated: bool = False,
+        size: int = 50,
+        error: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        query_body = self.build_direct_lexical_query(
+            semantic_query=semantic_query,
+            lexical_query=lexical_query,
+            category_gids=category_gids or [],
+            exclusion_terms=exclusion_terms or [],
+            refinement_filters=refinement_filters or [],
+            show_generated=show_generated,
+            is_not_generated=is_not_generated,
+            size=size,
+        )
+        response = self.client.search(
+            index=self.photo_index,
+            body=query_body,
+            params={},
+        )
+        result = self._format_search_response(response)
+        result["opensearch_query"] = query_body
+        result["opensearch_pipeline"] = None
+        result["opensearch_index"] = self.photo_index
+        result["fallback"] = "lexical_only"
+        if error:
+            result["error"] = f"Embedding unavailable; used lexical fallback: {error}"
+        return result
+
     def build_direct_hybrid_query(
         self,
         semantic_query: str,
@@ -146,6 +200,80 @@ class PhotoSearchService:
         `icc_images_ext` exposes a 256-dim `dense_vector` kNN field plus text
         fields: title, description, and tags.
         """
+        lexical_bool = self._build_lexical_bool(
+            semantic_query=semantic_query,
+            lexical_query=lexical_query,
+            category_gids=category_gids or [],
+            exclusion_terms=exclusion_terms or [],
+            refinement_filters=refinement_filters or [],
+            show_generated=show_generated,
+            is_not_generated=is_not_generated,
+        )
+
+        return {
+            "size": size,
+            "_source": self._source_fields(),
+            "query": {
+                "hybrid": {
+                    "queries": [
+                        self._build_knn_clause(vector=vector, size=size),
+                        {"bool": lexical_bool},
+                    ]
+                }
+            },
+        }
+
+    def build_direct_lexical_query(
+        self,
+        semantic_query: str,
+        lexical_query: str,
+        category_gids: Optional[List[int]] = None,
+        exclusion_terms: Optional[List[str]] = None,
+        refinement_filters: Optional[List[Dict[str, Any]]] = None,
+        show_generated: bool = False,
+        is_not_generated: bool = False,
+        size: int = 50,
+    ) -> Dict[str, Any]:
+        return {
+            "size": size,
+            "_source": self._source_fields(),
+            "query": {
+                "bool": self._build_lexical_bool(
+                    semantic_query=semantic_query,
+                    lexical_query=lexical_query,
+                    category_gids=category_gids or [],
+                    exclusion_terms=exclusion_terms or [],
+                    refinement_filters=refinement_filters or [],
+                    show_generated=show_generated,
+                    is_not_generated=is_not_generated,
+                )
+            },
+        }
+
+    def _source_fields(self) -> List[str]:
+        return [
+            "image_id",
+            "title",
+            "description",
+            "tags",
+            "thumbnail_url",
+            "medium_url",
+            "pexels_url",
+            "photographer",
+            "width",
+            "height",
+        ]
+
+    def _build_lexical_bool(
+        self,
+        semantic_query: str,
+        lexical_query: str,
+        category_gids: List[int],
+        exclusion_terms: List[str],
+        refinement_filters: List[Dict[str, Any]],
+        show_generated: bool,
+        is_not_generated: bool,
+    ) -> Dict[str, Any]:
         lexical_bool: Dict[str, Any] = {
             "must": [
                 {
@@ -177,30 +305,7 @@ class PhotoSearchService:
         )
         if filters:
             lexical_bool["filter"] = filters
-
-        return {
-            "size": size,
-            "_source": [
-                "image_id",
-                "title",
-                "description",
-                "tags",
-                "thumbnail_url",
-                "medium_url",
-                "pexels_url",
-                "photographer",
-                "width",
-                "height",
-            ],
-            "query": {
-                "hybrid": {
-                    "queries": [
-                        self._build_knn_clause(vector=vector, size=size),
-                        {"bool": lexical_bool},
-                    ]
-                }
-            },
-        }
+        return lexical_bool
 
     def _build_knn_clause(self, vector: List[float], size: int) -> Dict[str, Any]:
         vector_query: Dict[str, Any] = {"vector": vector}

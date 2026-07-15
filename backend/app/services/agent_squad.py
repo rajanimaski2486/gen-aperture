@@ -1447,17 +1447,34 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         )
         payload = result.get("opensearch_query")
         index = result.get("opensearch_index") or settings.opensearch_photo_index
-        pipeline_name = result.get("opensearch_pipeline") or settings.opensearch_hybrid_search_pipeline
+        pipeline_name = (
+            result.get("opensearch_pipeline")
+            if "opensearch_pipeline" in result
+            else settings.opensearch_hybrid_search_pipeline
+        )
         error = result.get("error")
-
-        steps.append({
-            "agent": "Search Specialist",
-            "action": f"Direct OpenSearch Hybrid Query ({workflow_label}, Images)",
-            "model": self.llm_model,
-            "reasoning": (
+        fallback = result.get("fallback")
+        search_reasoning = (
+            f"Used lexical-only fallback over title/description/tags using \"{lexical_query}\" "
+            f"because vector embedding was unavailable. "
+            if fallback == "lexical_only"
+            else (
                 f"Generated a hybrid OpenSearch query locally for `{index}` instead of calling Search Service. "
                 f"The query combines kNN over `{settings.opensearch_vector_field}` using \"{semantic_query}\" "
                 f"with lexical BM25 over title/description/tags using \"{lexical_query}\". "
+            )
+        )
+
+        steps.append({
+            "agent": "Search Specialist",
+            "action": (
+                f"Direct OpenSearch Lexical Fallback ({workflow_label}, Images)"
+                if fallback == "lexical_only"
+                else f"Direct OpenSearch Hybrid Query ({workflow_label}, Images)"
+            ),
+            "model": self.llm_model,
+            "reasoning": (
+                search_reasoning +
                 f"Search mode was '{search_mode}', pipeline was '{pipeline}', lexical operator was {lexical_operator.upper()}."
                 + (f" Error: {error}" if error else "")
             ),
@@ -1473,12 +1490,14 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "show_generated": show_generated,
                 "is_not_generated": is_not_generated,
                 "query_source": "app_generated_direct_hybrid",
+                "fallback": fallback,
             },
             "output": {
                 "total_results": result.get("total", 0),
                 "returned_results": len(result.get("results", [])),
                 "took_ms": result.get("took_ms", 0),
                 "error": error,
+                "fallback": fallback,
             },
             "opensearch_payload": payload,
             "opensearch_url": (
