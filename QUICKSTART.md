@@ -72,7 +72,7 @@ Access at: http://localhost:5173
 5. **Exclusion phrases:** try `mountain photos without people` — text exclusions are applied against `title`, `description`, and `tags`; older orientation/recency filters are ignored by the current `icc_images_ext` index
 6. Click `🤖 Agent Workflow` to inspect each agent's reasoning, input/output, and OpenSearch payloads
 
-Direct image search requires the configured CLIP text model and the PCA model used to project embeddings for `icc_images_ext`. By default the app looks for `ipca_10m.npz` at the repo root and CLIP weights under `SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT` (`/tmp/clip` by default).
+Direct image search requires `OPENAI_API_KEY` because the query vector is generated with `text-embedding-3-small` at 256 dimensions to match `icc_images_ext.dense_vector`. CLIP weights under `SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT` (`/tmp/clip` by default) are only needed for the optional SearchByBrief retriever path.
 
 ### Reflection Reranking trigger phrases
 

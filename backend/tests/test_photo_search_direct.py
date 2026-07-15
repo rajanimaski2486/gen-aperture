@@ -1,4 +1,5 @@
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from app.config import settings
@@ -36,13 +37,28 @@ class FakeSearchClient:
         }
 
 
-def make_service():
+class FakeEmbeddingsClient:
+    def __init__(self, vector=None):
+        self.calls = []
+        self._vector = vector or [0.01] * 256
+        self.embeddings = self
+
+    def create(self, **kwargs):
+        self.calls.append(kwargs)
+        return SimpleNamespace(
+            data=[
+                SimpleNamespace(
+                    embedding=self._vector,
+                )
+            ]
+        )
+
+
+def make_service(embedding_vector=None):
     service = object.__new__(PhotoSearchService)
     service.photo_index = settings.opensearch_photo_index
     service.client = FakeSearchClient()
-    service._text_embedder = None
-    service._text_embedder_pca_path = None
-    service._embed_query_text = lambda query: [0.01] * 256
+    service._embedding_client = FakeEmbeddingsClient(embedding_vector)
     return service
 
 
@@ -73,7 +89,8 @@ class DirectPhotoSearchTests(unittest.TestCase):
         self.assertIn("must_not", lexical)
 
     def test_execute_direct_hybrid_search_maps_icc_image_fields(self):
-        service = make_service()
+        vector = [0.02] * 256
+        service = make_service(embedding_vector=vector)
 
         result = service.execute_direct_hybrid_search(
             semantic_query="mountain sunrise",
@@ -81,11 +98,24 @@ class DirectPhotoSearchTests(unittest.TestCase):
             size=10,
         )
 
+        self.assertEqual(
+            service._embedding_client.calls[0],
+            {
+                "model": settings.opensearch_text_embedding_model,
+                "input": "mountain sunrise",
+                "dimensions": settings.opensearch_text_embedding_dimensions,
+                "encoding_format": "float",
+            },
+        )
         self.assertEqual(service.client.calls[0]["index"], settings.opensearch_photo_index)
         self.assertEqual(
             service.client.calls[0]["params"]["search_pipeline"],
             settings.opensearch_hybrid_search_pipeline,
         )
+        vector_query = service.client.calls[0]["body"]["query"]["hybrid"]["queries"][0]["knn"][
+            settings.opensearch_vector_field
+        ]
+        self.assertEqual(vector_query["vector"], vector)
         self.assertEqual(result["total"], 1)
         self.assertEqual(result["took_ms"], 7)
 
@@ -113,6 +143,12 @@ class DirectPhotoSearchTests(unittest.TestCase):
         vector_query = body["query"]["hybrid"]["queries"][0]["knn"][settings.opensearch_vector_field]
         self.assertEqual(vector_query["k"], settings.opensearch_knn_k)
         self.assertNotIn("min_score", vector_query)
+
+    def test_embed_query_text_rejects_wrong_embedding_dimension(self):
+        service = make_service(embedding_vector=[0.01] * 255)
+
+        with self.assertRaisesRegex(RuntimeError, "Expected 256-dimensional embedding"):
+            service._embed_query_text("mountain sunrise")
 
 
 if __name__ == "__main__":

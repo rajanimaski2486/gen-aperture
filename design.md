@@ -65,6 +65,8 @@ The generated query uses:
 - `OPENSEARCH_VECTOR_FIELD=dense_vector`
 - `OPENSEARCH_KNN_K=200`
 - `OPENSEARCH_KNN_MIN_SCORE=0.58`
+- `OPENSEARCH_TEXT_EMBEDDING_MODEL=text-embedding-3-small`
+- `OPENSEARCH_TEXT_EMBEDDING_DIMENSIONS=256`
 
 The app builds a query shaped like:
 
@@ -120,7 +122,7 @@ The app builds a query shaped like:
 }
 ```
 
-At runtime the vector is a real 256-dimension embedding. The backend creates it by embedding the semantic query with the configured CLIP text model and projecting it with the PCA model. By default, the PCA file is `ipca_10m.npz` at the repo root.
+At runtime the vector is a real 256-dimension OpenAI embedding. The backend creates it by sending the semantic query to the configured OpenAI embedding model, currently `text-embedding-3-small`, with `dimensions=256` so it matches the stored `dense_vector` field.
 
 When `OPENSEARCH_KNN_MIN_SCORE` is greater than zero, vector retrieval uses radial kNN to drop distant neighbors before hybrid lexical/vector blending. Set it to `0` to use top-k retrieval with `OPENSEARCH_KNN_K`.
 
@@ -184,6 +186,7 @@ LLM calls use the server-side NVIDIA key:
 ```text
 NVIDIA_API_KEY=...
 NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
+OPENAI_API_KEY=...
 AGENT_MODEL=meta/llama-3.3-70b-instruct
 AGENT_LLM_TIMEOUT_SECONDS=30
 AGENT_LLM_MAX_RETRIES=0
@@ -192,9 +195,13 @@ IMAGE_ANALYSIS_MODEL=meta/llama-3.2-11b-vision-instruct
 SEARCHBYBRIEF_MODEL=meta/llama-3.3-70b-instruct
 RERANK_MODEL=meta/llama-3.2-3b-instruct
 RERANK_TIMEOUT_SECONDS=120
+OPENSEARCH_TEXT_EMBEDDING_MODEL=text-embedding-3-small
+OPENSEARCH_TEXT_EMBEDDING_DIMENSIONS=256
 ```
 
 The request schema still accepts `openai_api_key` for backward compatibility, but it is deprecated and not used for LLM calls.
+
+`OPENAI_API_KEY` is server-side and used for direct image-search query embeddings only. Chat, image analysis, SearchByBrief LLM planning/curation, and reflection reranking still use NVIDIA NIM settings.
 
 Text-only `relevance` versus `popular` routing is deterministic by default. Non-reranker Agent Squad LLM calls are bounded by `AGENT_LLM_TIMEOUT_SECONDS` with `AGENT_LLM_MAX_RETRIES=0` unless overridden.
 
@@ -245,9 +252,9 @@ npm run dev
 End-to-end chat requires:
 
 - `NVIDIA_API_KEY` in `backend/.env`
+- `OPENAI_API_KEY` in `backend/.env` for direct image-search query embeddings
 - OpenSearch endpoint and credentials in `backend/.env`
-- `ipca_10m.npz` available, or `OPENSEARCH_TEXT_EMBEDDING_PCA_MODEL_PATH` set
-- CLIP model weights available under `SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT`, or permission to download them
+- CLIP model weights available under `SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT`, or permission to download them, only when using the optional SearchByBrief retriever mode
 
 ## Historical Notes
 

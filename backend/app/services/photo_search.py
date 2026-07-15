@@ -3,8 +3,8 @@ OpenSearch photo search service.
 Searches the configured image index for stock photos matching user queries.
 """
 import logging
-from pathlib import Path
 from typing import List, Dict, Any, Optional
+from openai import OpenAI
 from app.config import settings
 from app.services.opensearch_guardrails import create_opensearch_client, is_readonly_endpoint
 
@@ -30,8 +30,7 @@ class PhotoSearchService:
             password=settings.opensearch_password,
         )
         self.photo_index = settings.opensearch_photo_index
-        self._text_embedder = None
-        self._text_embedder_pca_path: Optional[str] = None
+        self._embedding_client: Optional[OpenAI] = None
     
     def search_photos(
         self,
@@ -376,42 +375,40 @@ class PhotoSearchService:
         return search_body
 
     def _embed_query_text(self, query: str) -> List[float]:
-        embedder = self._get_text_embedder()
-        vectors = embedder.embed_texts(
-            [query],
-            pca=True,
-            normalize=settings.searchbybrief_retriever_normalize_embeddings,
-            truncate=settings.searchbybrief_retriever_truncate_text,
+        clean_query = " ".join(str(query or "").split())
+        if not clean_query:
+            raise RuntimeError("Cannot generate embedding for an empty query")
+
+        response = self._get_embedding_client().embeddings.create(
+            model=settings.opensearch_text_embedding_model,
+            input=clean_query,
+            dimensions=settings.opensearch_text_embedding_dimensions,
+            encoding_format="float",
         )
-        if not vectors:
+        if not response.data:
             raise RuntimeError("No embedding generated for query")
-        return vectors[0]
 
-    def _get_text_embedder(self):
-        pca_path = self._resolve_pca_model_path()
-        if self._text_embedder is not None and self._text_embedder_pca_path == pca_path:
-            return self._text_embedder
+        vector = [float(v) for v in response.data[0].embedding]
+        expected_dimensions = int(settings.opensearch_text_embedding_dimensions)
+        if len(vector) != expected_dimensions:
+            raise RuntimeError(
+                f"Expected {expected_dimensions}-dimensional embedding, got {len(vector)}"
+            )
+        return vector
 
-        from app.services.searchbybrief.retriever import LocalClipTextEmbedder
+    def _get_embedding_client(self) -> OpenAI:
+        if self._embedding_client is not None:
+            return self._embedding_client
 
-        self._text_embedder = LocalClipTextEmbedder(
-            model_name=settings.searchbybrief_retriever_clip_model,
-            device=settings.searchbybrief_retriever_clip_device,
-            download_root=settings.searchbybrief_retriever_clip_download_root,
-            pca_model_path=pca_path,
-        )
-        self._text_embedder_pca_path = pca_path
-        return self._text_embedder
+        client_kwargs: Dict[str, Any] = {
+            "api_key": settings.require_openai_api_key(),
+            "timeout": settings.opensearch_text_embedding_timeout_seconds,
+        }
+        if settings.openai_base_url:
+            client_kwargs["base_url"] = settings.openai_base_url
 
-    def _resolve_pca_model_path(self) -> str:
-        configured = settings.opensearch_text_embedding_pca_model_path
-        if configured:
-            p = Path(configured).expanduser()
-        else:
-            p = Path(__file__).resolve().parents[3] / "ipca_10m.npz"
-        if not p.exists():
-            raise FileNotFoundError(f"PCA model not found: {p}")
-        return str(p)
+        self._embedding_client = OpenAI(**client_kwargs)
+        return self._embedding_client
 
     def _supported_filter_clauses(
         self,

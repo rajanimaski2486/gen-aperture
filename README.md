@@ -26,8 +26,8 @@ AI-powered conversational interface for searching stock photos using natural lan
 
 Image and document-assisted image search no longer asks Search Service for a base payload. `PhotoSearchService` generates and executes the OpenSearch body directly:
 
-1. Build a local text embedding for the semantic query.
-2. Project the embedding to the 256-dimension vector used by `icc_images_ext`.
+1. Build an OpenAI `text-embedding-3-small` query embedding for the semantic query.
+2. Request `256` dimensions so the query vector matches the indexed `dense_vector` field in `icc_images_ext`.
 3. Query `icc_images_ext` with an OpenSearch `hybrid` query:
    - kNN over `dense_vector`, using `OPENSEARCH_KNN_MIN_SCORE` when positive or `OPENSEARCH_KNN_K` top-k retrieval when set to `0`
    - lexical `multi_match` over `title`, `description`, `tags`, and `photographer`
@@ -251,7 +251,9 @@ OPENSEARCH_KNN_K=200
 # Above zero uses radial kNN search and drops distant vector neighbors before hybrid blending.
 # Set to 0 to fall back to top-k vector retrieval.
 OPENSEARCH_KNN_MIN_SCORE=0.58
-OPENSEARCH_TEXT_EMBEDDING_PCA_MODEL_PATH=./ipca_10m.npz
+OPENSEARCH_TEXT_EMBEDDING_MODEL=text-embedding-3-small
+OPENSEARCH_TEXT_EMBEDDING_DIMENSIONS=256
+OPENSEARCH_TEXT_EMBEDDING_TIMEOUT_SECONDS=15
 OPENSEARCH_CONVERSATION_ENDPOINT=http://localhost:9200
 OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
 OPENSEARCH_CONVERSATION_MAX_RECORDS=5000
@@ -271,6 +273,11 @@ AGENT_LLM_TIMEOUT_SECONDS=30
 AGENT_LLM_MAX_RETRIES=0
 TEXT_QUERY_INTENT_LLM_ENABLED=false
 IMAGE_ANALYSIS_MODEL=meta/llama-3.2-11b-vision-instruct
+
+# OpenAI query embeddings for direct icc_images_ext search
+OPENAI_API_KEY=...
+
+# Optional SearchByBrief retriever settings
 SEARCHBYBRIEF_MODEL=meta/llama-3.3-70b-instruct
 SEARCHBYBRIEF_RETRIEVER_CLIP_MODEL=ViT-B/32
 SEARCHBYBRIEF_RETRIEVER_CLIP_DOWNLOAD_ROOT=/tmp/clip
@@ -288,6 +295,7 @@ RERANK_TIMEOUT_SECONDS=120
 ## Security
 
 - ⚠️ `NVIDIA_API_KEY` stays server-side in `backend/.env`
+- ⚠️ `OPENAI_API_KEY` stays server-side in `backend/.env` and is used only for direct OpenSearch query embeddings
 - OpenSearch cluster is read-only for the photo index
 - Conversation writes are allowed only to `gen-aperture-conversations`
 - Conversation writes are rejected at 5000 records or 5 GB index store size

@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # discarded before the hybrid lexical/vector pipeline blends scores.
     # Set to 0 to restore the previous top-k behavior.
     opensearch_knn_min_score: float = 0.58
+    opensearch_text_embedding_model: str = "text-embedding-3-small"
+    opensearch_text_embedding_dimensions: int = 256
+    opensearch_text_embedding_timeout_seconds: float = 15.0
+    # Deprecated for direct image search; retained so older env files do not fail.
     opensearch_text_embedding_pca_model_path: Optional[str] = None
 
     # OpenSearch guardrails
@@ -47,6 +51,8 @@ class Settings(BaseSettings):
     # existing OpenAI SDK/LangChain client can be pointed at the NVIDIA base URL.
     nvidia_api_key: Optional[str] = None
     nvidia_base_url: str = "https://integrate.api.nvidia.com/v1"
+    openai_api_key: Optional[str] = None
+    openai_base_url: Optional[str] = None
     agent_model: str = "meta/llama-3.3-70b-instruct"
     agent_model_base_url: Optional[str] = None
     agent_fallback_model: Optional[str] = None
@@ -150,6 +156,11 @@ class Settings(BaseSettings):
         if not self.nvidia_api_key:
             raise RuntimeError("NVIDIA_API_KEY is not configured")
         return self.nvidia_api_key
+
+    def require_openai_api_key(self) -> str:
+        if not self.openai_api_key:
+            raise RuntimeError("OPENAI_API_KEY is not configured")
+        return self.openai_api_key
 
 
 # Global settings instance

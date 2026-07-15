@@ -441,14 +441,14 @@
       "updated": 1,
       "link": null,
       "locked": false,
-      "text": "PhotoSearchService\nCLIP text embedding + PCA\nhybrid kNN/min_score + lexical\nreveal-hybrid pipeline",
+      "text": "PhotoSearchService\nOpenAI text-embedding-3-small\n256d query vector\nhybrid kNN/min_score + lexical",
       "fontSize": 18,
       "fontFamily": 1,
       "textAlign": "center",
       "verticalAlign": "middle",
       "baseline": 82,
       "containerId": null,
-      "originalText": "PhotoSearchService\nCLIP text embedding + PCA\nhybrid kNN/min_score + lexical\nreveal-hybrid pipeline",
+      "originalText": "PhotoSearchService\nOpenAI text-embedding-3-small\n256d query vector\nhybrid kNN/min_score + lexical",
       "lineHeight": 1.25
     },
     {

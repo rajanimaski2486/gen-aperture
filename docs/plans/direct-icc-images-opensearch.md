@@ -72,3 +72,4 @@ Replace the image Search Service payload dependency with app-generated OpenSearc
 ## Status
 
 - Implemented and locally verified with compile, unit, frontend build, mapping/pipeline inspection, and diff checks.
+- Follow-up: direct query-vector generation was later changed from the initial local CLIP/PCA approach to OpenAI `text-embedding-3-small` with `dimensions=256`; see `docs/plans/openai-query-embeddings.md`.
