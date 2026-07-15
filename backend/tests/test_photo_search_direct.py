@@ -89,7 +89,26 @@ class DirectPhotoSearchTests(unittest.TestCase):
         self.assertIn("title^4", multi_match["fields"])
         self.assertIn("description^3", multi_match["fields"])
         self.assertIn("tags^2", multi_match["fields"])
+        self.assertEqual(multi_match["operator"], "and")
+        self.assertNotIn("minimum_should_match", multi_match)
         self.assertIn("must_not", lexical)
+
+    def test_build_direct_hybrid_query_uses_minimum_should_match_for_long_lexical_query(self):
+        service = make_service()
+        body = service.build_direct_hybrid_query(
+            semantic_query="healthcare laboratory team",
+            lexical_query="healthcare AND medical professionals laboratory",
+            vector=[0.01] * 256,
+            size=25,
+        )
+
+        multi_match = body["query"]["hybrid"]["queries"][1]["bool"]["must"][0]["multi_match"]
+        self.assertEqual(
+            multi_match["query"],
+            "healthcare AND medical professionals laboratory",
+        )
+        self.assertEqual(multi_match["minimum_should_match"], "75%")
+        self.assertNotIn("operator", multi_match)
 
     def test_execute_direct_hybrid_search_maps_icc_image_fields(self):
         vector = [0.02] * 256
@@ -169,6 +188,8 @@ class DirectPhotoSearchTests(unittest.TestCase):
         self.assertNotIn("hybrid", call["body"]["query"])
         lexical = call["body"]["query"]["bool"]
         self.assertEqual(lexical["must"][0]["multi_match"]["query"], "red AND roses")
+        self.assertEqual(lexical["must"][0]["multi_match"]["operator"], "and")
+        self.assertNotIn("minimum_should_match", lexical["must"][0]["multi_match"])
         self.assertEqual(result["fallback"], "lexical_only")
         self.assertIn("Embedding unavailable", result["error"])
         self.assertEqual(result["total"], 1)

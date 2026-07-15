@@ -3,12 +3,17 @@ OpenSearch photo search service.
 Searches the configured image index for stock photos matching user queries.
 """
 import logging
+import re
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
 from app.config import settings
 from app.services.opensearch_guardrails import create_opensearch_client, is_readonly_endpoint
 
 logger = logging.getLogger(__name__)
+
+LEXICAL_MINIMUM_SHOULD_MATCH = "75%"
+BOOLEAN_CONNECTOR_TERMS = {"and", "or", "not"}
+LEXICAL_TERM_RE = re.compile(r"\b[\w'-]+\b")
 
 
 class PhotoSearchService:
@@ -264,6 +269,27 @@ class PhotoSearchService:
             "height",
         ]
 
+    def _meaningful_lexical_terms(self, query: str) -> List[str]:
+        return [
+            term
+            for term in LEXICAL_TERM_RE.findall(query or "")
+            if term.lower() not in BOOLEAN_CONNECTOR_TERMS
+        ]
+
+    def _apply_lexical_match_policy(
+        self,
+        multi_match: Dict[str, Any],
+        query: str,
+    ) -> None:
+        term_count = len(self._meaningful_lexical_terms(query))
+        multi_match.pop("operator", None)
+        multi_match.pop("minimum_should_match", None)
+
+        if term_count >= 4:
+            multi_match["minimum_should_match"] = LEXICAL_MINIMUM_SHOULD_MATCH
+        else:
+            multi_match["operator"] = "and"
+
     def _build_lexical_bool(
         self,
         semantic_query: str,
@@ -274,21 +300,24 @@ class PhotoSearchService:
         show_generated: bool,
         is_not_generated: bool,
     ) -> Dict[str, Any]:
+        query_text = lexical_query or semantic_query
+        multi_match: Dict[str, Any] = {
+            "query": query_text,
+            "fields": [
+                "title^4",
+                "description^3",
+                "tags^2",
+                "photographer",
+            ],
+            "type": "best_fields",
+            "fuzziness": "AUTO",
+        }
+        self._apply_lexical_match_policy(multi_match, query_text)
+
         lexical_bool: Dict[str, Any] = {
             "must": [
                 {
-                    "multi_match": {
-                        "query": lexical_query or semantic_query,
-                        "fields": [
-                            "title^4",
-                            "description^3",
-                            "tags^2",
-                            "photographer",
-                        ],
-                        "type": "best_fields",
-                        "operator": "or",
-                        "fuzziness": "AUTO",
-                    }
+                    "multi_match": multi_match
                 }
             ]
         }
