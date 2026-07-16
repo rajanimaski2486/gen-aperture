@@ -41,3 +41,4 @@ backend/analysis_outputs/
 # Temporary files
 *.tmp
 .cache/
+.vercel

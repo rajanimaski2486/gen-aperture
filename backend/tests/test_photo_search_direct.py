@@ -3,7 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from app.config import settings
-from app.services.photo_search import PhotoSearchService
+from app.services.photo_search import MAX_EMBEDDING_TIMEOUT_SECONDS, PhotoSearchService
 
 
 class FakeSearchClient:
@@ -66,6 +66,22 @@ def make_service(embedding_vector=None, embedding_error=None):
 
 
 class DirectPhotoSearchTests(unittest.TestCase):
+    def setUp(self):
+        patches = [
+            patch.object(settings, "opensearch_vector_field", "dense_vector"),
+            patch.object(settings, "opensearch_knn_min_score", 0.58),
+            patch.object(settings, "opensearch_knn_k", 200),
+            patch.object(settings, "opensearch_text_embedding_provider", "openai"),
+            patch.object(settings, "opensearch_text_embedding_model", "text-embedding-3-small"),
+            patch.object(settings, "opensearch_text_embedding_dimensions", 256),
+            patch.object(settings, "opensearch_text_embedding_send_dimensions", True),
+            patch.object(settings, "opensearch_text_embedding_query_input_type", None),
+            patch.object(settings, "opensearch_text_embedding_truncate", None),
+        ]
+        for patcher in patches:
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
     def test_build_direct_hybrid_query_combines_knn_and_lexical(self):
         service = make_service()
         body = service.build_direct_hybrid_query(
@@ -150,6 +166,112 @@ class DirectPhotoSearchTests(unittest.TestCase):
         self.assertEqual(photo["keywords"], ["mountain", "sunrise"])
         self.assertEqual(photo["photographer"], "Ada")
         self.assertIn("opensearch_query", result)
+        self.assertEqual(
+            result["embedding_metadata"],
+            {
+                "provider": "openai",
+                "model": "text-embedding-3-small",
+                "dimensions": 256,
+                "send_dimensions": True,
+                "query_input_type": "query",
+                "passage_input_type": "passage",
+                "truncate": None,
+                "vector_field": "dense_vector",
+                "timeout_seconds": settings.opensearch_text_embedding_timeout_seconds,
+            },
+        )
+
+    def test_embed_query_text_can_use_nvidia_query_input_type(self):
+        vector = [0.03] * 384
+        service = make_service(embedding_vector=vector)
+
+        with (
+            patch.object(settings, "opensearch_text_embedding_provider", "nvidia"),
+            patch.object(
+                settings,
+                "opensearch_text_embedding_model",
+                "nvidia/llama-nemotron-embed-1b-v2",
+            ),
+            patch.object(settings, "opensearch_text_embedding_dimensions", 384),
+            patch.object(settings, "opensearch_text_embedding_truncate", "END"),
+        ):
+            result = service._embed_query_text("  city skyline  ")
+
+        self.assertEqual(result, vector)
+        self.assertEqual(
+            service._embedding_client.calls[0],
+            {
+                "model": "nvidia/llama-nemotron-embed-1b-v2",
+                "input": "city skyline",
+                "encoding_format": "float",
+                "dimensions": 384,
+                "extra_body": {
+                    "input_type": "query",
+                    "truncate": "END",
+                },
+            },
+        )
+
+    def test_execute_direct_hybrid_search_uses_configured_nvidia_vector_field(self):
+        vector = [0.04] * 384
+        service = make_service(embedding_vector=vector)
+
+        with (
+            patch.object(settings, "opensearch_vector_field", "dense_vector_nvidia_384"),
+            patch.object(settings, "opensearch_text_embedding_provider", "nvidia"),
+            patch.object(
+                settings,
+                "opensearch_text_embedding_model",
+                "nvidia/llama-nemotron-embed-1b-v2",
+            ),
+            patch.object(settings, "opensearch_text_embedding_dimensions", 384),
+            patch.object(settings, "opensearch_text_embedding_query_input_type", "query"),
+            patch.object(settings, "opensearch_text_embedding_passage_input_type", "passage"),
+            patch.object(settings, "opensearch_text_embedding_truncate", "END"),
+            patch.object(settings, "opensearch_text_embedding_timeout_seconds", 120.0),
+        ):
+            result = service.execute_direct_hybrid_search(
+                semantic_query="red roses",
+                lexical_query="red roses",
+                size=5,
+            )
+
+        knn = service.client.calls[0]["body"]["query"]["hybrid"]["queries"][0]["knn"]
+        self.assertIn("dense_vector_nvidia_384", knn)
+        self.assertEqual(knn["dense_vector_nvidia_384"]["vector"], vector)
+        self.assertEqual(
+            result["embedding_metadata"],
+            {
+                "provider": "nvidia",
+                "model": "nvidia/llama-nemotron-embed-1b-v2",
+                "dimensions": 384,
+                "send_dimensions": True,
+                "query_input_type": "query",
+                "passage_input_type": "passage",
+                "truncate": "END",
+                "vector_field": "dense_vector_nvidia_384",
+                "timeout_seconds": MAX_EMBEDDING_TIMEOUT_SECONDS,
+            },
+        )
+
+    def test_embedding_client_timeout_is_capped_at_sixty_seconds(self):
+        service = object.__new__(PhotoSearchService)
+        service._embedding_client = None
+
+        with (
+            patch.object(settings, "opensearch_text_embedding_provider", "openai"),
+            patch.object(settings, "openai_api_key", "test-key"),
+            patch.object(settings, "openai_base_url", None),
+            patch.object(settings, "opensearch_text_embedding_base_url", None),
+            patch.object(settings, "opensearch_text_embedding_timeout_seconds", 120.0),
+            patch("app.services.photo_search.OpenAI") as openai_cls,
+        ):
+            service._get_embedding_client()
+
+        openai_cls.assert_called_once_with(
+            api_key="test-key",
+            timeout=MAX_EMBEDDING_TIMEOUT_SECONDS,
+        )
 
     def test_build_direct_hybrid_query_can_fallback_to_top_k(self):
         service = make_service()

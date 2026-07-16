@@ -190,6 +190,67 @@ class AgentSquadLatencyTests(unittest.TestCase):
         self.assertEqual(result.boolean_query, "red AND roses")
         self.assertEqual(result.exclusion_terms, ["people"])
 
+    def test_direct_hybrid_workflow_step_records_embedding_model(self):
+        agent = object.__new__(AgentSquad)
+        agent.llm_model = "meta/llama-3.3-70b-instruct"
+        steps = []
+        embedding_metadata = {
+            "provider": "nvidia",
+            "model": "nvidia/llama-nemotron-embed-1b-v2",
+            "dimensions": 384,
+            "send_dimensions": True,
+            "query_input_type": "query",
+            "passage_input_type": "passage",
+            "truncate": "END",
+            "vector_field": "dense_vector_nvidia_384",
+            "timeout_seconds": 60.0,
+        }
+        search_result = {
+            "results": [{"hadron_id": "1"}],
+            "total": 1,
+            "took_ms": 42,
+            "opensearch_query": {
+                "query": {
+                    "hybrid": {
+                        "queries": [
+                            {"knn": {"dense_vector_nvidia_384": {"vector": [0.1] * 384}}},
+                            {"bool": {"must": []}},
+                        ]
+                    }
+                }
+            },
+            "opensearch_index": "icc_images_ext",
+            "opensearch_pipeline": "reveal-hybrid",
+            "embedding_metadata": embedding_metadata,
+        }
+
+        with patch(
+            "app.services.agent_squad.photo_search_service.execute_direct_hybrid_search",
+            return_value=search_result,
+        ):
+            result = agent._execute_direct_image_hybrid_search(
+                steps=steps,
+                workflow_label="Text-Only",
+                semantic_query="red roses",
+                lexical_query="red roses",
+                category_gids=[],
+                exclusion_terms=[],
+                refinement_filters=[],
+                show_generated=False,
+                is_not_generated=False,
+                pipeline="image",
+                search_mode="relevance",
+                lexical_operator="and",
+            )
+
+        self.assertEqual(result, search_result)
+        self.assertEqual(len(steps), 1)
+        step = steps[0]
+        self.assertIn("nvidia/llama-nemotron-embed-1b-v2", step["reasoning"])
+        self.assertIn("dense_vector_nvidia_384", step["reasoning"])
+        self.assertEqual(step["input"]["embedding"], embedding_metadata)
+        self.assertEqual(step["output"]["embedding"], embedding_metadata)
+
 
 if __name__ == "__main__":
     unittest.main()

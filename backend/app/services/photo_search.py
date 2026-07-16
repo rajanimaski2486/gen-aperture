@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 LEXICAL_MINIMUM_SHOULD_MATCH = "75%"
 BOOLEAN_CONNECTOR_TERMS = {"and", "or", "not"}
 LEXICAL_TERM_RE = re.compile(r"\b[\w'-]+\b")
+MAX_EMBEDDING_TIMEOUT_SECONDS = 60.0
 
 
 class PhotoSearchService:
@@ -141,6 +142,7 @@ class PhotoSearchService:
             result["opensearch_query"] = query_body
             result["opensearch_pipeline"] = settings.opensearch_hybrid_search_pipeline
             result["opensearch_index"] = self.photo_index
+            result["embedding_metadata"] = self._embedding_metadata()
             return result
         except Exception as e:
             logger.error("Direct hybrid query failed: %s", e, exc_info=True)
@@ -182,6 +184,7 @@ class PhotoSearchService:
         result["opensearch_query"] = query_body
         result["opensearch_pipeline"] = None
         result["opensearch_index"] = self.photo_index
+        result["embedding_metadata"] = self._embedding_metadata()
         result["fallback"] = "lexical_only"
         if error:
             result["error"] = f"Embedding unavailable; used lexical fallback: {error}"
@@ -514,10 +517,10 @@ class PhotoSearchService:
             raise RuntimeError("Cannot generate embedding for an empty query")
 
         response = self._get_embedding_client().embeddings.create(
-            model=settings.opensearch_text_embedding_model,
-            input=clean_query,
-            dimensions=settings.opensearch_text_embedding_dimensions,
-            encoding_format="float",
+            **self._embedding_request_kwargs(
+                clean_query,
+                input_type=settings.opensearch_text_embedding_query_input_type or "query",
+            )
         )
         if not response.data:
             raise RuntimeError("No embedding generated for query")
@@ -530,16 +533,59 @@ class PhotoSearchService:
             )
         return vector
 
+    def _embedding_request_kwargs(self, input_text: Any, input_type: Optional[str] = None) -> Dict[str, Any]:
+        kwargs: Dict[str, Any] = {
+            "model": settings.opensearch_text_embedding_model,
+            "input": input_text,
+            "encoding_format": "float",
+        }
+        if settings.opensearch_text_embedding_send_dimensions:
+            kwargs["dimensions"] = settings.opensearch_text_embedding_dimensions
+
+        extra_body: Dict[str, Any] = {}
+        if settings.normalized_embedding_provider == "nvidia":
+            resolved_input_type = input_type
+            if not resolved_input_type:
+                resolved_input_type = settings.opensearch_text_embedding_query_input_type
+            if not resolved_input_type:
+                resolved_input_type = "query"
+            extra_body["input_type"] = resolved_input_type
+            if settings.opensearch_text_embedding_truncate:
+                extra_body["truncate"] = settings.opensearch_text_embedding_truncate
+
+        if extra_body:
+            kwargs["extra_body"] = extra_body
+        return kwargs
+
+    def _effective_embedding_timeout_seconds(self) -> float:
+        configured = float(settings.opensearch_text_embedding_timeout_seconds)
+        if configured <= 0:
+            return MAX_EMBEDDING_TIMEOUT_SECONDS
+        return min(configured, MAX_EMBEDDING_TIMEOUT_SECONDS)
+
+    def _embedding_metadata(self) -> Dict[str, Any]:
+        return {
+            "provider": settings.normalized_embedding_provider,
+            "model": settings.opensearch_text_embedding_model,
+            "dimensions": int(settings.opensearch_text_embedding_dimensions),
+            "send_dimensions": bool(settings.opensearch_text_embedding_send_dimensions),
+            "query_input_type": settings.opensearch_text_embedding_query_input_type or "query",
+            "passage_input_type": settings.opensearch_text_embedding_passage_input_type or "passage",
+            "truncate": settings.opensearch_text_embedding_truncate,
+            "vector_field": settings.opensearch_vector_field,
+            "timeout_seconds": self._effective_embedding_timeout_seconds(),
+        }
+
     def _get_embedding_client(self) -> OpenAI:
         if self._embedding_client is not None:
             return self._embedding_client
 
         client_kwargs: Dict[str, Any] = {
-            "api_key": settings.require_openai_api_key(),
-            "timeout": settings.opensearch_text_embedding_timeout_seconds,
+            "api_key": settings.require_embedding_api_key(),
+            "timeout": self._effective_embedding_timeout_seconds(),
         }
-        if settings.openai_base_url:
-            client_kwargs["base_url"] = settings.openai_base_url
+        if settings.embedding_base_url:
+            client_kwargs["base_url"] = settings.embedding_base_url
 
         self._embedding_client = OpenAI(**client_kwargs)
         return self._embedding_client

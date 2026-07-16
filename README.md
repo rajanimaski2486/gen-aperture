@@ -26,10 +26,10 @@ AI-powered conversational interface for searching stock photos using natural lan
 
 Image and document-assisted image search no longer asks Search Service for a base payload. `PhotoSearchService` generates and executes the OpenSearch body directly:
 
-1. Build an OpenAI `text-embedding-3-small` query embedding for the semantic query.
-2. Request `256` dimensions so the query vector matches the indexed `dense_vector` field in `icc_images_ext`.
+1. Build a query embedding for the semantic query using the configured embedding provider.
+2. Use matching model, dimensions, and vector field settings so the query vector matches the indexed OpenSearch vector field.
 3. Query `icc_images_ext` with an OpenSearch `hybrid` query:
-   - kNN over `dense_vector`, using `OPENSEARCH_KNN_MIN_SCORE` when positive or `OPENSEARCH_KNN_K` top-k retrieval when set to `0`
+   - kNN over `OPENSEARCH_VECTOR_FIELD`, using `OPENSEARCH_KNN_MIN_SCORE` when positive or `OPENSEARCH_KNN_K` top-k retrieval when set to `0`
    - lexical `multi_match` over `title`, `description`, `tags`, and `photographer`
    - optional text exclusions and only filters supported by the current index
 4. Run the query through the `reveal-hybrid` search pipeline.
@@ -251,9 +251,16 @@ OPENSEARCH_KNN_K=200
 # Above zero uses radial kNN search and drops distant vector neighbors before hybrid blending.
 # Set to 0 to fall back to top-k vector retrieval.
 OPENSEARCH_KNN_MIN_SCORE=0.58
+OPENSEARCH_TEXT_EMBEDDING_PROVIDER=openai
 OPENSEARCH_TEXT_EMBEDDING_MODEL=text-embedding-3-small
 OPENSEARCH_TEXT_EMBEDDING_DIMENSIONS=256
-OPENSEARCH_TEXT_EMBEDDING_TIMEOUT_SECONDS=15
+OPENSEARCH_TEXT_EMBEDDING_SEND_DIMENSIONS=true
+OPENSEARCH_TEXT_EMBEDDING_QUERY_INPUT_TYPE=
+OPENSEARCH_TEXT_EMBEDDING_PASSAGE_INPUT_TYPE=
+OPENSEARCH_TEXT_EMBEDDING_TRUNCATE=
+OPENSEARCH_TEXT_EMBEDDING_BASE_URL=
+OPENSEARCH_TEXT_EMBEDDING_API_KEY=
+OPENSEARCH_TEXT_EMBEDDING_TIMEOUT_SECONDS=60
 OPENSEARCH_CONVERSATION_ENDPOINT=http://localhost:9200
 OPENSEARCH_CONVERSATION_INDEX=gen-aperture-conversations
 OPENSEARCH_CONVERSATION_MAX_RECORDS=5000
@@ -274,8 +281,17 @@ AGENT_LLM_MAX_RETRIES=0
 TEXT_QUERY_INTENT_LLM_ENABLED=false
 IMAGE_ANALYSIS_MODEL=meta/llama-3.2-11b-vision-instruct
 
-# OpenAI query embeddings for direct icc_images_ext search
+# OpenAI query embeddings for the default direct icc_images_ext search path
 OPENAI_API_KEY=...
+
+# NVIDIA query embeddings after backfilling a matching vector field
+# OPENSEARCH_VECTOR_FIELD=dense_vector_nvidia_384
+# OPENSEARCH_TEXT_EMBEDDING_PROVIDER=nvidia
+# OPENSEARCH_TEXT_EMBEDDING_MODEL=nvidia/llama-nemotron-embed-1b-v2
+# OPENSEARCH_TEXT_EMBEDDING_DIMENSIONS=384
+# OPENSEARCH_TEXT_EMBEDDING_QUERY_INPUT_TYPE=query
+# OPENSEARCH_TEXT_EMBEDDING_PASSAGE_INPUT_TYPE=passage
+# OPENSEARCH_TEXT_EMBEDDING_TRUNCATE=END
 
 # Optional SearchByBrief retriever settings
 SEARCHBYBRIEF_MODEL=meta/llama-3.3-70b-instruct
@@ -292,10 +308,39 @@ RERANK_MODEL=meta/llama-3.2-3b-instruct
 RERANK_TIMEOUT_SECONDS=120
 ```
 
+### NVIDIA Embedding Backfill
+
+Backfill NVIDIA vectors into a new field before switching query-time kNN to that field. Dry run first:
+
+```bash
+cd backend
+python scripts/backfill_nvidia_embeddings.py \
+  --index icc_images_ext \
+  --vector-field dense_vector_nvidia_384 \
+  --model nvidia/llama-nemotron-embed-1b-v2 \
+  --dimensions 384 \
+  --create-mapping
+```
+
+When the dry-run sample text and mapping look correct, run the write:
+
+```bash
+cd backend
+python scripts/backfill_nvidia_embeddings.py \
+  --index icc_images_ext \
+  --vector-field dense_vector_nvidia_384 \
+  --model nvidia/llama-nemotron-embed-1b-v2 \
+  --dimensions 384 \
+  --create-mapping \
+  --execute
+```
+
+After the backfill completes, set `OPENSEARCH_VECTOR_FIELD`, `OPENSEARCH_TEXT_EMBEDDING_PROVIDER`, `OPENSEARCH_TEXT_EMBEDDING_MODEL`, and `OPENSEARCH_TEXT_EMBEDDING_DIMENSIONS` to the same values used by the script.
+
 ## Security
 
 - ⚠️ `NVIDIA_API_KEY` stays server-side in `backend/.env`
-- ⚠️ `OPENAI_API_KEY` stays server-side in `backend/.env` and is used only for direct OpenSearch query embeddings
+- ⚠️ Embedding API keys stay server-side in `backend/.env`; `OPENAI_API_KEY` is only needed for the default OpenAI embedding path
 - OpenSearch cluster is read-only for the photo index
 - Conversation writes are allowed only to `gen-aperture-conversations`
 - Conversation writes are rejected at 5000 records or 5 GB index store size

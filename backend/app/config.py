@@ -26,9 +26,16 @@ class Settings(BaseSettings):
     # discarded before the hybrid lexical/vector pipeline blends scores.
     # Set to 0 to restore the previous top-k behavior.
     opensearch_knn_min_score: float = 0.58
+    opensearch_text_embedding_provider: str = "openai"
     opensearch_text_embedding_model: str = "text-embedding-3-small"
     opensearch_text_embedding_dimensions: int = 256
-    opensearch_text_embedding_timeout_seconds: float = 15.0
+    opensearch_text_embedding_send_dimensions: bool = True
+    opensearch_text_embedding_query_input_type: Optional[str] = None
+    opensearch_text_embedding_passage_input_type: Optional[str] = None
+    opensearch_text_embedding_truncate: Optional[str] = None
+    opensearch_text_embedding_base_url: Optional[str] = None
+    opensearch_text_embedding_api_key: Optional[str] = None
+    opensearch_text_embedding_timeout_seconds: float = 60.0
     # Deprecated for direct image search; retained so older env files do not fail.
     opensearch_text_embedding_pca_model_path: Optional[str] = None
 
@@ -161,6 +168,25 @@ class Settings(BaseSettings):
         if not self.openai_api_key:
             raise RuntimeError("OPENAI_API_KEY is not configured")
         return self.openai_api_key
+
+    @property
+    def normalized_embedding_provider(self) -> str:
+        return (self.opensearch_text_embedding_provider or "openai").strip().lower()
+
+    @property
+    def embedding_base_url(self) -> Optional[str]:
+        if self.opensearch_text_embedding_base_url:
+            return self.opensearch_text_embedding_base_url
+        if self.normalized_embedding_provider == "nvidia":
+            return self.nvidia_base_url
+        return self.openai_base_url
+
+    def require_embedding_api_key(self) -> str:
+        if self.opensearch_text_embedding_api_key:
+            return self.opensearch_text_embedding_api_key
+        if self.normalized_embedding_provider == "nvidia":
+            return self.require_nvidia_api_key()
+        return self.require_openai_api_key()
 
 
 # Global settings instance

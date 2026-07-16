@@ -1096,6 +1096,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "total_results": state["total_results"],
                 "returned_results": len(state["search_results"]),
                 "took_ms": state["processing_time_ms"],
+                "image_embedding": image_search_result.get("embedding_metadata"),
             },
             "opensearch_payload": image_search_result.get("opensearch_query") or video_opensearch_query,
             "opensearch_url": (
@@ -1360,6 +1361,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "total_results": state["total_results"],
                 "returned_results": len(state["search_results"]),
                 "took_ms": state["processing_time_ms"],
+                "image_embedding": image_search_result.get("embedding_metadata"),
             },
             "opensearch_payload": image_search_result.get("opensearch_query") or video_opensearch_query,
             "opensearch_url": (
@@ -1474,13 +1476,19 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
         )
         error = result.get("error")
         fallback = result.get("fallback")
+        embedding_metadata = result.get("embedding_metadata") or photo_search_service._embedding_metadata()
+        embedding_model = embedding_metadata.get("model") or settings.opensearch_text_embedding_model
+        embedding_provider = embedding_metadata.get("provider") or settings.normalized_embedding_provider
+        embedding_dimensions = embedding_metadata.get("dimensions") or settings.opensearch_text_embedding_dimensions
+        embedding_vector_field = embedding_metadata.get("vector_field") or settings.opensearch_vector_field
         search_reasoning = (
             f"Used lexical-only fallback over title/description/tags using \"{lexical_query}\" "
-            f"because vector embedding was unavailable. "
+            f"because {embedding_provider} embedding model `{embedding_model}` was unavailable. "
             if fallback == "lexical_only"
             else (
                 f"Generated a hybrid OpenSearch query locally for `{index}` instead of calling Search Service. "
-                f"The query combines kNN over `{settings.opensearch_vector_field}` using \"{semantic_query}\" "
+                f"The query combines kNN over `{embedding_vector_field}` using {embedding_provider} "
+                f"embedding model `{embedding_model}` at {embedding_dimensions} dimensions for \"{semantic_query}\" "
                 f"with lexical BM25 over title/description/tags using \"{lexical_query}\". "
             )
         )
@@ -1511,6 +1519,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "is_not_generated": is_not_generated,
                 "query_source": "app_generated_direct_hybrid",
                 "fallback": fallback,
+                "embedding": embedding_metadata,
             },
             "output": {
                 "total_results": result.get("total", 0),
@@ -1518,6 +1527,7 @@ Respond in this EXACT format — structured analysis followed by a JSON block:
                 "took_ms": result.get("took_ms", 0),
                 "error": error,
                 "fallback": fallback,
+                "embedding": embedding_metadata,
             },
             "opensearch_payload": payload,
             "opensearch_url": (
