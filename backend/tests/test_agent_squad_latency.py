@@ -20,6 +20,11 @@ class FailingResolverLlm:
         raise RuntimeError("resolver unavailable")
 
 
+class WeakAnaphoraResolverLlm:
+    def invoke(self, messages):
+        return SimpleNamespace(content="blue ones")
+
+
 class JsonIntentLlm:
     def __init__(self):
         self.messages = None
@@ -104,6 +109,10 @@ class AgentSquadLatencyTests(unittest.TestCase):
             "red roses without people",
         )
         self.assertEqual(
+            build_contextual_query_fallback("blue ones", history),
+            "blue roses",
+        )
+        self.assertEqual(
             build_contextual_query_fallback("best matches", history),
             "red roses",
         )
@@ -127,6 +136,32 @@ class AgentSquadLatencyTests(unittest.TestCase):
 
         self.assertEqual(resolved, "red roses without people")
         self.assertEqual(source, "contextual_fallback")
+
+    def test_followup_resolver_rewrites_weak_anaphoric_output(self):
+        agent = object.__new__(AgentSquad)
+        agent.llm = WeakAnaphoraResolverLlm()
+        history = [
+            {"role": "user", "content": "red roses"},
+            {"role": "assistant", "content": "I found red rose images."},
+        ]
+
+        resolved, source = agent._resolve_followup_query_with_source(
+            "blue ones",
+            history,
+        )
+
+        self.assertEqual(resolved, "blue roses")
+        self.assertEqual(source, "contextual_anaphora")
+
+    def test_text_intent_fast_path_drops_placeholder_nouns(self):
+        result = detect_text_query_intent(
+            "blue ones",
+            ExplodingLlm(),
+            DummyCategoryFilter(),
+        )
+
+        self.assertEqual(result.entity_terms, ["blue"])
+        self.assertEqual(result.boolean_query, "blue")
 
     def test_text_intent_llm_prompt_includes_prior_user_context(self):
         llm = JsonIntentLlm()

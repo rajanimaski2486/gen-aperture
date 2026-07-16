@@ -16,6 +16,7 @@ Ensure text-only follow-up messages in an existing chat window use previous conv
 
 ## Acceptance criteria
 - For text-only Agent Squad searches with prior conversation history, Query Intent Analysis receives a context-aware query derived from the current message and previous user messages.
+- Follow-up phrases with anaphoric placeholder nouns such as "blue ones" resolve the placeholder back to the prior search subject, e.g. "red roses" followed by "blue ones" becomes "blue roses" for intent extraction.
 - The workflow step exposes enough input metadata to verify that prior chat context was considered.
 - If follow-up resolution fails, intent analysis still receives a deterministic contextual fallback instead of only the latest short follow-up.
 - Standalone/new chat searches keep the current fast local intent behavior.
@@ -23,6 +24,7 @@ Ensure text-only follow-up messages in an existing chat window use previous conv
 
 ## Approach
 - Add context helpers in `query_intent.py` for compact prior-user-message formatting and deterministic contextual fallback construction.
+- Add deterministic placeholder-noun resolution so resolver failures or weak resolver outputs do not pass `one`/`ones`/`it`/`them` into lexical search as entity terms.
 - Extend `detect_text_query_intent` to accept optional conversation history and an already resolved query while preserving the default fast path.
 - Update `AgentSquad._search_text_only` to pass conversation history into Query Intent Analysis and record context metadata in workflow step input.
 - Send compact same-window chat history from the frontend with `/api/chat` so immediate follow-ups are not blocked by stale conversation-store reads.
@@ -46,6 +48,7 @@ Ensure text-only follow-up messages in an existing chat window use previous conv
 ## Test plan
 - Before/proof: current Query Intent Analysis step input contains only `raw_query` and `query_source`, so reviewers cannot verify prior chat context was considered.
 - Happy path: prior user query plus latest refinement produces a context-aware query passed into intent analysis, and workflow input reports prior context.
+- Anaphora path: `red roses` followed by `blue ones` resolves to `blue roses`, and a weak LLM resolver output of `blue ones` is replaced before Query Intent Analysis.
 - Sad path: resolver/LLM failure falls back to a deterministic combination of the prior user query and latest message.
 - After/proof: focused tests assert the exact prompt/input behavior and fallback query.
 
@@ -57,4 +60,5 @@ Ensure text-only follow-up messages in an existing chat window use previous conv
 - Very long histories should stay compact; use only recent user messages for intent context.
 
 ## Status
-- Implemented and locally verified with focused context tests, backend test discovery, compile checks, and frontend production build.
+- Implemented deterministic anaphora resolution after live validation showed `red roses` then `blue ones` still searched for `blue AND ones`.
+- Locally verified with focused context tests, backend test discovery, compile checks, and diff checks.

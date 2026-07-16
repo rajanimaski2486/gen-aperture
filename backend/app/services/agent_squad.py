@@ -17,6 +17,7 @@ from app.services.query_intent import (
     build_contextual_query_fallback,
     compact_prior_user_context,
     detect_text_query_intent,
+    resolve_anaphoric_query_placeholders,
 )
 from app.services.reranker import ReflectionReranker, RerankerConfig, should_rerank, _run_async_from_sync
 from app.config import settings
@@ -2330,7 +2331,18 @@ Rules:
         try:
             response = self.llm.invoke(messages)
             resolved = response.content.strip().strip('"\'')
+            anaphora_resolved = resolve_anaphoric_query_placeholders(
+                resolved,
+                conversation_history,
+            )
             logger.info(f"Resolved follow-up '{user_query}' -> '{resolved}'")
+            if anaphora_resolved != resolved:
+                logger.info(
+                    "Resolved anaphoric follow-up output '%s' -> '%s'",
+                    resolved,
+                    anaphora_resolved,
+                )
+                return anaphora_resolved, "contextual_anaphora"
             return resolved, "contextual_followup"
         except Exception as e:
             fallback_query = build_contextual_query_fallback(user_query, conversation_history)

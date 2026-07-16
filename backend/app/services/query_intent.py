@@ -26,7 +26,18 @@ _STOP_WORDS = frozenset({
     "show", "me", "find", "get", "search", "for",
     "images", "photos", "pictures", "popular",
     "trending", "best", "top", "of", "the", "a",
-    "an", "in", "from", "some", "please",
+    "an", "in", "from", "some", "please", "and",
+    "or", "but", "with", "without", "on", "at",
+    "by", "near", "into", "one", "ones", "it",
+    "them", "those", "these", "this", "that",
+})
+_ANAPHORIC_PLACEHOLDER_RE = re.compile(
+    r"\b(?:one|ones|it|them|those|these|this|that)\b",
+    re.IGNORECASE,
+)
+_SUBJECT_BOUNDARY_WORDS = frozenset({
+    "with", "without", "in", "on", "at", "from", "near", "around", "against",
+    "by", "beside", "inside", "outside", "including", "except", "minus",
 })
 
 _VIDEO_RE = re.compile(r"\b(videos?|footage|clips?|reels?)\b", re.IGNORECASE)
@@ -48,6 +59,60 @@ _RERANK_ONLY_RE = re.compile(
     r"\b(?:best|top|rerank|ranked|reviewed|matching|match|results?|picks?)\b",
     re.IGNORECASE,
 )
+
+
+def _primary_subject_from_prior_query(query: str) -> str:
+    """Best-effort subject head extraction from a previous short search query."""
+    tokens = re.findall(r"[a-z0-9]+", (query or "").lower())
+    if not tokens:
+        return ""
+
+    segments: List[List[str]] = [[]]
+    for token in tokens:
+        if token in _SUBJECT_BOUNDARY_WORDS:
+            segments.append([])
+            continue
+        segments[-1].append(token)
+
+    for segment in segments:
+        content_tokens = [token for token in segment if token not in _STOP_WORDS]
+        if content_tokens:
+            return content_tokens[-1]
+    return ""
+
+
+def resolve_anaphoric_query_placeholders(
+    user_query: str,
+    conversation_history: Optional[List[Dict[str, str]]],
+) -> str:
+    """
+    Replace placeholder nouns in a follow-up with the prior search subject.
+
+    Example: prior "red roses" + latest "blue ones" -> "blue roses".
+    This keeps placeholder words such as "ones" out of the lexical query when
+    the LLM resolver fails or returns an under-resolved follow-up.
+    """
+    latest = " ".join((user_query or "").split())
+    if not latest or not _ANAPHORIC_PLACEHOLDER_RE.search(latest):
+        return latest
+
+    prior_context = compact_prior_user_context(conversation_history, limit=1)
+    if not prior_context:
+        return latest
+
+    subject = _primary_subject_from_prior_query(prior_context[-1])
+    if not subject:
+        return latest
+
+    make_match = re.match(
+        r"^(?:make|turn)\s+(?:one|ones|it|them|those|these|this|that)\s+(.+)$",
+        latest,
+        re.IGNORECASE,
+    )
+    if make_match:
+        return f"{make_match.group(1).strip()} {subject}".strip()
+
+    return _ANAPHORIC_PLACEHOLDER_RE.sub(subject, latest)
 
 
 @dataclass
@@ -104,6 +169,10 @@ def build_contextual_query_fallback(
     prior_context = compact_prior_user_context(conversation_history, limit=1)
     if not latest or not prior_context:
         return latest
+
+    resolved_anaphora = resolve_anaphoric_query_placeholders(latest, conversation_history)
+    if resolved_anaphora != latest:
+        return resolved_anaphora
 
     if not _FOLLOWUP_RE.search(latest):
         return latest
