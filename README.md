@@ -15,7 +15,8 @@ AI-powered conversational interface for searching stock photos using natural lan
 
 ## Architecture
 
-- **Editable diagram**: [docs/gen-aperture-architecture.excalidraw.json](docs/gen-aperture-architecture.excalidraw.json)
+- **Editable architecture diagram**: [docs/gen-aperture-architecture.excalidraw.json](docs/gen-aperture-architecture.excalidraw.json)
+- **Agentic workflow diagrams and search patterns**: [docs/agentic-workflows.md](docs/agentic-workflows.md), with editable Excalidraw at [docs/gen-aperture-agentic-workflows.excalidraw.json](docs/gen-aperture-agentic-workflows.excalidraw.json)
 - **Frontend**: React 18 + Vite chat UI with workflow trace, OpenSearch payload viewer, rerank decision log, and frontend-only rerank progress stages
 - **Backend**: FastAPI (Python 3.11+) serving `/api/chat`, conversation endpoints, file extraction, image analysis, and static frontend assets when built
 - **Agents and LLMs**: LangGraph Agent Squad using NVIDIA NIM OpenAI-compatible chat completions through server-side `NVIDIA_API_KEY`
@@ -38,7 +39,9 @@ Image and document-assisted image search no longer asks Search Service for a bas
 
 Explicit video and mixed video searches still use the video search service path.
 
-## Agent Pipeline
+## Agent Pipeline Summary
+
+For workflow-focused diagrams and the agentic search patterns used by the app, see [docs/agentic-workflows.md](docs/agentic-workflows.md).
 
 ```mermaid
 flowchart TD
@@ -174,7 +177,11 @@ gen-aperture/
 │   └── package.json
 ├── briefs/                            # Sample creative briefs for testing
 ├── docs/
+│   ├── agentic-workflows.md          # Agentic workflow diagrams and search patterns
 │   ├── gen-aperture-architecture.excalidraw.json # Editable architecture diagram
+│   ├── gen-aperture-agentic-workflows.excalidraw.json # Editable agentic workflow diagram
+│   ├── nvidia-nim-apis-rag.md        # NVIDIA NIM/API, embeddings, reasoning, and RAG guide
+│   ├── nvidia-nim-apis-rag.excalidraw.json # Editable NVIDIA NIM/API block diagram
 │   └── plans/                         # Task plans and implementation notes
 ├── design.md                          # Current architecture specification
 ├── QUICKSTART.md                      # Local run and smoke-test guide
@@ -353,7 +360,11 @@ After the backfill completes, set `OPENSEARCH_VECTOR_FIELD`, `OPENSEARCH_TEXT_EM
 ## Documentation
 
 - [design.md](design.md) — Current architecture specification
+- [docs/agentic-workflows.md](docs/agentic-workflows.md) — Agentic workflow diagrams and search patterns
 - [docs/gen-aperture-architecture.excalidraw.json](docs/gen-aperture-architecture.excalidraw.json) — Editable Excalidraw architecture diagram
+- [docs/gen-aperture-agentic-workflows.excalidraw.json](docs/gen-aperture-agentic-workflows.excalidraw.json) — Editable Excalidraw agentic workflow diagram
+- [docs/nvidia-nim-apis-rag.md](docs/nvidia-nim-apis-rag.md) — NVIDIA NIM/API, embeddings, reasoning, and RAG guide
+- [docs/nvidia-nim-apis-rag.excalidraw.json](docs/nvidia-nim-apis-rag.excalidraw.json) — Editable Excalidraw NVIDIA API block diagram
 - [QUICKSTART.md](QUICKSTART.md) — Local startup and smoke-test guide
 - [docs/plans/](docs/plans/) — Task plans and implementation notes for architecture changes
 - [.github/copilot-instructions.md](.github/copilot-instructions.md) — AI coding guidelines

@@ -2,7 +2,9 @@
 
 This document describes the current runtime architecture for Gen-Aperture after the NVIDIA LLM, direct OpenSearch hybrid-search, bounded reranker, and UI progress changes.
 
-Editable diagram: [docs/gen-aperture-architecture.excalidraw.json](docs/gen-aperture-architecture.excalidraw.json)
+Editable architecture diagram: [docs/gen-aperture-architecture.excalidraw.json](docs/gen-aperture-architecture.excalidraw.json)
+
+Agentic workflow diagrams and search patterns: [docs/agentic-workflows.md](docs/agentic-workflows.md), with editable Excalidraw at [docs/gen-aperture-agentic-workflows.excalidraw.json](docs/gen-aperture-agentic-workflows.excalidraw.json)
 
 ## Executive Summary
 
@@ -37,6 +39,8 @@ Browser
 Production can serve the compiled React frontend from the FastAPI app when static assets are present.
 
 ## Agent Flow
+
+The summary below is the system-level agent path. For workflow-specific diagrams that explain the app's agentic search patterns, including brief decomposition, reflection reranking, bounded fallback, and the optional SearchByBrief repair loop, see [docs/agentic-workflows.md](docs/agentic-workflows.md).
 
 ```text
 User message / optional brief
